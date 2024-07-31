@@ -35,13 +35,20 @@ const App: React.FC = () => {
     });
   }, [runSearch]);
 
-  const handleReset = useCallback(() => {
+  const makeMove = useCallback(() => {
+    setGameState((prevState) => {
+      const aiMove = runSearch(prevState);
+      return prevState.makeMove(aiMove);
+    });
+  }, [runSearch]);
+
+  const resetGame = useCallback(() => {
     setGameState(games[selectedGame].createInitialState());
   }, [selectedGame]);
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex flex-wrap gap-16 justify-center">
+      <div className="flex flex-wrap gap-8 justify-between">
         <div className="col-span-2">
           <h1 className="text-2xl font-bold mb-4">Game Interface</h1>
           <select
@@ -51,15 +58,24 @@ const App: React.FC = () => {
               setGameState(games[e.target.value].createInitialState());
             }}
             className="mb-4 p-2 border rounded"
-          >
-            {Object.keys(games).map((game) => (
-              <option key={game} value={game}>
-                {games[game].name}
-              </option>
-            ))}
-          </select>
-          <button className="p-2 bg-blue-500 text-white rounded" onClick={handleReset}>Reset</button>
-          <div>
+          >{Object.keys(games).map((game) => (
+            <option key={game} value={game}>
+              {games[game].name}
+            </option>
+          ))}</select>
+
+          <div className="mb-4 flex gap-2">
+            <button
+              className={`p-2 ${gameState.isTerminal() ? 'bg-gray-200 cursor-not-allowed' : 'bg-blue-500'} text-white rounded`}
+              onClick={makeMove}
+              disabled={gameState.isTerminal()}
+            >&#9658;</button>
+            <button
+              className="p-2 bg-gray-200 rounded"
+              onClick={resetGame}
+            >&#8635;</button>
+          </div>
+          <div className="mb-4 p-2 border-2 rounded">
             <GameBoard
               renderBoard={games[selectedGame].renderBoard}
               gameState={gameState}

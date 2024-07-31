@@ -35,16 +35,13 @@ const App: React.FC = () => {
     });
   }, [runSearch]);
 
+  const handleReset = useCallback(() => {
+    setGameState(games[selectedGame].createInitialState());
+  }, [selectedGame]);
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-wrap gap-16 justify-center">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">MCTS Settings</h1>
-          <MCTSSettings settings={mctsSettings} setSettings={setMctsSettings} />
-          <h2 className="text-xl font-semibold mb-2">Tree Viewer</h2>
-          <TreeViewer mcts={mcts} />
-        </div>
-
         <div className="col-span-2">
           <h1 className="text-2xl font-bold mb-4">Game Interface</h1>
           <select
@@ -61,10 +58,7 @@ const App: React.FC = () => {
               </option>
             ))}
           </select>
-          <button
-            onClick={() => setGameState(games[selectedGame].createInitialState())}
-            className="p-2 bg-blue-500 text-white rounded"
-          >Reset</button>
+          <button className="p-2 bg-blue-500 text-white rounded" onClick={handleReset}>Reset</button>
           <div>
             <GameBoard
               renderBoard={games[selectedGame].renderBoard}
@@ -72,6 +66,14 @@ const App: React.FC = () => {
               onMove={handleMove}
             />
           </div>
+        </div>
+
+        <div>
+          <h1 className="text-2xl font-bold mb-2">MCTS Settings</h1>
+          <MCTSSettings settings={mctsSettings} setSettings={setMctsSettings} />
+
+          <h2 className="text-xl font-semibold mb-2">Tree Viewer</h2>
+          <TreeViewer mcts={mcts} />
         </div>
       </div>
     </div>

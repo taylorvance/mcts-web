@@ -1,66 +1,53 @@
 // src/components/TreeViewer.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MCTS } from 'multimcts';
 
 interface TreeViewerProps {
   mcts: MCTS | null;
 }
 
-interface NodeStats {
-  move: string | null;
-  state: string;
-  visits: number;
-  rewards: Record<string, number>;
-  children: NodeStats[] | string | null;
-}
-
-const NodeViewer: React.FC<{ nodeStats:NodeStats; mcts:MCTS; expanded:boolean; path:string[]; }> = ({ nodeStats, mcts, expanded, path }) => {
-  let node = mcts.rootNode;
-  while(path.length > 0) {
-    node = node.children[path.shift()!];
-  }
-  const children = [];
-  for(const move in node.children) {
-    children.push(node.children[move].getStats(0));
-  }
-  children.sort((a,b) => b.visits-a.visits);
-
+const NodeViewer: React.FC<{ node:Object; expanded:boolean; }> = ({ node, expanded }) => {
   const [isExpanded, setIsExpanded] = useState(expanded);
-  const [childrenStats, setChildrenStats] = useState<NodeStats[]>(children);
+  const [children, setChildren] = useState<Object[]>([]);
 
-  const handleExpand = async () => {
-    setIsExpanded(!isExpanded);
-  };
+  useEffect(() => {
+    setChildren(Object.values(node.children).sort((a,b) => b.visits-a.visits));
+    setIsExpanded(expanded);
+  }, [node]);
+
+  const toggleExpand = () => { setIsExpanded(!isExpanded); };
 
   return (
     <div className="ml-4">
-      <div className="flex items-center cursor-pointer" onClick={handleExpand}>
-        <span className="mr-2">{isExpanded ? '▼' : '►'}</span>
-        <span className="">{nodeStats.state}</span>
-        <span className="font-mono">
-          (Visits: {nodeStats.visits}, Rewards: {JSON.stringify(nodeStats.rewards)})
+      <div className={`flex items-center ${children.length>0 ? 'cursor-pointer' : 'cursor-default'}`} onClick={toggleExpand}>
+        <span className={`mr-2 ${children.length>0 ? 'font-bold' : ''}`}>
+          {children.length>0 ? (isExpanded?'-':'+') : '·'}
         </span>
+        <span className="mr-2 bg-gray-200">{node.state.toString()}</span>
+        <span className="mr-2 bg-gray-200">{node.move}</span>
+        <span className="mr-2">n={node.visits}</span>
+        <span className="mr-2">{JSON.stringify(node.rewards)}</span>
       </div>
-      {isExpanded && (
-        <div>
-          {childrenStats.map((childStats, index) => (
-            <NodeViewer key={index} nodeStats={childStats} mcts={mcts} expanded={false} path={[...path, childStats.move!]} />
-          ))}
-        </div>
-      )}
+      {isExpanded && children.map((child, index) => (
+        <NodeViewer key={index} node={child} expanded={false} />
+      ))}
     </div>
   );
 };
 
 const TreeViewer: React.FC<TreeViewerProps> = ({ mcts }) => {
-  const rootStats = mcts ? mcts.rootNode.getStats(0) : null;
+  const [rootNode, setRootNode] = useState(mcts?.rootNode);
+
+  useEffect(() => {
+    if(mcts) {
+      setRootNode(mcts.rootNode);
+    }
+  }, [mcts]);
 
   return (
-    <div className="mt-4">
-      {rootStats ? (
-        <div className="bg-gray-100 p-2 rounded overflow-auto max-h-96 text-sm">
-          <NodeViewer nodeStats={rootStats} mcts={mcts} expanded={true} path={[]} />
-        </div>
+    <div className="bg-gray-100 p-2 rounded overflow-auto text-sm font-mono">
+      {rootNode ? (
+        <NodeViewer node={rootNode} expanded={true} />
       ) : (
         <p className="text-gray-500">No tree information available.</p>
       )}

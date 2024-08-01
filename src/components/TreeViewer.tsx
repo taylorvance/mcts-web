@@ -39,9 +39,7 @@ const TreeViewer: React.FC<TreeViewerProps> = ({ mcts }) => {
   const [rootNode, setRootNode] = useState(mcts?.rootNode);
 
   useEffect(() => {
-    if(mcts) {
-      setRootNode(mcts.rootNode);
-    }
+    setRootNode(mcts?.rootNode);
   }, [mcts]);
 
   return (

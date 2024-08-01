@@ -1,5 +1,4 @@
-// src/App.tsx
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GameState } from 'multimcts';
 import MCTSSettings from './components/MCTSSettings';
 import GameBoard from './components/GameBoard';
@@ -7,6 +6,7 @@ import TreeViewer from './components/TreeViewer';
 import TicTacToe from './games/TicTacToe';
 import { Game } from './types/Game';
 import { useMCTS } from './hooks/useMCTS';
+import { FaX, FaBackwardStep, FaForwardStep, FaForwardFast, FaStop } from "react-icons/fa6";
 
 const games: Record<string, Game> = {
   TicTacToe: TicTacToe,
@@ -14,20 +14,27 @@ const games: Record<string, Game> = {
 };
 
 const App: React.FC = () => {
-  const [selectedGame, setSelectedGame] = useState<string>('TicTacToe');
   const [mctsSettings, setMctsSettings] = useState({
     explorationBias: 1.414,
     maxIterations: 1000,
     maxTime: 1,
   });
+  const [selectedGame, setSelectedGame] = useState<string>('TicTacToe');
   const [gameState, setGameState] = useState<GameState>(games[selectedGame].createInitialState());
+  const [gameHistory, setGameHistory] = useState<GameState[]>([]);
+  const [isAutoplaying, setIsAutoplaying] = useState<boolean>(false);
 
-  const { runSearch, mcts } = useMCTS(mctsSettings);
+  const { mcts, runSearch, resetMCTS } = useMCTS(mctsSettings);
+
+  const canUndo = useCallback(() => gameHistory.length>0, [gameHistory]);
+  const isTerminal = useCallback(() => gameState.isTerminal(), [gameState]);
 
   const handleMove = useCallback((move: string) => {
     setGameState((prevState) => {
       const newState = prevState.makeMove(move);
-      if (!newState.isTerminal()) {
+      setGameHistory((prevHistory) => [...prevHistory, prevState]);
+      if(!newState.isTerminal()) {
+        //.make this a disablable option
         const aiMove = runSearch(newState);
         return newState.makeMove(aiMove);
       }
@@ -38,44 +45,91 @@ const App: React.FC = () => {
   const makeMove = useCallback(() => {
     setGameState((prevState) => {
       const aiMove = runSearch(prevState);
-      return prevState.makeMove(aiMove);
+      const newState = prevState.makeMove(aiMove);
+      setGameHistory((prevHistory) => [...prevHistory, prevState]);
+      return newState;
     });
   }, [runSearch]);
 
+  const startAutoPlay = useCallback(() => { setIsAutoplaying(true); }, []);
+  const stopAutoPlay = useCallback(() => { setIsAutoplaying(false); }, []);
+
+  useEffect(() => {
+    if(isAutoplaying && !isTerminal()) {
+      const aiMove = runSearch(gameState);
+      const newState = gameState.makeMove(aiMove);
+      setGameHistory((prevHistory) => [...prevHistory, gameState]);
+      setGameState(newState);
+    } else {
+      setIsAutoplaying(false);
+    }
+  }, [gameState, isAutoplaying, isTerminal, runSearch]);
+
   const resetGame = useCallback(() => {
     setGameState(games[selectedGame].createInitialState());
-  }, [selectedGame]);
+    setGameHistory([]);
+    resetMCTS();
+  }, [selectedGame, resetMCTS]);
+
+  const undoMove = useCallback(() => {
+    setGameHistory((prevHistory) => {
+      if (prevHistory.length === 0) return prevHistory;
+      const lastState = prevHistory[prevHistory.length - 1];
+      setGameState(lastState);
+      return prevHistory.slice(0, -1);
+    });
+    resetMCTS();
+  }, [resetMCTS]);
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex flex-wrap gap-8 justify-between">
-        <div className="col-span-2">
-          <h1 className="text-2xl font-bold mb-4">Game Interface</h1>
+      <div className="flex flex-wrap gap-16">
+        <div className="flex flex-col items-center gap-4">
+          <h1 className="text-2xl font-bold">Game Interface</h1>
           <select
             value={selectedGame}
             onChange={(e) => {
               setSelectedGame(e.target.value);
               setGameState(games[e.target.value].createInitialState());
+              setGameHistory([]);
             }}
-            className="mb-4 p-2 border rounded"
+            className="p-2 border rounded"
           >{Object.keys(games).map((game) => (
             <option key={game} value={game}>
               {games[game].name}
             </option>
           ))}</select>
 
-          <div className="mb-4 flex gap-2">
+          <div className="flex gap-2 text-xl">
             <button
-              className={`p-2 ${gameState.isTerminal() ? 'bg-gray-200 cursor-not-allowed' : 'bg-blue-500'} text-white rounded`}
-              onClick={makeMove}
-              disabled={gameState.isTerminal()}
-            >&#9658;</button>
-            <button
-              className="p-2 bg-gray-200 rounded"
+              className="bg-gray-200 p-2 rounded"
               onClick={resetGame}
-            >&#8635;</button>
+            ><FaX /></button>
+            <button
+              className={`bg-gray-200 p-2 rounded ${!canUndo() ? 'cursor-not-allowed text-white' : ''}`}
+              onClick={undoMove}
+              disabled={!canUndo()}
+            ><FaBackwardStep /></button>
+            <button
+              className={`bg-gray-200 p-2 rounded ${isTerminal() ? 'cursor-not-allowed text-white' : ''}`}
+              onClick={makeMove}
+              disabled={isTerminal()}
+            ><FaForwardStep /></button>
+            {!isAutoplaying ? (
+              <button
+                className={`bg-gray-200 p-2 rounded ${isTerminal() ? 'cursor-not-allowed text-white' : ''}`}
+                onClick={startAutoPlay}
+                disabled={isTerminal()}
+              ><FaForwardFast /></button>
+            ) : (
+              <button
+                className="bg-gray-200 p-2 rounded"
+                onClick={stopAutoPlay}
+              ><FaStop /></button>
+            )}
           </div>
-          <div className="mb-4 p-2 border-2 rounded">
+
+          <div className="border-2 p-2 rounded">
             <GameBoard
               renderBoard={games[selectedGame].renderBoard}
               gameState={gameState}
@@ -84,11 +138,9 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div>
-          <h1 className="text-2xl font-bold mb-2">MCTS Settings</h1>
+        <div className="flex flex-col gap-4">
+          <h1 className="text-2xl font-bold">MCTS Settings</h1>
           <MCTSSettings settings={mctsSettings} setSettings={setMctsSettings} />
-
-          <h2 className="text-xl font-semibold mb-2">Tree Viewer</h2>
           <TreeViewer mcts={mcts} />
         </div>
       </div>

@@ -17,5 +17,9 @@ export const useMCTS = (settings: {explorationBias:number; maxIterations:number,
 		return move;
 	}, [settings.explorationBias, settings.maxIterations, settings.maxTime]);
 
-	return { runSearch, mcts };
+	const resetMCTS = useCallback(() => {
+		setMCTS(null);
+	}, []);
+
+	return { mcts, runSearch, resetMCTS };
 };

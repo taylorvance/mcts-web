@@ -1,10 +1,18 @@
 // src/games/TicTacToe.ts
-import React from 'react';
-import { GameState } from 'multimcts';
 import TicTacToeState from 'multimcts/tictactoe';
 import { Game } from '../types/Game';
+import { GameState } from 'multimcts';
 
-const renderBoard = (state:TicTacToeState, onMove:(move:string) => void) => {
+// Type guard to check if state is TicTacToeState
+const isTicTacToeState = (state: GameState): state is TicTacToeState => {
+  return (state as TicTacToeState).board !== undefined;
+};
+
+const renderBoard = (state:GameState, onMove:(move:string) => void) => {
+  if (!isTicTacToeState(state)) {
+    throw new Error("Invalid state type");
+  }
+
   return (
     <div className="grid grid-cols-3 gap-2">
       {state.board.map((cell, index) => (

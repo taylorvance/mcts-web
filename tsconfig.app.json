@@ -8,6 +8,12 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
+	"baseUrl": ".",
+	"paths": {
+      "multimcts": ["node_modules/multimcts"],
+      "multimcts/tictactoe": ["src/types/tictactoe"]
+    },
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

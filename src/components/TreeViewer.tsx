@@ -1,14 +1,14 @@
 // src/components/TreeViewer.tsx
 import React, { useState, useEffect } from 'react';
-import { MCTS } from 'multimcts';
+import { MCTS, Node } from 'multimcts';
 
 interface TreeViewerProps {
   mcts: MCTS | null;
 }
 
-const NodeViewer: React.FC<{ node:Object; expanded:boolean; }> = ({ node, expanded }) => {
+const NodeViewer: React.FC<{ node:Node; expanded:boolean; }> = ({ node, expanded }) => {
   const [isExpanded, setIsExpanded] = useState(expanded);
-  const [children, setChildren] = useState<Object[]>([]);
+  const [children, setChildren] = useState<Node[]>([]);
 
   useEffect(() => {
     setChildren(Object.values(node.children).sort((a,b) => b.visits-a.visits));

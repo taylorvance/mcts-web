@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { GameState } from 'multimcts';
 import MCTSSettings from './components/MCTSSettings';
 import GameBoard from './components/GameBoard';

@@ -15,7 +15,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ tooltip, children, className=
     <div className={fullClassName}>
       {React.Children.map(children, (child, index) => {
         if(React.isValidElement(child)) {
-          return React.cloneElement(child, {
+          return React.cloneElement(child as React.ReactElement<any>, {
             isInGroup: true,
             isFirst: index === 0,
             isLast: index === React.Children.count(children) - 1,

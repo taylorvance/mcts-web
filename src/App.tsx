@@ -11,7 +11,7 @@ import { useMCTS } from './hooks/useMCTS';
 import { useHotkeys } from './hooks/useHotkeys';
 import { HOTKEYS } from './config/hotkeys';
 import { FaUndo, FaRedo } from "react-icons/fa";
-import { FaBackwardFast, FaBackwardStep, FaForwardStep, FaForwardFast, FaStop } from "react-icons/fa6";
+import { FaForwardStep, FaForwardFast, FaStop } from "react-icons/fa6";
 import { HiRefresh } from "react-icons/hi";
 import TicTacToe from './games/TicTacToe';
 import Onitama from './games/Onitama';
@@ -44,6 +44,7 @@ const App: React.FC = () => {
   const performMove = useCallback(async (move:string|null=null): Promise<GameState> => {
     return new Promise((resolve) => {
       setGameState((prevState) => {
+        if(!prevState || prevState.isTerminal()) return prevState;
         move = move ?? runSearch(prevState);
         const newState = prevState.makeMove(move);
         const newHistory = [...history.slice(0, historyIdx+1), newState];
@@ -72,7 +73,7 @@ const App: React.FC = () => {
 
     let timeoutId: NodeJS.Timeout;
     const playNextMove = () => {
-      if(isAutoplaying && !gameState.isTerminal()) {
+      if(isAutoplaying && gameState && !gameState.isTerminal()) {
         performMove();
         timeoutId = setTimeout(playNextMove, delay); // Add a delay between moves
       } else {
@@ -80,7 +81,7 @@ const App: React.FC = () => {
       }
     };
 
-    if(isAutoplaying && !gameState.isTerminal()) {
+    if(isAutoplaying && gameState && !gameState.isTerminal()) {
       timeoutId = setTimeout(playNextMove, delay);
     }
 
@@ -149,7 +150,7 @@ const App: React.FC = () => {
     AUTOPLAY: toggleAutoplay,
   });
 
-  const hotkeyHint = (key:string) => <span className="text-sm">({HOTKEYS[key]})</span>;
+  const hotkeyHint = (key: keyof typeof HOTKEYS) => <span className="text-sm">({HOTKEYS[key]})</span>;
 
   return (
     <div className="container mx-auto p-4">
@@ -173,7 +174,7 @@ const App: React.FC = () => {
             <Button onClick={doAIMove} disabled={!canPlay()} tooltip="AI Move"><FaForwardStep />{hotkeyHint('AI_MOVE')}</Button>
 
             {!isAutoplaying ? (
-              <Button onClick={()=>setIsAutoplaying(true)} disabled={isTerminal()} tooltip="Autoplay On"><FaForwardFast />{hotkeyHint('AUTOPLAY')}</Button>
+              <Button onClick={()=>setIsAutoplaying(true)} disabled={isTerminal()?true:false} tooltip="Autoplay On"><FaForwardFast />{hotkeyHint('AUTOPLAY')}</Button>
             ) : (
               <Button onClick={()=>setIsAutoplaying(false)} className="bg-gray-400" tooltip="Autoplay Off"><FaStop />{hotkeyHint('AUTOPLAY')}</Button>
             )}

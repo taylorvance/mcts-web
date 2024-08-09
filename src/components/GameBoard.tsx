@@ -3,15 +3,15 @@ import React from 'react';
 import { GameState } from 'multimcts';
 
 interface GameBoardProps {
-  renderBoard: (state: GameState, onMove: (move: string) => void) => React.ReactNode;
+  render: (state: GameState, onMove: (move: string) => void) => React.ReactNode;
   gameState: GameState;
   onMove: (move: string) => void;
 }
 
-const GameBoard: React.FC<GameBoardProps> = ({ renderBoard, gameState, onMove }) => {
+const GameBoard: React.FC<GameBoardProps> = ({ render, gameState, onMove }) => {
   return (
     <div className="game-board">
-      {renderBoard(gameState, onMove)}
+      {render(gameState, onMove)}
     </div>
   );
 };

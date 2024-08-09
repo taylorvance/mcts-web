@@ -24,7 +24,7 @@ const MCTSSettings: React.FC<MCTSSettingsProps> = ({ settings, setSettings }) =>
           type="number"
           value={settings.explorationBias}
           onChange={(e) => setSettings({ ...settings, explorationBias: parseFloat(e.target.value) })}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-lg"
           step="0.1"
         />
       </div>
@@ -35,7 +35,7 @@ const MCTSSettings: React.FC<MCTSSettingsProps> = ({ settings, setSettings }) =>
           type="number"
           value={settings.maxIterations}
           onChange={(e) => setSettings({ ...settings, maxIterations: parseInt(e.target.value, 10) })}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-lg"
         />
       </div>
       <div>
@@ -45,7 +45,7 @@ const MCTSSettings: React.FC<MCTSSettingsProps> = ({ settings, setSettings }) =>
           type="number"
           value={settings.maxTime}
           onChange={(e) => setSettings({ ...settings, maxTime: parseFloat(e.target.value) })}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-lg"
         />
       </div>
     </div>

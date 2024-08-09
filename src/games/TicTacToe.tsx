@@ -1,4 +1,4 @@
-// src/games/TicTacToe.ts
+// src/games/TicTacToe.tsx
 import TicTacToeState from 'multimcts/tictactoe';
 import { Game } from '../types/Game';
 import { GameState } from 'multimcts';
@@ -8,7 +8,7 @@ const isTicTacToeState = (state: GameState): state is TicTacToeState => {
   return (state as TicTacToeState).board !== undefined;
 };
 
-const renderBoard = (state:GameState, onMove:(move:string) => void) => {
+const render = (state:GameState, onMove:(move:string) => void) => {
   if (!isTicTacToeState(state)) {
     throw new Error("Invalid state type");
   }
@@ -32,7 +32,7 @@ const renderBoard = (state:GameState, onMove:(move:string) => void) => {
 const TicTacToe: Game = {
   name: "TicTacToe",
   createInitialState: () => new TicTacToeState(),
-  renderBoard: renderBoard,
+  render: render,
 };
 
 export default TicTacToe;

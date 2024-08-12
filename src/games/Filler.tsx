@@ -1,5 +1,4 @@
 // src/games/Filler.tsx
-import React from 'react';
 import { Game } from '../types/Game';
 import { GameState } from 'multimcts';
 
@@ -12,7 +11,7 @@ const isFillerState = (state:GameState): state is FillerState => {
   return state instanceof FillerState;
 };
 
-const render = (state:GameState, onMove:(move:number) => void) => {
+const render = (state:GameState, onMove:(move:string) => void) => {
   if(!isFillerState(state)) {
     throw new Error("Invalid state type");
   }
@@ -47,8 +46,8 @@ const render = (state:GameState, onMove:(move:number) => void) => {
       <div className="flex flex-col items-center">
         Player {state.getCurrentTeam()}
         <div className="flex flex-row gap-2">
-          {state.getLegalMoves().map((colorIndex) => (
-            <button key={colorIndex} className="w-14 h-14" style={{ backgroundColor: COLORS[colorIndex] }} onClick={() => onMove(colorIndex)}></button>
+          {state.getLegalMoves().map((move:string) => (
+            <button key={move} className="w-14 h-14" style={{ backgroundColor: COLORS[parseInt(move)] }} onClick={() => onMove(move)}></button>
           ))}
         </div>
       </div>

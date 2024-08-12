@@ -15,10 +15,12 @@ import { FaForwardStep, FaForwardFast, FaStop } from "react-icons/fa6";
 import { HiRefresh } from "react-icons/hi";
 import TicTacToe from './games/TicTacToe';
 import Onitama from './games/Onitama';
+import Filler from './games/Filler';
 
 const games: Record<string, Game> = {
-  TicTacToe: TicTacToe,
+  Filler: Filler,
   Onitama: Onitama,
+  TicTacToe: TicTacToe,
 };
 
 const App: React.FC = () => {
@@ -27,7 +29,7 @@ const App: React.FC = () => {
     maxIterations: 1000,
     maxTime: 1,
   });
-  const [selectedGame, setSelectedGame] = useState<string>('Onitama');
+  const [selectedGame, setSelectedGame] = useState<string>('TicTacToe');
   const [gameState, setGameState] = useState<GameState|null>(null);
   const [history, setHistory] = useState<GameState[]>([games[selectedGame].createInitialState()]);
   const [historyIdx, setHistoryIdx] = useState<number>(0);

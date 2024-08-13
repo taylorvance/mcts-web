@@ -23,6 +23,8 @@ const games: Record<string, Game> = {
   TicTacToe: TicTacToe,
 };
 
+const MOVE_DELAY = 100; // (helps React keep up with the latest game state)
+
 const App: React.FC = () => {
   const [mctsSettings, setMctsSettings] = useState({
     explorationBias: 1.414,
@@ -35,6 +37,7 @@ const App: React.FC = () => {
   const [historyIdx, setHistoryIdx] = useState<number>(0);
   const [isAutoplaying, setIsAutoplaying] = useState<boolean>(false);
   const [doAIMoveAfterPlayer, setDoAIMoveAfterPlayer] = useState<boolean>(true);
+  const [isMoveInProgress, setIsMoveInProgress] = useState<boolean>(false);
 
   const { mcts, runSearch, resetMCTS } = useMCTS(mctsSettings);
 
@@ -42,66 +45,73 @@ const App: React.FC = () => {
   const canPlay = useCallback(() => gameState!==null && !isAutoplaying && !isTerminal(), [gameState, isAutoplaying, isTerminal]);
   const canUndo = useCallback(() => historyIdx > 0, [historyIdx]);
   const canRedo = useCallback(() => historyIdx < history.length-1, [historyIdx, history]);
+  const startAutoplay = useCallback(() => setIsAutoplaying(true), []);
+  const stopAutoplay = useCallback(() => setIsAutoplaying(false), []);
 
-  const performMove = useCallback(async (move:string|null=null): Promise<GameState> => {
-    return new Promise((resolve) => {
-      setGameState((prevState) => {
-        if(!prevState || prevState.isTerminal()) return prevState;
-        move = move ?? runSearch(prevState);
-        const newState = prevState.makeMove(move);
-        const newHistory = [...history.slice(0, historyIdx+1), newState];
-        setHistory(newHistory);
-        setHistoryIdx(newHistory.length-1);
-        resolve(newState);
-        return newState;
+  const performMove = useCallback(async (move:string|null=null): Promise<GameState|null> => {
+    if(isMoveInProgress) {
+      return gameState;
+    }
+    setIsMoveInProgress(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, MOVE_DELAY));
+      return new Promise((resolve) => {
+        setGameState((prevState) => {
+          if(!prevState || prevState.isTerminal()) return prevState;
+          move = move ?? runSearch(prevState);
+          const newState = prevState.makeMove(move);
+          const newHistory = [...history.slice(0, historyIdx+1), newState];
+          setHistory(newHistory);
+          setHistoryIdx(newHistory.length-1);
+          resolve(newState);
+          return newState;
+        });
       });
-    });
-  }, [isTerminal, runSearch, historyIdx]);
+    } finally {
+      setIsMoveInProgress(false);
+    }
+  }, [isTerminal, runSearch, history, historyIdx, isMoveInProgress, gameState]);
 
-  const handlePlayerMove = useCallback((move:string) => {
-    performMove(move).then((newState) => {
-      if(doAIMoveAfterPlayer && !newState.isTerminal()) {
-        performMove();
-      }
-    });
-  }, [performMove, doAIMoveAfterPlayer]);
+  const handlePlayerMove = useCallback(async (move:string) => {
+    if(!canPlay()) return;
+    const newState = await performMove(move);
+
+    if(doAIMoveAfterPlayer && newState && !newState.isTerminal()) {
+      performMove();
+    }
+  }, [canPlay, performMove, doAIMoveAfterPlayer]);
 
   const doAIMove = useCallback(() => {
-    if(canPlay()) performMove();
-  }, [performMove]);
+    if(!canPlay()) return;
+    performMove();
+  }, [performMove, canPlay]);
 
   useEffect(() => {
-    const delay = 100;
+    if(!isAutoplaying) return;
 
-    let timeoutId: NodeJS.Timeout;
-    const playNextMove = () => {
+    const autoplay = async () => {
       if(isAutoplaying && gameState && !gameState.isTerminal()) {
         performMove();
-        timeoutId = setTimeout(playNextMove, delay); // Add a delay between moves
       } else {
-        setIsAutoplaying(false);
+        stopAutoplay();
       }
     };
 
-    if(isAutoplaying && gameState && !gameState.isTerminal()) {
-      timeoutId = setTimeout(playNextMove, delay);
-    }
+    autoplay();
+  }, [isAutoplaying, gameState, performMove, stopAutoplay]);
 
-    return () => {
-      if(timeoutId) clearTimeout(timeoutId);
-    };
-  }, [gameState, isAutoplaying, performMove]);
-
-  useEffect(() => { if(isTerminal()) setIsAutoplaying(false); }, [isTerminal]);
+  useEffect(() => {
+    if(isTerminal()) stopAutoplay();
+  }, [isTerminal, stopAutoplay]);
 
   const resetGame = useCallback(() => {
-    setIsAutoplaying(false);
+    stopAutoplay();
     const initialState = games[selectedGame].createInitialState();
     setGameState(initialState);
     setHistoryIdx(0);
     setHistory([initialState]);
     resetMCTS();
-  }, [selectedGame, resetMCTS]);
+  }, [selectedGame, resetMCTS, stopAutoplay]);
 
   const changeGame = useCallback((game:string) => {
     setSelectedGame(game);
@@ -120,29 +130,29 @@ const App: React.FC = () => {
 
   const undoMove = useCallback(() => {
     if(canUndo()) {
-      setIsAutoplaying(false);
+      stopAutoplay();
       setHistoryIdx((prevIdx) => prevIdx-1);
       setGameState(history[historyIdx-1]);
       resetMCTS();
     }
-  }, [canUndo, history, historyIdx, resetMCTS]);
+  }, [canUndo, history, historyIdx, resetMCTS, stopAutoplay]);
 
   const redoMove = useCallback(() => {
     if(canRedo()) {
-      setIsAutoplaying(false);
+      stopAutoplay();
       setHistoryIdx((prevIdx) => prevIdx+1);
       setGameState(history[historyIdx+1]);
       resetMCTS();
     }
-  }, [canRedo, history, historyIdx, resetMCTS]);
+  }, [canRedo, history, historyIdx, resetMCTS, stopAutoplay]);
 
   const toggleAutoplay = useCallback(() => {
     if(isAutoplaying || isTerminal()) {
-      setIsAutoplaying(false);
+      stopAutoplay();
     } else {
-      setIsAutoplaying(true);
+      startAutoplay();
     }
-  }, [isAutoplaying, isTerminal]);
+  }, [isAutoplaying, isTerminal, startAutoplay, stopAutoplay]);
 
   useHotkeys({
     RESET: resetGame,
@@ -176,9 +186,9 @@ const App: React.FC = () => {
             <Button onClick={doAIMove} disabled={!canPlay()} tooltip="AI Move"><FaForwardStep />{hotkeyHint('AI_MOVE')}</Button>
 
             {!isAutoplaying ? (
-              <Button onClick={()=>setIsAutoplaying(true)} disabled={isTerminal()?true:false} tooltip="Autoplay On"><FaForwardFast />{hotkeyHint('AUTOPLAY')}</Button>
+              <Button onClick={startAutoplay} disabled={isTerminal()?true:false} tooltip="Autoplay On"><FaForwardFast />{hotkeyHint('AUTOPLAY')}</Button>
             ) : (
-              <Button onClick={()=>setIsAutoplaying(false)} className="bg-gray-400" tooltip="Autoplay Off"><FaStop />{hotkeyHint('AUTOPLAY')}</Button>
+              <Button onClick={stopAutoplay} className="bg-gray-400" tooltip="Autoplay Off"><FaStop />{hotkeyHint('AUTOPLAY')}</Button>
             )}
 
             <label className="flex items-center gap-1">

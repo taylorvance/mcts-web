@@ -13,7 +13,6 @@
       "multimcts": ["node_modules/multimcts"],
       "multimcts/tictactoe": ["src/types/tictactoe"]
     },
-	"types": ["node"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",

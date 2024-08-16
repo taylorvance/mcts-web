@@ -5,4 +5,5 @@ export const HOTKEYS = {
   REDO: 'x',
   AI_MOVE: 'n',
   AUTOPLAY: 'p',
+  AI_AFTER_PLAYER: 'a',
 };

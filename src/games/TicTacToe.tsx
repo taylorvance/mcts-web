@@ -32,7 +32,7 @@ const render = (state:GameState, onMove:(move:string) => void) => {
 const TicTacToe: Game = {
   name: "TicTacToe",
   createInitialState: () => new TicTacToeState(),
-  render: render,
+  render,
 };
 
 export default TicTacToe;

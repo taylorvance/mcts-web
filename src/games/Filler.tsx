@@ -2,8 +2,9 @@
 import { Game } from '../types/Game';
 import { GameState } from 'multimcts';
 
-const BOARD_SIZE = 7;
-const TOTAL_CELLS = BOARD_SIZE * BOARD_SIZE;
+const ROWS = 7;
+const COLS = 8;
+const TOTAL_CELLS = ROWS * COLS;
 const COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
 const COLOR_COUNT = COLORS.length;
 
@@ -33,13 +34,9 @@ const render = (state:GameState, onMove:(move:string) => void) => {
         <div className="text-end pe-2" style={{ width: `${(score2 / TOTAL_CELLS) * 100}%`, backgroundColor: COLORS[state.board[TOTAL_CELLS-1]] }}>{score2}</div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid gap-1" style={{gridTemplateColumns:`repeat(${COLS},minmax(0,1fr))`}}>
         {Array.from(state.board).map((colorIndex, index) => (
-          <div
-            key={index}
-            className={`w-8 h-8 ${[0,TOTAL_CELLS-1].includes(index) ? 'border-black border-4' : ''}`}
-            style={{ backgroundColor: COLORS[colorIndex] }}
-          />
+          <div key={index} className={`w-8 h-8 ${[0,TOTAL_CELLS-1].includes(index) ? 'border-black border-4' : ''}`} style={{ backgroundColor: COLORS[colorIndex] }} />
         ))}
       </div>
 
@@ -47,7 +44,7 @@ const render = (state:GameState, onMove:(move:string) => void) => {
         Player {state.getCurrentTeam()}
         <div className="flex flex-row gap-2">
           {state.getLegalMoves().map((move:string) => (
-            <button key={move} className="w-14 h-14" style={{ backgroundColor: COLORS[parseInt(move)] }} onClick={() => onMove(move)}></button>
+            <button key={move} className="w-16 h-16" style={{ backgroundColor: COLORS[parseInt(move)] }} onClick={() => onMove(move)} />
           ))}
         </div>
       </div>
@@ -88,7 +85,7 @@ class FillerState extends GameState {
 
   isTerminal(): boolean { return new Set(this.board).size === 2; }
 
-  getReward(): number {
+  getReward() {
     const rewards = {'1':0, '2':0};
     const p1 = this.board[0];
     for(let i = 0; i < TOTAL_CELLS; i++) {
@@ -107,6 +104,7 @@ class FillerState extends GameState {
       // 1 for win, -1 for loss
       if(!this.team && rewards['1'] > rewards['2']) return 1;
       if(this.team && rewards['2'] > rewards['1']) return 1;
+      if(rewards['1'] === rewards['2']) return 0;
       return -1;
     }
   }
@@ -114,8 +112,8 @@ class FillerState extends GameState {
   toString(): string {
     let board = Array.from(this.board).map((colorIndex, index) => {
       let cell = COLORS[colorIndex][0];
-      if(index===0 || index===TOTAL_CELLS-1) cell = cell.toUpperCase();
-      if(index>0 && index%BOARD_SIZE===0) cell = '/' + cell;
+      //if(index===0 || index===TOTAL_CELLS-1) cell = cell.toUpperCase();
+      if(index>0 && index%COLS===0) cell = '/' + cell;
       return cell;
     }).join('');
     return this.getCurrentTeam() + ' ' + board;
@@ -137,13 +135,13 @@ class FillerState extends GameState {
 
     board[index] = newColor;
 
-    const row = (index / BOARD_SIZE) | 0;
-    const col = index % BOARD_SIZE;
+    const row = (index / COLS) | 0;
+    const col = index % COLS;
 
-    if(row > 0) this._floodFill(board, index - BOARD_SIZE, oldColor, newColor);
-    if(row < BOARD_SIZE - 1) this._floodFill(board, index + BOARD_SIZE, oldColor, newColor);
-    if(col > 0) this._floodFill(board, index - 1, oldColor, newColor);
-    if(col < BOARD_SIZE - 1) this._floodFill(board, index + 1, oldColor, newColor);
+    if(row > 0) this._floodFill(board, index-COLS, oldColor, newColor);
+    if(row < ROWS-1) this._floodFill(board, index+COLS, oldColor, newColor);
+    if(col > 0) this._floodFill(board, index-1, oldColor, newColor);
+    if(col < COLS-1) this._floodFill(board, index+1, oldColor, newColor);
   }
 }
 

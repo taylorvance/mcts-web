@@ -157,12 +157,6 @@ const render = (state: GameState, onMove: (move: string) => void) => {
   );
 };
 
-const Onitama: Game = {
-  name: "Onitama",
-  createInitialState: (): GameState => new OnitamaState(),
-  render: render,
-};
-
 class OnitamaState extends GameState {
   static _DECK = [
     // Base
@@ -319,5 +313,11 @@ class OnitamaState extends GameState {
 
   _isDraw() { return this.nmoves >= 1000; }
 }
+
+const Onitama: Game = {
+  name: "Onitama",
+  createInitialState: (): GameState => new OnitamaState(),
+  render,
+};
 
 export default Onitama;

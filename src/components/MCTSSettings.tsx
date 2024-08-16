@@ -1,5 +1,6 @@
 // src/components/MCTSSettings.tsx
 import React from 'react';
+import TextInput from './TextInput';
 
 interface MCTSSettingsProps {
   settings: {
@@ -15,39 +16,39 @@ interface MCTSSettingsProps {
 }
 
 const MCTSSettings: React.FC<MCTSSettingsProps> = ({ settings, setSettings }) => {
+  const handleChange = (key: keyof typeof settings) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = key === 'maxIterations' ? parseInt(e.target.value, 10) : parseFloat(e.target.value);
+    setSettings(prev => ({ ...prev, [key]: value }));
+  };
+
   return (
-    <div className="space-y-2">
-      <div>
-        <label htmlFor="explorationBias" className="block">Exploration Bias:</label>
-        <input
-          id="explorationBias"
-          type="number"
-          value={settings.explorationBias}
-          onChange={(e) => setSettings({ ...settings, explorationBias: parseFloat(e.target.value) })}
-          className="w-full p-2 border rounded-lg"
-          step="0.1"
-        />
-      </div>
-      <div>
-        <label htmlFor="maxIterations" className="block">Max Iterations:</label>
-        <input
-          id="maxIterations"
-          type="number"
-          value={settings.maxIterations}
-          onChange={(e) => setSettings({ ...settings, maxIterations: parseInt(e.target.value, 10) })}
-          className="w-full p-2 border rounded-lg"
-        />
-      </div>
-      <div>
-        <label htmlFor="maxTime" className="block">Max Time (s):</label>
-        <input
-          id="maxTime"
-          type="number"
-          value={settings.maxTime}
-          onChange={(e) => setSettings({ ...settings, maxTime: parseFloat(e.target.value) })}
-          className="w-full p-2 border rounded-lg"
-        />
-      </div>
+    <div className="flex flex-col gap-2">
+      <TextInput
+        label="Exploration Bias"
+        id="explorationBias"
+        type="number"
+        value={settings.explorationBias}
+        onChange={handleChange('explorationBias')}
+        min="0"
+        step="0.1"
+      />
+      <TextInput
+        label="Max Iterations"
+        id="maxIterations"
+        type="number"
+        value={settings.maxIterations}
+        onChange={handleChange('maxIterations')}
+        min="0"
+      />
+      <TextInput
+        label="Max Time (s)"
+        id="maxTime"
+        type="number"
+        value={settings.maxTime}
+        onChange={handleChange('maxTime')}
+        min="0"
+        step="0.5"
+      />
     </div>
   );
 };

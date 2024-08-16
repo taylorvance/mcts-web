@@ -59,7 +59,7 @@ class FillerState extends GameState {
   board: Uint8Array;
   team: boolean;
 
-  constructor(board?: Uint8Array, team?: boolean) {
+  constructor(board?:Uint8Array, team?:boolean) {
     super();
     this.board = board || new Uint8Array(TOTAL_CELLS);
     this.team = team ?? true;
@@ -78,7 +78,7 @@ class FillerState extends GameState {
     return moves;
   }
 
-  makeMove(move: string): GameState {
+  makeMove(move:string): GameState {
     const newColor = parseInt(move);
     const oldColor = this.team ? this.board[0] : this.board[TOTAL_CELLS-1];
     const newBoard = new Uint8Array(this.board);
@@ -86,24 +86,39 @@ class FillerState extends GameState {
     return new FillerState(newBoard, !this.team);
   }
 
-  isTerminal(): boolean {
-    const activeColors = new Set([this.board[0], this.board[TOTAL_CELLS-1]]);
-    for(let i = 0; i < TOTAL_CELLS; i++) {
-      if(!activeColors.has(this.board[i])) return false;
-    }
-    return true;
-  }
+  isTerminal(): boolean { return new Set(this.board).size === 2; }
 
   getReward(): number {
-    const color = this.board[0];
-    let score = 0;
+    const rewards = {'1':0, '2':0};
+    const p1 = this.board[0];
     for(let i = 0; i < TOTAL_CELLS; i++) {
-      if(this.board[i] === color) score++;
-      else score--;
+      if(this.board[i] === p1) rewards['1']++;
+      else rewards['2']++;
     }
-    const terminalTeam = !this.team;
-    if(!terminalTeam) score *= -1;
-    return score;
+    if(1) {
+      // return their actual scores
+      if(1) {
+        // (normalized)
+        rewards['1'] /= TOTAL_CELLS;
+        rewards['2'] /= TOTAL_CELLS;
+      }
+      return rewards;
+    } else {
+      // 1 for win, -1 for loss
+      if(!this.team && rewards['1'] > rewards['2']) return 1;
+      if(this.team && rewards['2'] > rewards['1']) return 1;
+      return -1;
+    }
+  }
+
+  toString(): string {
+    let board = Array.from(this.board).map((colorIndex, index) => {
+      let cell = COLORS[colorIndex][0];
+      if(index===0 || index===TOTAL_CELLS-1) cell = cell.toUpperCase();
+      if(index>0 && index%BOARD_SIZE===0) cell = '/' + cell;
+      return cell;
+    }).join('');
+    return this.getCurrentTeam() + ' ' + board;
   }
 
   static _initializeBoard() {
@@ -135,7 +150,7 @@ class FillerState extends GameState {
 const Filler: Game = {
   name: "Filler",
   createInitialState: (): GameState => new FillerState(),
-  render: render,
+  render,
 };
 
 export default Filler;

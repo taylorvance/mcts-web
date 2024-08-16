@@ -11,6 +11,8 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ tooltip, children, className=
   const baseClassName = 'flex items-center';
   const fullClassName = `${baseClassName} ${className}`.trim();
 
+  const numChildren = React.Children.count(children);
+
   const buttonGroup = (
     <div className={fullClassName}>
       {React.Children.map(children, (child, index) => {
@@ -18,7 +20,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ tooltip, children, className=
           return React.cloneElement(child as React.ReactElement<any>, {
             isInGroup: true,
             isFirst: index === 0,
-            isLast: index === React.Children.count(children) - 1,
+            isLast: index === numChildren-1,
           });
         }
         return child;

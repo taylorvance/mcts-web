@@ -26,14 +26,16 @@ const Button: React.FC<ButtonProps> = ({
   const disabledClassName = disabled ? 'cursor-not-allowed text-white' : '';
   
   let roundingClass = 'rounded-lg';
+  let marginClass = '';
+
   if(isInGroup) {
     roundingClass = '';
     if(isFirst) roundingClass += ' rounded-l-lg';
+    else marginClass = 'ml-0.5';
     if(isLast) roundingClass += ' rounded-r-lg';
-    roundingClass = roundingClass.trim();
   }
 
-  const fullClassName = `${baseClassName} ${roundingClass} ${className} ${disabledClassName}`.trim();
+  const fullClassName = `${baseClassName} ${roundingClass} ${marginClass} ${className} ${disabledClassName}`.trim();
 
   const button = (
     <button className={fullClassName} onClick={onClick} disabled={disabled}>{children}</button>

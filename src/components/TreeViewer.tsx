@@ -1,10 +1,53 @@
 // src/components/TreeViewer.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { MCTS, Node } from 'multimcts';
 
 interface TreeViewerProps {
   mcts: MCTS | null;
 }
+
+const TreeViewer: React.FC<TreeViewerProps> = ({ mcts }) => {
+  const [rootNode, setRootNode] = useState(mcts?.rootNode);
+
+  /*
+  const scores = useCallback(() => {
+    if(!rootNode) return [];
+
+    const rewards = Object.entries(rootNode.rewards).map(([team,reward]) => {
+      return {team, reward, avg:reward/rootNode.visits};
+    }).sort((a,b) => b.reward-a.reward);
+
+    return rewards;
+  }, [rootNode]);
+   */
+
+  useEffect(() => {
+    setRootNode(mcts?.rootNode);
+  }, [mcts]);
+
+  return (
+    <div className="flex flex-col">
+      {false && rootNode && (
+        <div className="flex flex-row gap-2">
+          {scores().map(({team,reward,avg}) => (
+            <div key={team} className="flex flex-col items-center">
+              <div>{team}</div>
+              <div>{Math.round(reward)}</div>
+              <div>{avg.toFixed(3)}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="bg-gray-100 p-2 rounded-lg overflow-auto text-sm font-mono">
+        {rootNode ? (
+          <NodeViewer node={rootNode} expanded={true} />
+        ) : (
+          <em className="text-gray-500">No tree information available.</em>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const NodeViewer: React.FC<{ node:Node; expanded:boolean; }> = ({ node, expanded }) => {
   const [isExpanded, setIsExpanded] = useState(expanded);
@@ -36,24 +79,6 @@ const NodeViewer: React.FC<{ node:Node; expanded:boolean; }> = ({ node, expanded
         </div>
       )}
     </>
-  );
-};
-
-const TreeViewer: React.FC<TreeViewerProps> = ({ mcts }) => {
-  const [rootNode, setRootNode] = useState(mcts?.rootNode);
-
-  useEffect(() => {
-    setRootNode(mcts?.rootNode);
-  }, [mcts]);
-
-  return (
-    <div className="bg-gray-100 p-2 rounded-lg overflow-auto text-sm font-mono">
-      {rootNode ? (
-        <NodeViewer node={rootNode} expanded={true} />
-      ) : (
-        <em className="text-gray-500">No tree information available.</em>
-      )}
-    </div>
   );
 };
 

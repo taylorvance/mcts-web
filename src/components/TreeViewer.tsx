@@ -1,5 +1,5 @@
 // src/components/TreeViewer.tsx
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MCTS, Node } from 'multimcts';
 
 interface TreeViewerProps {
@@ -27,7 +27,7 @@ const TreeViewer: React.FC<TreeViewerProps> = ({ mcts }) => {
 
   return (
     <div className="flex flex-col">
-      {false && rootNode && (
+      {/*rootNode && (
         <div className="flex flex-row gap-2">
           {scores().map(({team,reward,avg}) => (
             <div key={team} className="flex flex-col items-center">
@@ -37,7 +37,7 @@ const TreeViewer: React.FC<TreeViewerProps> = ({ mcts }) => {
             </div>
           ))}
         </div>
-      )}
+        )*/}
       <div className="bg-gray-100 p-2 rounded-lg overflow-auto text-sm font-mono">
         {rootNode ? (
           <NodeViewer node={rootNode} expanded={true} />

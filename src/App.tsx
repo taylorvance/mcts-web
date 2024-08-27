@@ -190,7 +190,7 @@ const App: React.FC = () => {
 
         {/* Game Controls */}
         <section className="flex items-center gap-2 text-xl">
-          <Button onClick={resetGame} tooltip="Reset Game"><HiRefresh />{hotkeyHint("RESET")}</Button>
+          <Button onClick={resetGame} tooltip="Reset"><HiRefresh />{hotkeyHint("RESET")}</Button>
 
           <ButtonGroup tooltip={`${historyIdx}/${history.length-1}`}>
             <Button onClick={undoMove} disabled={!canUndo()}><FaUndo />{hotkeyHint("UNDO")}</Button>

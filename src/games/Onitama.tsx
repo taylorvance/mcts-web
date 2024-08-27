@@ -17,13 +17,13 @@ const render = (state: GameState, onMove: (move: string) => void) => {
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
   const [validMoves, setValidMoves] = useState<number[]>([]);
 
-  const handleCardClick = (cardIdx: number) => {
+  const handleCardClick = (cardIdx:number) => {
     setSelectedCard(cardIdx);
     setSelectedPiece(null);
     setValidMoves([]);
   };
 
-  const handlePieceClick = (index: number) => {
+  const handlePieceClick = (index:number) => {
     if (selectedCard !== null && state.board[index] && state.board[index]!.toUpperCase() === state.getCurrentTeam()) {
       setSelectedPiece(index);
       const cardMoves = OnitamaState._DECK[selectedCard].moves;
@@ -48,7 +48,7 @@ const render = (state: GameState, onMove: (move: string) => void) => {
     }
   };
 
-  const handleMoveClick = (index: number) => {
+  const handleMoveClick = (index:number) => {
     if (selectedCard !== null && selectedPiece !== null && validMoves.includes(index)) {
       onMove(`${selectedCard},${selectedPiece},${index}`);
       setSelectedCard(null);
@@ -57,28 +57,25 @@ const render = (state: GameState, onMove: (move: string) => void) => {
     }
   };
 
-  const renderCard = (cardIdx: number | null) => {
-    let name = '', color = '', first = '', moves:[number,number][] = [];
-    if (cardIdx !== null) {
+  const renderCard = (cardIdx:number|null) => {
+    let name='', color='', first='', moves:[number,number][]=[];
+    if(cardIdx !== null) {
       const card = OnitamaState._DECK[cardIdx];
       name = card.name;
       color = card.color;
       first = card.first;
       moves = card.moves.filter((move: number[]) => move.length === 2) as [number, number][]; // Ensure moves have exactly two numbers
     }
-    color = { 'R': 'bg-red-400', 'B': 'bg-blue-400', '': 'bg-yellow-400' }[color]!;
+    color = {'R':'bg-red-400', 'B':'bg-blue-400', '':'bg-yellow-400'}[color]!;
     return (
       <div
         key={name}
-        className={`inline-block mx-1 p-1 border ${cardIdx !== null ? 'border-gray-800' : 'border-white'}`}
-        onClick={() => cardIdx !== null && handleCardClick(cardIdx)}
+        className={`text-center text-xl p-1 bg-white rounded border ${cardIdx===null ? 'border-white' : 'border-gray-800 '+(first==='R'?'text-red-600':'text-blue-700')}`}
+        onClick={() => cardIdx!==null && handleCardClick(cardIdx)}
       >
-        {cardIdx !== null ? (
-          <>
-            <div className="flex flex-row items-center justify-between">
-              <i className="text-lg">{name}</i>
-              {first === 'R' ? '🔴' : '🔵'}
-            </div>
+        {cardIdx!==null ? (
+          <div>
+            <div>{name}</div>
             <div className="grid grid-cols-5 border-b border-r border-gray-500">
               {[-2, -1, 0, 1, 2].map((r) => {
                 return [-2, -1, 0, 1, 2].map((c) => {
@@ -86,73 +83,79 @@ const render = (state: GameState, onMove: (move: string) => void) => {
                   return (
                     <div
                       key={`${r},${c}`}
-                      className={`w-6 h-6 border-t border-l border-gray-500 ${move ? color : (r === 0 && c === 0 ? 'bg-gray-800' : 'bg-gray-100')}`}
+                      className={`w-5 h-5 border-t border-l border-gray-500 ${move ? color : (r===0 && c===0 ? 'bg-gray-800' : 'bg-gray-100')}`}
                     ></div>
                   );
                 });
               })}
             </div>
-          </>
+          </div>
         ) : (
-          <>
-            <div className="flex flex-row items-center">
-              <i className="text-lg">&nbsp;</i>
-            </div>
+          <div>
+            <div></div>
             <div className="grid grid-cols-5 border-b border-r border-white">
               {[-2, -1, 0, 1, 2].map((r) => {
                 return [-2, -1, 0, 1, 2].map((c) => {
                   return (
-                    <div key={`${r},${c}`} className="w-6 h-6 border-t border-l border-white"></div>
+                    <div key={`${r},${c}`} className="w-5 h-5 border-t border-l border-white"></div>
                   );
                 });
               })}
             </div>
-          </>
+          </div>
         )}
       </div>
     );
   };
 
-  const cellClass = (index: number) => {
+  const cellClass = (index:number) => {
     const cell = state.board[index];
 
-    const size = ('RB'.includes(cell || '') ? 'text-3xl' : 'text-2xl');
+    const size = ('RB'.includes(cell || '') ? 'text-4xl' : 'text-3xl');
 
     let bg = 'bg-gray-200';
-    if (index % 5 === 2) {
-      if (index < 5) bg = 'bg-blue-200';
-      else if (index >= 20) bg = 'bg-red-200';
+    if(index % 5 === 2) {
+      if(index < 5) bg = 'bg-blue-200';
+      else if(index >= 20) bg = 'bg-red-200';
     }
 
-    const fg = (!cell ? '' : (cell.toUpperCase() === 'R' ? 'text-red-600' : 'text-blue-700'));
+    const fg = (!cell ? '' : (cell.toUpperCase()==='R' ? 'text-red-600' : 'text-blue-700'));
     const highlight = validMoves.includes(index) ? 'bg-yellow-200' : '';
+    const cursor = validMoves.includes(index) || (cell && cell.toUpperCase()===state.getCurrentTeam()) ? 'cursor-pointer' : 'cursor-default';
 
-    return `w-12 h-12 border-2 border-gray-500 flex items-center justify-center ${size} ${bg} ${fg} ${highlight}`;
+    return `w-12 h-12 border-gray-500 border-b-2 border-r-2 flex items-center justify-center ${size} ${bg} ${fg} ${highlight} ${cursor}`;
+  };
+
+  const renderPlayerCards = (team:'R'|'B') => {
+    const isCurrentTeam = team === state.getCurrentTeam();
+    const teamKey = team.toLowerCase() as 'r'|'b';
+    return (
+      <div className={`flex flex-row gap-2 ${team==='B'&&'rotate-180'}`}>
+        {state.cards[teamKey].map((card:number) => (
+          <div className={isCurrentTeam?'cursor-pointer':'cursor-default'}>
+            {renderCard(card)}
+          </div>
+        ))}
+        <div className="scale-90 ml-6 opacity-70 cursor-default">{renderCard(isCurrentTeam ? state.cards.n : null)}</div>
+      </div>
+    );
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="rotate-180">{state.cards.b.map(card => renderCard(card))}</div>
+    <div className="flex flex-col items-center gap-4" style={{fontFamily:"Papyrus,Trattatello,Luminari,cursive"}}>
+      {renderPlayerCards('B')}
 
-      <div className="flex flex-row items-center gap-2">
-        <div className="self-start rotate-180">{renderCard(state.getCurrentTeam() === 'B' ? state.cards.n : null)}</div>
-
-        <div className="grid grid-cols-5 gap-1">
-          {state.board.map((cell, index) => (
-            <div
-              key={index}
-              className={cellClass(index)}
-              onClick={() => (validMoves.includes(index) ? handleMoveClick(index) : handlePieceClick(index))}
-            >
-              {!cell ? '' : ('RB'.includes(cell) ? <FaChessKing /> : <FaChessPawn />)}
-            </div>
-          ))}
-        </div>
-
-        <div className="self-end">{renderCard(state.getCurrentTeam() === 'R' ? state.cards.n : null)}</div>
+      <div className="grid grid-cols-5 border-gray-500 border-t-2 border-l-2">
+        {state.board.map((cell, index) => (
+          <div
+            key={index}
+            className={cellClass(index)}
+            onClick={() => (validMoves.includes(index) ? handleMoveClick(index) : handlePieceClick(index))}
+          >{cell ? ('RB'.includes(cell) ? <FaChessKing /> : <FaChessPawn />) : ''}</div>
+        ))}
       </div>
 
-      <div>{state.cards.r.map(card => renderCard(card))}</div>
+      {renderPlayerCards('R')}
     </div>
   );
 };

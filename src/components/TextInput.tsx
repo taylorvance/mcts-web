@@ -2,7 +2,6 @@
 import React from 'react';
 
 interface TextInputProps {
-  id: string;
   label?: string;
   type?: string;
   value: string|number;
@@ -12,13 +11,12 @@ interface TextInputProps {
   max?: string;
 }
 
-const TextInput: React.FC<TextInputProps> = ({ id, label, type='text', value, onChange, step, min, max }) => {
+const TextInput: React.FC<TextInputProps> = ({label, type='text', value, onChange, step, min, max}) => {
   return (
-    <div className="flex flex-col gap-1">
-      {label && <label htmlFor={id} className="block">{label}</label>}
+    <label className="flex flex-col gap-1">
+      {label}
       <input
-        className="w-full text-lg px-2 py-1 border rounded-lg border-gray-400 hover:border-gray-800"
-        id={id}
+        className="text-lg px-2 py-1 border rounded-lg border-gray-400 hover:border-gray-800"
         type={type}
         value={value}
         onChange={onChange}
@@ -26,7 +24,7 @@ const TextInput: React.FC<TextInputProps> = ({ id, label, type='text', value, on
         max={max}
         step={step}
       />
-    </div>
+    </label>
   );
 };
 

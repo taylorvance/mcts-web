@@ -184,6 +184,7 @@ const App: React.FC = () => {
           value={selectedGame}
           onChange={changeGame}
           options={Object.fromEntries(Object.entries(games).map(([key,value]) => [key,value.name]))}
+          className="text-xl px-4 py-2"
           centerText={true}
         />
 

@@ -15,17 +15,16 @@ interface MCTSSettingsProps {
   }>>;
 }
 
-const MCTSSettings: React.FC<MCTSSettingsProps> = ({ settings, setSettings }) => {
+const MCTSSettings: React.FC<MCTSSettingsProps> = ({settings, setSettings}) => {
   const handleChange = (key: keyof typeof settings) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = key === 'maxIterations' ? parseInt(e.target.value, 10) : parseFloat(e.target.value);
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings(prev => ({...prev, [key]:value}));
   };
 
   return (
     <div className="flex flex-col gap-2">
       <TextInput
         label="Exploration Bias"
-        id="explorationBias"
         type="number"
         value={settings.explorationBias}
         onChange={handleChange('explorationBias')}
@@ -34,7 +33,6 @@ const MCTSSettings: React.FC<MCTSSettingsProps> = ({ settings, setSettings }) =>
       />
       <TextInput
         label="Max Iterations"
-        id="maxIterations"
         type="number"
         value={settings.maxIterations}
         onChange={handleChange('maxIterations')}
@@ -42,7 +40,6 @@ const MCTSSettings: React.FC<MCTSSettingsProps> = ({ settings, setSettings }) =>
       />
       <TextInput
         label="Max Time (s)"
-        id="maxTime"
         type="number"
         value={settings.maxTime}
         onChange={handleChange('maxTime')}

@@ -6,6 +6,7 @@ import GameBoard from './components/GameBoard';
 import TreeViewer from './components/TreeViewer';
 import Button from './components/Button';
 import ButtonGroup from './components/ButtonGroup';
+import Select from './components/Select';
 import { Game } from './types/Game';
 import { useMCTS } from './hooks/useMCTS';
 import { useHotkeys } from './hooks/useHotkeys';
@@ -23,6 +24,7 @@ const games: Record<string, Game> = {
   Onitama: Onitama,
   TicTacToe: TicTacToe,
 };
+const defaultGame = 'TicTacToe';
 
 const MOVE_DELAY = 100; // (helps React keep up with the latest game state)
 
@@ -33,7 +35,7 @@ const App: React.FC = () => {
     maxTime: 1,
   });
 
-  const [selectedGame, setSelectedGame] = useState<string>('TicTacToe');
+  const [selectedGame, setSelectedGame] = useState<string>(defaultGame);
   const [gameState, setGameState] = useState<GameState|null>(null);
   const [history, setHistory] = useState<GameState[]>([games[selectedGame].createInitialState()]);
   const [historyIdx, setHistoryIdx] = useState<number>(0);
@@ -178,15 +180,12 @@ const App: React.FC = () => {
         <h1 className="text-2xl font-bold">Game Interface</h1>
 
         {/* Game Selector */}
-        <select
+        <Select
           value={selectedGame}
-          onChange={(e)=>changeGame(e.target.value)}
-          className="text-xl rounded-lg px-4 py-2 border border-gray-400 hover:border-gray-800 focus:outline-none appearance-none"
-        >
-          {Object.keys(games).map((game) => (
-            <option key={game} value={game}>{games[game].name}</option>
-          ))}
-        </select>
+          onChange={changeGame}
+          options={Object.fromEntries(Object.entries(games).map(([key,value]) => [key,value.name]))}
+          centerText={true}
+        />
 
         {/* Game Controls */}
         <section className="flex items-center gap-2 text-xl">

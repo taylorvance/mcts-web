@@ -74,35 +74,35 @@ const render = (state: GameState, onMove: (move: string) => void) => {
         onClick={() => cardIdx!==null && handleCardClick(cardIdx)}
       >
         {cardIdx!==null ? (
-          <div>
+          <>
             <div>{name}</div>
             <div className="grid grid-cols-5 border-b border-r border-gray-500">
               {[-2, -1, 0, 1, 2].map((r) => {
                 return [-2, -1, 0, 1, 2].map((c) => {
-                  const move = moves.find(([mr, mc]) => mr === r && mc === c);
+                  const move = moves.find(([mr, mc]) => mr===r && mc===c);
                   return (
                     <div
-                      key={`${r},${c}`}
+                      key={`${r}-${c}`}
                       className={`w-5 h-5 border-t border-l border-gray-500 ${move ? color : (r===0 && c===0 ? 'bg-gray-800' : 'bg-gray-100')}`}
                     ></div>
                   );
                 });
               })}
             </div>
-          </div>
+          </>
         ) : (
-          <div>
+          <>
             <div></div>
             <div className="grid grid-cols-5 border-b border-r border-white">
               {[-2, -1, 0, 1, 2].map((r) => {
                 return [-2, -1, 0, 1, 2].map((c) => {
                   return (
-                    <div key={`${r},${c}`} className="w-5 h-5 border-t border-l border-white"></div>
+                    <div key={`${r}-${c}`} className="w-5 h-5 border-t border-l border-white"></div>
                   );
                 });
               })}
             </div>
-          </div>
+          </>
         )}
       </div>
     );
@@ -132,7 +132,7 @@ const render = (state: GameState, onMove: (move: string) => void) => {
     return (
       <div className={`flex flex-row gap-2 ${team==='B'&&'rotate-180'}`}>
         {state.cards[teamKey].map((card:number) => (
-          <div className={isCurrentTeam?'cursor-pointer':'cursor-default'}>
+          <div key={card} className={isCurrentTeam?'cursor-pointer':'cursor-default'}>
             {renderCard(card)}
           </div>
         ))}

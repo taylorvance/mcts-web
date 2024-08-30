@@ -9,8 +9,7 @@ import ButtonGroup from './components/ButtonGroup';
 import Select from './components/Select';
 import { Game } from './types/Game';
 import { useMCTS } from './hooks/useMCTS';
-import { useHotkeys } from './hooks/useHotkeys';
-import { HOTKEYS } from './config/hotkeys';
+import { useHotkeys } from 'react-hotkeys-hook';
 import { FaUndo, FaRedo } from "react-icons/fa";
 import { FaForwardStep, FaForwardFast, FaStop } from "react-icons/fa6";
 import { HiRefresh } from "react-icons/hi";
@@ -45,7 +44,7 @@ const App: React.FC = () => {
 
   const {mcts, runSearch, resetMCTS} = useMCTS(mctsSettings);
 
-  const isTerminal = useCallback(() => gameState && gameState.isTerminal(), [gameState]);
+  const isTerminal = useCallback(() => gameState ? gameState.isTerminal() : false, [gameState]);
   const canPlay = useCallback(() => gameState!==null && !isAutoplaying && !isMoveInProgress && !isTerminal(), [gameState, isAutoplaying, isMoveInProgress, isTerminal]);
   const canUndo = useCallback(() => historyIdx > 0, [historyIdx]);
   const canRedo = useCallback(() => historyIdx < history.length-1, [historyIdx, history]);
@@ -163,15 +162,18 @@ const App: React.FC = () => {
     }
   }, [isAutoplaying, isTerminal]);
 
-  useHotkeys({
-    RESET: resetGame,
-    UNDO: undoMove,
-    REDO: redoMove,
-    AI_MOVE: doAIMove,
-    AUTOPLAY: toggleAutoplay,
-    AI_AFTER_PLAYER: toggleAIMoveAfterPlayer,
+  const HOTKEYS = {
+    reset: {keys:'r', callback:resetGame},
+    undo: {keys:'z', callback:undoMove},
+    redo: {keys:'x', callback:redoMove},
+    aiMove: {keys:'n', callback:doAIMove},
+    autoplay: {keys:'p', callback:toggleAutoplay},
+    aiAfterPlayer: {keys:'a', callback:toggleAIMoveAfterPlayer},
+  };
+  Object.values(HOTKEYS).forEach(({keys, callback}) => {
+    useHotkeys(keys, callback);
   });
-  const hotkeyHint = (key: keyof typeof HOTKEYS) => <span className="text-sm">({HOTKEYS[key]})</span>;
+  const hotkeyHint = (keys:string) => <span className="text-sm">({keys})</span>;
 
   return (
     <div className="container mx-auto flex flex-wrap gap-4">
@@ -190,26 +192,33 @@ const App: React.FC = () => {
 
         {/* Game Controls */}
         <section className="flex items-center gap-2 text-xl">
-          <Button onClick={resetGame} tooltip="Reset"><HiRefresh />{hotkeyHint("RESET")}</Button>
+          <Button onClick={resetGame} tooltip="Reset"><HiRefresh />{hotkeyHint(HOTKEYS.reset.keys)}</Button>
 
           <ButtonGroup tooltip={`${historyIdx}/${history.length-1}`}>
-            <Button onClick={undoMove} disabled={!canUndo()}><FaUndo />{hotkeyHint("UNDO")}</Button>
-            <Button onClick={redoMove} disabled={!canRedo()}><FaRedo />{hotkeyHint("REDO")}</Button>
+            <Button onClick={undoMove} disabled={!canUndo()}><FaUndo />{hotkeyHint(HOTKEYS.undo.keys)}</Button>
+            <Button onClick={redoMove} disabled={!canRedo()}><FaRedo />{hotkeyHint(HOTKEYS.redo.keys)}</Button>
           </ButtonGroup>
 
-          <Button onClick={doAIMove} disabled={!canPlay()} tooltip="AI Move"><FaForwardStep />{hotkeyHint("AI_MOVE")}</Button>
+          <Button onClick={doAIMove} disabled={!canPlay()} tooltip="AI Move"><FaForwardStep />{hotkeyHint(HOTKEYS.aiMove.keys)}</Button>
 
-          {isAutoplaying ? (
-            <Button onClick={stopAutoplay} className="bg-gray-400" tooltip="Autoplay"><FaStop />{hotkeyHint("AUTOPLAY")}</Button>
-          ) : (
-            <Button onClick={startAutoplay} disabled={isTerminal()?true:false} tooltip="Autoplay"><FaForwardFast />{hotkeyHint("AUTOPLAY")}</Button>
-          )}
+          <Button
+            onClick={isAutoplaying ? stopAutoplay : startAutoplay}
+            className={isAutoplaying ? "bg-gray-400" : ""}
+            tooltip="Autoplay"
+            disabled={isTerminal()}
+          >
+            {isAutoplaying ? <FaStop /> : <FaForwardFast />}
+            {hotkeyHint(HOTKEYS.autoplay.keys)}
+          </Button>
 
-          {doAIMoveAfterPlayer ? (
-            <Button onClick={toggleAIMoveAfterPlayer} className="bg-gray-400" tooltip="AI move after Player"><TbRobot />{hotkeyHint("AI_AFTER_PLAYER")}</Button>
-          ) : (
-            <Button onClick={toggleAIMoveAfterPlayer} tooltip="AI move after Player"><TbRobotOff />{hotkeyHint("AI_AFTER_PLAYER")}</Button>
-          )}
+          <Button
+            onClick={toggleAIMoveAfterPlayer}
+            className={doAIMoveAfterPlayer ? "bg-gray-400" : ""}
+            tooltip="AI move after Player"
+          >
+            {doAIMoveAfterPlayer ? <TbRobot /> : <TbRobotOff />}
+            {hotkeyHint(HOTKEYS.aiAfterPlayer.keys)}
+          </Button>
         </section>
 
         {/* Game Board */}

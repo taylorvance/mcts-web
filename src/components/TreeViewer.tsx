@@ -66,7 +66,7 @@ const NodeViewer: React.FC<{ node:Node; expanded:boolean; }> = ({ node, expanded
         <span className={`mr-2 ${children.length>0 ? 'font-bold' : ''}`}>
           {children.length>0 ? (isExpanded?'-':'+') : '·'}
         </span>
-        <span className="mr-2 bg-gray-200">{node.state.toString()}</span>
+        <span className="mr-2 bg-gray-200 overflow-auto">{node.state.toString()}</span>
         <span className="mr-2 bg-gray-200">{node.move}</span>
         <span className="mr-2">n={node.visits}</span>
         <span className="mr-2">{JSON.stringify(node.rewards)}</span>

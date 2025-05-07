@@ -151,6 +151,21 @@ class UltimateTicTacToeState extends GameState {
   getReward(_:string): number { return this._hasWinner() ? 1 : 0; }
 
   toString(): string {
+    let str = this.getCurrentTeam() + ": ";
+    for (let i=0; i<this.board.length; i++) {
+      str += this.board[i]===undefined ? '.' : (this.board[i] ? 'X' : 'O');
+      if (i % 27 === 26) {
+        str += '-'; // separate rows of sub-boards
+      } else if (i % 9 === 8) {
+        str += '|'; // separate horizontally adjacent sub-boards
+      } else if (i % 3 === 2) {
+        str += '/'; // separate rows within a sub-board
+      }
+    }
+    return str;
+  }
+
+  _toString2(): string {
     const lines:string[] = [];
 
     for(let bigRow=0; bigRow<3; bigRow++) {
@@ -172,7 +187,6 @@ class UltimateTicTacToeState extends GameState {
     }
 
     return lines.join('\n');
-    //return this.getCurrentTeam()+" "+lines.join('\n');
   }
 
 

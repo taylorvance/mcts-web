@@ -15,13 +15,15 @@ import { FaForwardStep, FaForwardFast, FaStop } from "react-icons/fa6";
 import { HiRefresh } from "react-icons/hi";
 import { TbRobot, TbRobotOff } from "react-icons/tb";
 import TicTacToe from './games/TicTacToe';
+import UltimateTicTacToe from './games/UltimateTicTacToe';
 import Onitama from './games/Onitama';
 import Filler from './games/Filler';
 
 const games: Record<string, Game> = {
+  TicTacToe: TicTacToe,
+  UltimateTicTacToe: UltimateTicTacToe,
   Filler: Filler,
   Onitama: Onitama,
-  TicTacToe: TicTacToe,
 };
 const defaultGame = 'TicTacToe';
 
@@ -176,7 +178,7 @@ const App: React.FC = () => {
   const hotkeyHint = (keys:string) => <span className="text-sm">({keys})</span>;
 
   return (
-    <div className="container mx-auto flex flex-wrap gap-4">
+    <div className="container mx-auto flex flex-wrap gap-4 mt-4">
       {/* Game Section */}
       <section className="flex flex-col flex-1 items-center gap-4">
         <h1 className="text-2xl font-bold">Game Interface</h1>
@@ -191,7 +193,7 @@ const App: React.FC = () => {
         />
 
         {/* Game Controls */}
-        <section className="flex items-center gap-2 text-xl">
+        <section className="flex items-center gap-2 text-xl select-none">
           <Button onClick={resetGame} tooltip="Reset"><HiRefresh />{hotkeyHint(HOTKEYS.reset.keys)}</Button>
 
           <ButtonGroup tooltip={`${historyIdx}/${history.length-1}`}>

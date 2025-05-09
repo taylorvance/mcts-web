@@ -11,8 +11,8 @@ interface SelectProps {
 }
 
 const Select: React.FC<SelectProps> = ({label, value, onChange, options, className='', centerText=false}) => {
-  const baseClassName = 'appearance-none text-lg px-2 py-1 rounded-lg border border-gray-400 hover:border-gray-800 focus:outline-none';
-  const textAlignStyle:React.CSSProperties = centerText ? {textAlignLast:'center'} : {};
+  const baseClassName = 'appearance-none text-lg pl-3 pr-8 py-1 rounded-lg border border-gray-400 group-hover:border-gray-800 focus:outline-none';
+  const textAlignStyle:React.CSSProperties = (centerText ? {textAlignLast:'center'} : {});
   const selectRef = useRef<HTMLSelectElement>(null);
 
   return (
@@ -21,12 +21,15 @@ const Select: React.FC<SelectProps> = ({label, value, onChange, options, classNa
       onClick={() => selectRef.current?.dispatchEvent(new MouseEvent('mousedown'))}
     >
       {label}
-      <div className="relative">
+      <div className="relative group">
         <select
           ref={selectRef}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className={`${baseClassName} ${className} pr-8`}
+          onChange={(e) => {
+            selectRef.current?.blur();
+            onChange(e.target.value);
+          }}
+          className={`${baseClassName} ${className}`}
           style={textAlignStyle}
         >
           {Object.keys(options).map((key) => (
@@ -35,7 +38,7 @@ const Select: React.FC<SelectProps> = ({label, value, onChange, options, classNa
             </option>
           ))}
         </select>
-        <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-400">
+        <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-400 group-hover:text-gray-800">
           <FaAngleDown />
         </span>
       </div>

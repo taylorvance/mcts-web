@@ -2,6 +2,7 @@
 import TicTacToeState from 'multimcts/tictactoe';
 import { Game } from '../types/Game';
 import { GameState } from 'multimcts';
+import { FaX, FaO } from "react-icons/fa6";
 
 // Type guard to check if state is TicTacToeState
 const isTicTacToeState = (state: GameState): state is TicTacToeState => {
@@ -18,12 +19,10 @@ const render = (state:GameState, onMove:(move:string) => void) => {
       {state.board.map((cell, index) => (
         <button
           key={index}
-          className="w-20 h-20 bg-gray-200 flex items-center justify-center text-6xl font-bold"
+          className={`w-20 h-20 bg-gray-200 flex items-center justify-center text-6xl ${cell===null ? '' : (cell ? 'text-red-600' : 'text-blue-600')}`}
           onClick={() => onMove(index.toString())}
           disabled={cell!==null || state.isTerminal()}
-        >
-          {cell===null ? '' : (cell?'X':'O')}
-        </button>
+        >{cell!==null && (cell ? <FaX /> : <FaO />)}</button>
       ))}
     </div>
   );

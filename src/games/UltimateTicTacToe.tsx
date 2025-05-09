@@ -8,13 +8,13 @@ const isUltimateTicTacToeState = (state: GameState): state is UltimateTicTacToeS
   return (state as UltimateTicTacToeState).board !== undefined;
 };
 
-const X_FG="text-red-600", X_BG="bg-red-200";
-const O_FG="text-blue-600", O_BG="bg-blue-200";
-
 const render = (state:GameState, onMove:(move:string) => void) => {
   if (!isUltimateTicTacToeState(state)) {
     throw new Error("Invalid state type");
   }
+
+  const X_FG="text-red-600", X_BG="bg-red-200";
+  const O_FG="text-blue-600", O_BG="bg-blue-200";
 
   const boards = [];
   for (let i=0; i<9; i++) {

@@ -1,19 +1,27 @@
 // src/App.tsx
+
 import React, { useState, useCallback, useEffect } from 'react';
+// MCTS
 import { GameState } from 'multimcts';
-import MCTSSettings from './components/MCTSSettings';
-import GameBoard from './components/GameBoard';
-import TreeViewer from './components/TreeViewer';
+import { useMCTS } from './hooks/useMCTS';
+// UI components
 import Button from './components/Button';
 import ButtonGroup from './components/ButtonGroup';
 import Select from './components/Select';
-import { Game } from './types/Game';
-import { useMCTS } from './hooks/useMCTS';
+// UI sections
+import GameBoard from './components/GameBoard';
+import MCTSSettings from './components/MCTSSettings';
+import TreeViewer from './components/TreeViewer';
+// UI helpers
 import { useHotkeys } from 'react-hotkeys-hook';
+// Icons
 import { FaUndo, FaRedo } from "react-icons/fa";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaForwardStep, FaForwardFast, FaStop } from "react-icons/fa6";
 import { HiRefresh } from "react-icons/hi";
 import { TbRobot, TbRobotOff } from "react-icons/tb";
+// Games
+import { Game } from './types/Game';
 import TicTacToe from './games/TicTacToe';
 import UltimateTicTacToe from './games/UltimateTicTacToe';
 import Onitama from './games/Onitama';
@@ -30,12 +38,7 @@ const defaultGame = 'TicTacToe';
 const MOVE_DELAY = 100; // (helps React keep up with the latest game state)
 
 const App: React.FC = () => {
-  const [mctsSettings, setMctsSettings] = useState({
-    explorationBias: 1.414,
-    maxIterations: 1000,
-    maxTime: 1,
-  });
-
+  const [mctsSettings, setMctsSettings] = useState({explorationBias:1.414, maxIterations:1000, maxTime:1});
   const [selectedGame, setSelectedGame] = useState<string>(defaultGame);
   const [gameState, setGameState] = useState<GameState|null>(null);
   const [history, setHistory] = useState<GameState[]>([games[selectedGame].createInitialState()]);
@@ -88,10 +91,7 @@ const App: React.FC = () => {
     }
   }, [canPlay, performMove, doAIMoveAfterPlayer]);
 
-  const doAIMove = useCallback(() => {
-    if(!canPlay()) return;
-    performMove();
-  }, [performMove, canPlay]);
+  const doAIMove = useCallback(() => { canPlay() && performMove(); }, [canPlay, performMove]);
 
   const startAutoplay = () => setIsAutoplaying(true);
   const stopAutoplay = () => setIsAutoplaying(false);
@@ -175,14 +175,12 @@ const App: React.FC = () => {
   Object.values(HOTKEYS).forEach(({keys, callback}) => {
     useHotkeys(keys, callback);
   });
-  const hotkeyHint = (keys:string) => <span className="text-sm">({keys})</span>;
+  const hotkeyHint = (keys:string) => <span className="text-xs">({keys})</span>;
 
   return (
     <div className="container mx-auto flex flex-wrap gap-4 mt-4">
       {/* Game Section */}
       <section className="flex flex-col flex-1 items-center gap-4">
-        <h1 className="text-2xl font-bold">Game Interface</h1>
-
         {/* Game Selector */}
         <Select
           value={selectedGame}
@@ -204,7 +202,7 @@ const App: React.FC = () => {
           <Button onClick={doAIMove} disabled={!canPlay()} tooltip="AI Move"><FaForwardStep />{hotkeyHint(HOTKEYS.aiMove.keys)}</Button>
 
           <Button
-            onClick={isAutoplaying ? stopAutoplay : startAutoplay}
+            onClick={toggleAutoplay}
             className={isAutoplaying ? "bg-gray-400" : ""}
             tooltip="Autoplay"
             disabled={isTerminal()}
@@ -235,6 +233,8 @@ const App: React.FC = () => {
         <div className="flex-none">
           <MCTSSettings settings={mctsSettings} setSettings={setMctsSettings} />
         </div>
+
+        <h2 className="text-xl font-bold flex-none">Search Tree</h2>
         <div className="flex-shrink-0 overflow-x-auto whitespace-nowrap">
           <TreeViewer mcts={mcts} />
         </div>

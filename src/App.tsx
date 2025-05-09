@@ -20,10 +20,10 @@ import Onitama from './games/Onitama';
 import Filler from './games/Filler';
 
 const games: Record<string, Game> = {
-  TicTacToe: TicTacToe,
-  UltimateTicTacToe: UltimateTicTacToe,
   Filler: Filler,
   Onitama: Onitama,
+  TicTacToe: TicTacToe,
+  UltimateTicTacToe: UltimateTicTacToe,
 };
 const defaultGame = 'TicTacToe';
 
@@ -225,9 +225,7 @@ const App: React.FC = () => {
 
         {/* Game Board */}
         <div className="border-2 p-2 rounded-lg">
-          {gameState && (
-            <GameBoard render={games[selectedGame].render} gameState={gameState} onMove={handlePlayerMove} />
-          )}
+          {gameState && <GameBoard render={games[selectedGame].render} gameState={gameState} onMove={handlePlayerMove} />}
         </div>
       </section>
 

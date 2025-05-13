@@ -130,20 +130,114 @@ class FillerState extends GameState {
     return board;
   }
 
-  _floodFill(board:Uint8Array, index:number, oldColor:number, newColor:number) {
-    if(index < 0 || index >= TOTAL_CELLS || board[index] !== oldColor) return;
+  _floodFill(board: Uint8Array, index: number, oldColor: number, newColor: number) {
+    if (oldColor === newColor || board[index] !== oldColor) return;
 
-    board[index] = newColor;
+    const board1 = new Uint8Array(board);
+    const board2 = new Uint8Array(board);
+    const board3 = new Uint8Array(board);
 
-    const row = (index / COLS) | 0;
-    const col = index % COLS;
+    // Recursive
+    const t1 = performance.now();
+    const recurse = (b, i) => {
+      if (i < 0 || i >= TOTAL_CELLS || b[i] !== oldColor) return;
+      b[i] = newColor;
+      const row = (i / COLS) | 0;
+      const col = i % COLS;
+      if (row > 0) recurse(b, i - COLS);
+      if (row < ROWS - 1) recurse(b, i + COLS);
+      if (col > 0) recurse(b, i - 1);
+      if (col < COLS - 1) recurse(b, i + 1);
+    };
+    recurse(board1, index);
+    const t2 = performance.now();
 
-    if(row > 0) this._floodFill(board, index-COLS, oldColor, newColor);
-    if(row < ROWS-1) this._floodFill(board, index+COLS, oldColor, newColor);
-    if(col > 0) this._floodFill(board, index-1, oldColor, newColor);
-    if(col < COLS-1) this._floodFill(board, index+1, oldColor, newColor);
+    // Iterative DFS
+    const stack = [index];
+    while (stack.length > 0) {
+      const current = stack.pop()!;
+      if (current < 0 || current >= TOTAL_CELLS || board2[current] !== oldColor) continue;
+      board2[current] = newColor;
+      const row = (current / COLS) | 0;
+      const col = current % COLS;
+      if (row > 0) stack.push(current - COLS);
+      if (row < ROWS - 1) stack.push(current + COLS);
+      if (col > 0) stack.push(current - 1);
+      if (col < COLS - 1) stack.push(current + 1);
+    }
+    const t3 = performance.now();
+
+    // BFS with Preallocated Queue
+    const queue = new Uint32Array(TOTAL_CELLS);
+    let head = 0, tail = 0;
+    queue[tail++] = index;
+    board3[index] = newColor;
+
+    while (head < tail) {
+      const current = queue[head++];
+      const row = (current / COLS) | 0;
+      const col = current % COLS;
+
+      if (row > 0) {
+        const up = current - COLS;
+        if (board3[up] === oldColor) {
+          queue[tail++] = up;
+          board3[up] = newColor;
+        }
+      }
+      if (row < ROWS - 1) {
+        const down = current + COLS;
+        if (board3[down] === oldColor) {
+          queue[tail++] = down;
+          board3[down] = newColor;
+        }
+      }
+      if (col > 0) {
+        const left = current - 1;
+        if (board3[left] === oldColor) {
+          queue[tail++] = left;
+          board3[left] = newColor;
+        }
+      }
+      if (col < COLS - 1) {
+        const right = current + 1;
+        if (board3[right] === oldColor) {
+          queue[tail++] = right;
+          board3[right] = newColor;
+        }
+      }
+    }
+    const t4 = performance.now();
+
+    for (let i = 0; i < TOTAL_CELLS; i++) {
+      if (board1[i] !== board2[i] || board2[i] !== board3[i]) {
+        console.error(`Flood fill mismatch at cell ${i}: Rec=${board1[i]}, DFS=${board2[i]}, BFS=${board3[i]}`);
+        alert(`Flood fill mismatch at cell ${i}. Check console for details.`);
+        throw new Error('Flood fill methods produced inconsistent results.');
+      }
+    }
+
+    // Accumulate times
+    floodFillTimes.recursive += t2 - t1;
+    floodFillTimes.dfs      += t3 - t2;
+    floodFillTimes.bfs      += t4 - t3;
+    floodFillTimes.calls++;
+
+    if (floodFillTimes.calls % 10000 === 0) {
+      console.log(floodFillTimes);
+    }
+
+    // Apply one result to the board
+    board.set(board3);
   }
 }
+
+let floodFillTimes = {
+  recursive: 0,
+  dfs: 0,
+  bfs: 0,
+  calls: 0,
+};
 
 const Filler: Game = {
   name: "Filler",

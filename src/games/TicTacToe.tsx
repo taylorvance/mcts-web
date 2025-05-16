@@ -15,12 +15,13 @@ const render = (state:GameState, onMove:(move:string) => void) => {
   }
 
   const isTerminal = state.isTerminal();
+
   let result = undefined;
   if (isTerminal) {
     if (state.getReward('moot') === 0) {
-      result = 'c';
+      result = null;
     } else {
-      result = state.team ? 'o' : 'x';
+      result = !state.team;
     }
   }
 
@@ -34,9 +35,9 @@ const render = (state:GameState, onMove:(move:string) => void) => {
           disabled={cell!==null || isTerminal}
         >{cell!==null && (cell ? <FaX /> : <FaO />)}</button>
       ))}
-      {result && (
-        <div className="absolute inset-0 flex items-center justify-center opacity-50" style={{fontSize:'15em'}}>
-          {result==='c' ? <FaCat /> : (result==='x' ? <FaX className="text-red-600" /> : <FaO className="text-blue-600" />)}
+      {result!==undefined && (
+        <div className="absolute inset-0 flex items-center justify-center opacity-70" style={{fontSize:'15em'}}>
+          {result===null ? <FaCat /> : (result ? <FaX className="text-red-600" /> : <FaO className="text-blue-600" />)}
         </div>
       )}
     </div>

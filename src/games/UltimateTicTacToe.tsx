@@ -27,15 +27,24 @@ const render = (state:GameState, onMove:(move:string) => void) => {
   const isTerminal = state.isTerminal();
   const legalMoves = isTerminal ? [] : state.getLegalMoves();
 
+  let result = undefined;
+  if (isTerminal) {
+    if (state.getReward('moot') === 0) {
+      result = null;
+    } else {
+      result = !state.team;
+    }
+  }
+
   return (
-    <div className="grid grid-cols-3 gap-3 text-2xl font-bold select-none cursor-default">
+    <div className="relative grid grid-cols-3 gap-3 text-2xl font-bold select-none cursor-default">
       {boards.map((board, boardIdx) => {
         const boardState:BoardState = boardStates[boardIdx];
         const isOpen = boardState === undefined;
 
         return (
           <div key={boardIdx} className="relative">
-            <div key={boardIdx} className="grid grid-cols-3 gap-0.5">
+            <div className="grid grid-cols-3 gap-0.5">
               {board.map((cell, j) => {
                 const cellIdx = 9*boardIdx + j;
                 const isPlayable = !isTerminal && isOpen && legalMoves.includes(cellIdx.toString());
@@ -58,12 +67,12 @@ const render = (state:GameState, onMove:(move:string) => void) => {
             </div>
 
             {!isOpen && (
-              <div className="absolute inset-0 flex items-center justify-center opacity-50">
+              <div className="absolute inset-0 flex items-center justify-center opacity-50" style={{fontSize:'5em'}}>
                 {boardState===null
-                  ? <FaCat style={{fontSize:'5em'}} />
+                  ? <FaCat />
                   : (boardState
-                    ? <FaX style={{fontSize:'5em'}} className={X_FG} />
-                    : <FaO style={{fontSize:'5em'}} className={O_FG} />
+                    ? <FaX className={X_FG} />
+                    : <FaO className={O_FG} />
                   )
                 }
               </div>
@@ -71,6 +80,12 @@ const render = (state:GameState, onMove:(move:string) => void) => {
           </div>
         );
       })}
+
+      {result!==undefined && (
+        <div className="absolute inset-0 flex items-center justify-center opacity-70" style={{fontSize:'15em'}}>
+          {result===null ? <FaCat /> : (result ? <FaX className={X_FG} /> : <FaO className={O_FG} />)}
+        </div>
+      )}
     </div>
   );
 };

@@ -114,7 +114,7 @@ const App: React.FC = () => {
 
     if(isAutoplaying && gameState && !gameState.isTerminal()) {
       (async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50)); // short delay so player can visually track the game
+        //await new Promise((resolve) => setTimeout(resolve, 50)); // short delay so player can visually track the game
         performMove();
       })();
     } else {

@@ -13,9 +13,7 @@ const isFillerState = (state:GameState): state is FillerState => {
 };
 
 const render = (state:GameState, onMove:(move:string) => void) => {
-  if(!isFillerState(state)) {
-    throw new Error("Invalid state type");
-  }
+  if(!isFillerState(state)) throw new Error("Invalid state type");
 
   let score1 = 0;
   let score2 = 0;
@@ -113,7 +111,11 @@ class FillerState extends GameState {
       if(!this.team && rewards['1'] > rewards['2']) return 1;
       if(this.team && rewards['2'] > rewards['1']) return 1;
       if(rewards['1'] === rewards['2']) return 0;
-      return -1;
+      if(0) {
+        return -1; // remove 1 pt from terminal team
+      } else {
+        return {[this.team?'2':'1']: 1}; // give 1 point to non-terminal team
+      }
     }
   }
 

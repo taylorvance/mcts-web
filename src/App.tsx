@@ -12,6 +12,7 @@ import Select from './components/Select';
 import GameBoard from './components/GameBoard';
 import MCTSSettings from './components/MCTSSettings';
 import TreeViewer from './components/TreeViewer';
+import EvalBar from './components/EvalBar';
 // UI helpers
 import { useHotkeys } from 'react-hotkeys-hook';
 // Icons
@@ -284,6 +285,7 @@ const App: React.FC = () => {
         </div>
 
         <h2 className="text-xl font-bold flex-none">Search Tree</h2>
+        <EvalBar node={mcts?.rootNode} />
         <div className="flex-shrink-0 overflow-x-auto whitespace-nowrap">
           <TreeViewer mcts={mcts} />
         </div>

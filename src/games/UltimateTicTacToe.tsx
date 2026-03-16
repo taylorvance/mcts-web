@@ -1,18 +1,9 @@
 // src/games/UltimateTicTacToe.tsx
-import { Game, GameBoardProps } from '../types/Game';
 import { GameState } from 'multimcts';
+import { TypedGameBoardProps, TypedGameDefinition } from '../types/Game';
 import { FaX, FaO, FaCat } from "react-icons/fa6";
 
-// Type guard to check if state is UltimateTicTacToeState
-const isUltimateTicTacToeState = (state: GameState): state is UltimateTicTacToeState => {
-  return (state as UltimateTicTacToeState).board !== undefined;
-};
-
-const UltimateTicTacToeBoard = ({ state, onMove }: GameBoardProps) => {
-  if (!isUltimateTicTacToeState(state)) {
-    throw new Error("Invalid state type");
-  }
-
+const UltimateTicTacToeBoard = ({ state, onMove }: TypedGameBoardProps<UltimateTicTacToeState, number>) => {
   const X_FG="text-red-600", X_BG="bg-red-200";
   const O_FG="text-blue-600", O_BG="bg-blue-200";
 
@@ -59,7 +50,7 @@ const UltimateTicTacToeBoard = ({ state, onMove }: GameBoardProps) => {
                 if (cellIdx === prevCellIdx) cellClass += " border-4 border-gray-800";
 
                 return (
-                  <div key={j} className={cellClass} onClick={() => isPlayable && onMove(cellIdx.toString())}>
+                  <div key={j} className={cellClass} onClick={() => isPlayable && onMove(cellIdx)}>
                     {cell!==undefined && (cell ? <FaX /> : <FaO />)}
                   </div>
                 );
@@ -256,9 +247,13 @@ class UltimateTicTacToeState extends GameState {
   }
 }
 
-const UltimateTicTacToe: Game = {
+const UltimateTicTacToe: TypedGameDefinition<UltimateTicTacToeState, number> = {
+  id: "UltimateTicTacToe",
   name: "UltimateTicTacToe",
   createInitialState: () => new UltimateTicTacToeState(),
+  isState: (state): state is UltimateTicTacToeState => state instanceof UltimateTicTacToeState,
+  encodeMove: (move) => move.toString(),
+  decodeMove: (encodedMove) => parseInt(encodedMove, 10),
   Board: UltimateTicTacToeBoard,
 };
 

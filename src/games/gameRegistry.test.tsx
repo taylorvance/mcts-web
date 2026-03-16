@@ -3,13 +3,17 @@ import { describe, expect, it, vi } from 'vitest';
 import { games } from './gameRegistry';
 
 describe('gameRegistry', () => {
-  it('adapts typed game boards to encoded string moves', () => {
+  it.each([
+    ['TicTacToe', games.TicTacToe],
+    ['UltimateTicTacToe', games.UltimateTicTacToe],
+  ])('adapts typed board moves for %s', (_gameName, game) => {
     const onMove = vi.fn();
-    const ticTacToe = games.TicTacToe;
+    const { container } = render(<game.Board state={game.createInitialState()} onMove={onMove} />);
 
-    render(<ticTacToe.Board state={ticTacToe.createInitialState()} onMove={onMove} />);
-
-    fireEvent.click(screen.getAllByRole('button')[0]);
+    const firstClickableElement = screen.queryAllByRole('button')[0]
+      ?? container.querySelector('.cursor-pointer');
+    expect(firstClickableElement).not.toBeNull();
+    fireEvent.click(firstClickableElement!);
 
     expect(onMove).toHaveBeenCalledWith('0');
   });

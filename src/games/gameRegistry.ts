@@ -43,7 +43,7 @@ export const gameEntries: GameRegistryEntry[] = [
   createLegacyGameEntry({ id: 'Filler', game: Filler }),
   createLegacyGameEntry({ id: 'Onitama', game: Onitama }),
   createTypedGameEntry(TicTacToe),
-  createLegacyGameEntry({ id: 'UltimateTicTacToe', game: UltimateTicTacToe }),
+  createTypedGameEntry(UltimateTicTacToe),
 ];
 
 export const games: Record<string, Game> = Object.fromEntries(

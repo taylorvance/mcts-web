@@ -1,0 +1,27 @@
+# Architecture Notes
+
+## Current Shape
+- `src/App.tsx` is the application shell. It should focus on layout, selected game, shared controls, and composing app-level hooks.
+- `src/hooks/` is for orchestration concerns shared across games, such as MCTS integration and hotkey registration.
+- `src/games/` holds game-specific code only.
+
+## Game Module Convention
+Each game module should expose:
+- `name`
+- `createInitialState()`
+- `Board`
+
+Rules for game modules:
+- Keep React state inside the `Board` component, not inside plain render callbacks.
+- Keep game-specific move parsing and rendering local to the game module.
+- Keep shared UI out of game files unless it is genuinely reusable across multiple games.
+
+## Testing Expectations
+- Rules changes should add or update state-focused tests.
+- Shared UI and app-shell changes should add at least one component test when behavior changes.
+- `npm run lint`, `npm run test -- --run`, and `npm run build` are the baseline local checks.
+
+## Near-Term Direction
+- Extract more session logic out of `src/App.tsx`.
+- Move toward typed game definitions and per-game folders.
+- Keep the app shell generic and keep game logic isolated.

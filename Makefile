@@ -20,6 +20,10 @@ stop: ## Stop the application.
 lint: ## Run linters.
 	npm run lint
 
+.PHONY: test
+test: ## Run the test suite.
+	npm run test -- --run
+
 .PHONY: deploy
 deploy: ## Deploy the application to GitHub Pages.
 	npm run deploy

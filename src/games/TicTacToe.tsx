@@ -1,6 +1,6 @@
 // src/games/TicTacToe.tsx
 import TicTacToeState from 'multimcts/tictactoe';
-import { Game } from '../types/Game';
+import { Game, GameBoardProps } from '../types/Game';
 import { GameState } from 'multimcts';
 import { FaX, FaO, FaCat } from "react-icons/fa6";
 
@@ -9,7 +9,7 @@ const isTicTacToeState = (state: GameState): state is TicTacToeState => {
   return (state as TicTacToeState).board !== undefined;
 };
 
-const render = (state:GameState, onMove:(move:string) => void) => {
+const TicTacToeBoard = ({ state, onMove }: GameBoardProps) => {
   if (!isTicTacToeState(state)) {
     throw new Error("Invalid state type");
   }
@@ -47,7 +47,7 @@ const render = (state:GameState, onMove:(move:string) => void) => {
 const TicTacToe: Game = {
   name: "TicTacToe",
   createInitialState: () => new TicTacToeState(),
-  render,
+  Board: TicTacToeBoard,
 };
 
 export default TicTacToe;

@@ -1,5 +1,5 @@
 // src/games/Filler.tsx
-import { Game } from '../types/Game';
+import { Game, GameBoardProps } from '../types/Game';
 import { GameState } from 'multimcts';
 
 const ROWS = 7;
@@ -12,7 +12,7 @@ const isFillerState = (state:GameState): state is FillerState => {
   return state instanceof FillerState;
 };
 
-const render = (state:GameState, onMove:(move:string) => void) => {
+const FillerBoard = ({ state, onMove }: GameBoardProps) => {
   if(!isFillerState(state)) throw new Error("Invalid state type");
 
   let score1 = 0;
@@ -98,29 +98,15 @@ class FillerState extends GameState {
       if(this.board[i] === p1) rewards['1']++;
       else rewards['2']++;
     }
-    if(1) {
-      // return their actual scores
-      if(1) {
-        // (normalized)
-        rewards['1'] /= TOTAL_CELLS;
-        rewards['2'] /= TOTAL_CELLS;
-      }
-      return rewards;
-    } else {
-      // 1 for win, -1 for loss
-      if(!this.team && rewards['1'] > rewards['2']) return 1;
-      if(this.team && rewards['2'] > rewards['1']) return 1;
-      if(rewards['1'] === rewards['2']) return 0;
-      if(0) {
-        return -1; // remove 1 pt from terminal team
-      } else {
-        return {[this.team?'2':'1']: 1}; // give 1 point to non-terminal team
-      }
-    }
+
+    // Return normalized scores for both players.
+    rewards['1'] /= TOTAL_CELLS;
+    rewards['2'] /= TOTAL_CELLS;
+    return rewards;
   }
 
   toString(): string {
-    let board = Array.from(this.board).map((colorIndex, index) => {
+    const board = Array.from(this.board).map((colorIndex, index) => {
       let cell = COLORS[colorIndex][0];
       //if(index===0 || index===TOTAL_CELLS-1) cell = cell.toUpperCase();
       if(index>0 && index%COLS===0) cell = '/' + cell;
@@ -189,7 +175,7 @@ class FillerState extends GameState {
 const Filler: Game = {
   name: "Filler",
   createInitialState: (): GameState => new FillerState(),
-  render,
+  Board: FillerBoard,
 };
 
 export default Filler;

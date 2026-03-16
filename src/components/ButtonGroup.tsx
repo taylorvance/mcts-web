@@ -7,6 +7,12 @@ interface ButtonGroupProps {
   className?: string;
 }
 
+interface GroupedButtonProps {
+  isInGroup?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
+}
+
 const ButtonGroup: React.FC<ButtonGroupProps> = ({ tooltip, children, className='' }) => {
   const baseClassName = 'flex items-center';
   const fullClassName = `${baseClassName} ${className}`.trim();
@@ -17,7 +23,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ tooltip, children, className=
     <div className={fullClassName}>
       {React.Children.map(children, (child, index) => {
         if(React.isValidElement(child)) {
-          return React.cloneElement(child as React.ReactElement<any>, {
+          return React.cloneElement(child as React.ReactElement<GroupedButtonProps>, {
             isInGroup: true,
             isFirst: index === 0,
             isLast: index === numChildren-1,

@@ -28,7 +28,7 @@ const NodeViewer: React.FC<{ node:Node; expanded:boolean; }> = ({ node, expanded
   useEffect(() => {
     setChildren(Object.values(node.children).sort((a,b) => b.visits-a.visits));
     setIsExpanded(expanded);
-  }, [node]);
+  }, [expanded, node]);
 
   const toggleExpand = () => { setIsExpanded(!isExpanded); };
 

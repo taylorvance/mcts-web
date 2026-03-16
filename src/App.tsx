@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 // MCTS
 import { GameState } from 'multimcts';
 import { useMCTS } from './hooks/useMCTS';
+import { useAppHotkeys } from './hooks/useAppHotkeys';
 // UI components
 import Button from './components/Button';
 import ButtonGroup from './components/ButtonGroup';
@@ -12,8 +13,6 @@ import Select from './components/Select';
 import GameBoard from './components/GameBoard';
 import MCTSSettings from './components/MCTSSettings';
 import TreeViewer from './components/TreeViewer';
-// UI helpers
-import { useHotkeys } from 'react-hotkeys-hook';
 // Icons
 import { FaUndo, FaRedo } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -53,10 +52,10 @@ const App: React.FC = () => {
 
   const {mcts, runSearch, resetMCTS} = useMCTS(mctsSettings);
 
-  const isTerminal = useCallback(() => gameState ? gameState.isTerminal() : false, [gameState]);
-  const canPlay = useCallback(() => gameState!==null && !isAutoplaying && !isMoveInProgress && !isTerminal(), [gameState, isAutoplaying, isMoveInProgress, isTerminal]);
-  const canUndo = useCallback(() => historyIdx > 0, [historyIdx]);
-  const canRedo = useCallback(() => historyIdx < history.length-1, [historyIdx, history]);
+  const isTerminal = gameState ? gameState.isTerminal() : false;
+  const canPlay = gameState!==null && !isAutoplaying && !isMoveInProgress && !isTerminal;
+  const canUndo = historyIdx > 0;
+  const canRedo = historyIdx < history.length-1;
 
   const performMove = useCallback((move:string|null=null) => {
     if(isMoveInProgress) return null;
@@ -78,10 +77,14 @@ const App: React.FC = () => {
   }, [isMoveInProgress, runSearch, historyIdx, gameState]);
 
   const handlePlayerMove = useCallback((move:string) => {
-    if(!canPlay()) return;
+    if(!canPlay) return;
     performMove(move);
     if(doAIMoveAfterPlayer) setIsPendingAIMove(true);
-  }, [canPlay, doAIMoveAfterPlayer]);
+  }, [canPlay, doAIMoveAfterPlayer, performMove]);
+
+  const doAIMove = useCallback(() => {
+    if(canPlay) performMove();
+  }, [canPlay, performMove]);
 
   useEffect(() => {
     if(!isPendingAIMove) return;
@@ -90,57 +93,35 @@ const App: React.FC = () => {
       setIsPendingAIMove(false);
       doAIMove();
     })();
-  }, [isPendingAIMove]);
+  }, [doAIMove, isPendingAIMove]);
 
-  const doAIMove = useCallback(() => { canPlay() && performMove(); }, [canPlay, performMove]);
-
-  const startAutoplay = () => setIsAutoplaying(true);
-  const stopAutoplay = () => setIsAutoplaying(false);
   const toggleAutoplay = useCallback(() => {
-    if(isAutoplaying || isTerminal()) {
-      stopAutoplay();
+    if(isAutoplaying || isTerminal) {
+      setIsAutoplaying(false);
     } else {
-      startAutoplay();
+      setIsAutoplaying(true);
     }
   }, [isAutoplaying, isTerminal]);
-  const toggleAIMoveAfterPlayer = () => setDoAIMoveAfterPlayer((prev) => !prev);
+  const toggleAIMoveAfterPlayer = useCallback(() => {
+    setDoAIMoveAfterPlayer((prev) => !prev);
+  }, []);
 
   useEffect(() => {
     if(!isAutoplaying) return;
-    if(isTerminal()) {
-      stopAutoplay();
+    if(isTerminal) {
+      setIsAutoplaying(false);
       return;
     }
 
     if(isAutoplaying && gameState && !gameState.isTerminal()) {
-      (async () => {
-        //await new Promise((resolve) => setTimeout(resolve, 50)); // short delay so player can visually track the game
-        performMove();
-      })();
+      performMove();
     } else {
-      stopAutoplay();
+      setIsAutoplaying(false);
     }
-  }, [isAutoplaying, isTerminal, gameState]);
+  }, [gameState, isAutoplaying, isTerminal, performMove]);
 
-  const resetGame = useCallback(() => {
-    if(historyIdx > 0) {
-      // The first reset just hits undo lots of times.
-      gotoHistoryIdx(0);
-    } else {
-      // The second reset actually clears out the history.
-      const initState = games[selectedGame].createInitialState();
-      stopAutoplay();
-      setGameState(initState);
-      setInitialState(initState);
-      setHistoryIdx(0);
-      setHistory([NULLMOVE]);
-      setShowHistory(false);
-      resetMCTS();
-    }
-  }, [selectedGame, resetMCTS, history, historyIdx]);
-
-  const changeGame = (game:string) => {
-    stopAutoplay();
+  const changeGame = useCallback((game:string) => {
+    setIsAutoplaying(false);
     setSelectedGame(game);
     setGameState(null);
     setHistoryIdx(0);
@@ -155,7 +136,7 @@ const App: React.FC = () => {
       document.title = `MCTS - ${games[game].name}`;
     }
     */
-  };
+  }, [resetMCTS]);
 
   /*
   useEffect(() => {
@@ -177,11 +158,9 @@ const App: React.FC = () => {
     setShowHistory(false);
   }, [selectedGame]);
 
-  const toggleHistory = () => setShowHistory((prev) => !prev);
-
   const gotoHistoryIdx = useCallback((idx:number) => {
     if(idx < 0 || idx >= history.length) return;
-    stopAutoplay();
+    setIsAutoplaying(false);
     let state = initialState ?? games[selectedGame].createInitialState();
     for(let i=1; i<=idx; i++) {
       state = state.makeMove(history[i]);
@@ -190,8 +169,34 @@ const App: React.FC = () => {
     setHistoryIdx(idx);
     resetMCTS();
   }, [history, initialState, selectedGame, resetMCTS]);
-  const undoMove = useCallback(() => { canUndo() && gotoHistoryIdx(historyIdx-1); }, [canUndo, historyIdx, gotoHistoryIdx]);
-  const redoMove = useCallback(() => { canRedo() && gotoHistoryIdx(historyIdx+1); }, [canRedo, historyIdx, gotoHistoryIdx]);
+
+  const resetGame = useCallback(() => {
+    if(historyIdx > 0) {
+      // The first reset just hits undo lots of times.
+      gotoHistoryIdx(0);
+      return;
+    }
+
+    // The second reset actually clears out the history.
+    const initState = games[selectedGame].createInitialState();
+    setIsAutoplaying(false);
+    setGameState(initState);
+    setInitialState(initState);
+    setHistoryIdx(0);
+    setHistory([NULLMOVE]);
+    setShowHistory(false);
+    resetMCTS();
+  }, [gotoHistoryIdx, historyIdx, resetMCTS, selectedGame]);
+
+  const toggleHistory = useCallback(() => {
+    setShowHistory((prev) => !prev);
+  }, []);
+  const undoMove = useCallback(() => {
+    if(canUndo) gotoHistoryIdx(historyIdx-1);
+  }, [canUndo, gotoHistoryIdx, historyIdx]);
+  const redoMove = useCallback(() => {
+    if(canRedo) gotoHistoryIdx(historyIdx+1);
+  }, [canRedo, gotoHistoryIdx, historyIdx]);
 
   const HOTKEYS = {
     reset: {keys:'r', callback:resetGame},
@@ -202,9 +207,7 @@ const App: React.FC = () => {
     autoplay: {keys:'p', callback:toggleAutoplay},
     aiAfterPlayer: {keys:'a', callback:toggleAIMoveAfterPlayer},
   };
-  Object.values(HOTKEYS).forEach(({keys, callback}) => {
-    useHotkeys(keys, callback);
-  });
+  useAppHotkeys(HOTKEYS);
   const hotkeyHint = (keys:string) => <span className="text-xs">({keys})</span>;
 
   return (
@@ -226,7 +229,7 @@ const App: React.FC = () => {
 
           {/* Undo/Redo + History dropdown */}
           <ButtonGroup tooltip={`${historyIdx}/${history.length-1}`}>
-            <Button onClick={undoMove} disabled={!canUndo()}><FaUndo />{hotkeyHint(HOTKEYS.undo.keys)}</Button>
+            <Button onClick={undoMove} disabled={!canUndo}><FaUndo />{hotkeyHint(HOTKEYS.undo.keys)}</Button>
 
             <Button onClick={toggleHistory} className="px-0 relative" disabled={history.length===1}>
               <BsThreeDotsVertical />
@@ -245,16 +248,16 @@ const App: React.FC = () => {
               </div>
             </Button>
 
-            <Button onClick={redoMove} disabled={!canRedo()}><FaRedo />{hotkeyHint(HOTKEYS.redo.keys)}</Button>
+            <Button onClick={redoMove} disabled={!canRedo}><FaRedo />{hotkeyHint(HOTKEYS.redo.keys)}</Button>
           </ButtonGroup>
 
-          <Button onClick={doAIMove} disabled={!canPlay()} tooltip="AI Move"><FaForwardStep />{hotkeyHint(HOTKEYS.aiMove.keys)}</Button>
+          <Button onClick={doAIMove} disabled={!canPlay} tooltip="AI Move"><FaForwardStep />{hotkeyHint(HOTKEYS.aiMove.keys)}</Button>
 
           <Button
             onClick={toggleAutoplay}
             className={isAutoplaying ? "bg-gray-400" : ""}
             tooltip="Autoplay"
-            disabled={isTerminal()}
+            disabled={isTerminal}
           >
             {isAutoplaying ? <FaStop /> : <FaForwardFast />}
             {hotkeyHint(HOTKEYS.autoplay.keys)}
@@ -272,7 +275,7 @@ const App: React.FC = () => {
 
         {/* Game Board */}
         <div className="border-2 p-2 rounded-lg">
-          {gameState && <GameBoard render={games[selectedGame].render} gameState={gameState} onMove={handlePlayerMove} />}
+          {gameState && <GameBoard Board={games[selectedGame].Board} gameState={gameState} onMove={handlePlayerMove} />}
         </div>
       </section>
 

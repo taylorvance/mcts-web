@@ -1,5 +1,5 @@
 // src/games/UltimateTicTacToe.tsx
-import { Game } from '../types/Game';
+import { Game, GameBoardProps } from '../types/Game';
 import { GameState } from 'multimcts';
 import { FaX, FaO, FaCat } from "react-icons/fa6";
 
@@ -8,7 +8,7 @@ const isUltimateTicTacToeState = (state: GameState): state is UltimateTicTacToeS
   return (state as UltimateTicTacToeState).board !== undefined;
 };
 
-const render = (state:GameState, onMove:(move:string) => void) => {
+const UltimateTicTacToeBoard = ({ state, onMove }: GameBoardProps) => {
   if (!isUltimateTicTacToeState(state)) {
     throw new Error("Invalid state type");
   }
@@ -163,7 +163,10 @@ class UltimateTicTacToeState extends GameState {
 
   isTerminal(): boolean { return !this._hasOpenBoards() || this._hasWinner(); }
 
-  getReward(_:string): number { return this._hasWinner() ? 1 : 0; }
+  getReward(team?: string): number {
+    void team;
+    return this._hasWinner() ? 1 : 0;
+  }
 
   toString(): string {
     let str = this.getCurrentTeam() + ": ";
@@ -256,7 +259,7 @@ class UltimateTicTacToeState extends GameState {
 const UltimateTicTacToe: Game = {
   name: "UltimateTicTacToe",
   createInitialState: () => new UltimateTicTacToeState(),
-  render,
+  Board: UltimateTicTacToeBoard,
 };
 
 export default UltimateTicTacToe;

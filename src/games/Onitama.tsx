@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Game } from '../types/Game';
+import { Game, GameBoardProps } from '../types/Game';
 import { GameState } from 'multimcts';
 import { FaChessKing, FaChessPawn } from "react-icons/fa6";
 
@@ -8,7 +8,7 @@ const isOnitamaState = (state: GameState): state is OnitamaState => {
   return state instanceof OnitamaState;
 };
 
-const render = (state: GameState, onMove: (move: string) => void) => {
+const OnitamaBoard = ({ state, onMove }: GameBoardProps) => {
   if (!isOnitamaState(state)) {
     throw new Error("Invalid state type");
   }
@@ -145,7 +145,7 @@ const render = (state: GameState, onMove: (move: string) => void) => {
     <div className="flex flex-col items-center gap-4" style={{fontFamily:"Papyrus,Trattatello,Luminari,cursive"}}>
       {renderPlayerCards('B')}
 
-      <div className="grid grid-cols-5 border-gray-500 border-t-2 border-l-2">
+      <div className="grid grid-cols-5 border-gray-500 border-t-2 border-l-2" data-testid="onitama-board">
         {state.board.map((cell, index) => (
           <div
             key={index}
@@ -320,7 +320,7 @@ class OnitamaState extends GameState {
 const Onitama: Game = {
   name: "Onitama",
   createInitialState: (): GameState => new OnitamaState(),
-  render,
+  Board: OnitamaBoard,
 };
 
 export default Onitama;

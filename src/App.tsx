@@ -3,19 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import Select from './components/Select';
 import GameSessionView from './components/GameSessionView';
-// Games
-import { Game } from './types/Game';
-import TicTacToe from './games/TicTacToe';
-import UltimateTicTacToe from './games/UltimateTicTacToe';
-import Onitama from './games/Onitama';
-import Filler from './games/Filler';
-
-const games: Record<string, Game> = {
-  Filler: Filler,
-  Onitama: Onitama,
-  TicTacToe: TicTacToe,
-  UltimateTicTacToe: UltimateTicTacToe,
-};
+import { games, gameOptions } from './games/gameRegistry';
 const defaultGame = 'TicTacToe';
 
 const App: React.FC = () => {
@@ -36,7 +24,7 @@ const App: React.FC = () => {
           <Select
             value={selectedGame}
             onChange={changeGame}
-            options={Object.fromEntries(Object.entries(games).map(([key,value]) => [key,value.name]))}
+            options={gameOptions}
             className="text-xl px-4 py-2"
             centerText={true}
           />

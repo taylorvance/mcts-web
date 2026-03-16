@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import TicTacToe from '../games/TicTacToe';
+import { games } from '../games/gameRegistry';
 import { useGameSession } from './useGameSession';
 
 const TEST_SETTINGS = {
@@ -11,7 +11,7 @@ const TEST_SETTINGS = {
 
 describe('useGameSession', () => {
   it('supports undo, redo, and reset flows', () => {
-    const { result } = renderHook(() => useGameSession(TicTacToe, TEST_SETTINGS));
+    const { result } = renderHook(() => useGameSession(games.TicTacToe, TEST_SETTINGS));
 
     act(() => {
       result.current.toggleAIMoveAfterPlayer();
@@ -48,7 +48,7 @@ describe('useGameSession', () => {
   });
 
   it('can autoplay forward from the current state', async () => {
-    const { result } = renderHook(() => useGameSession(TicTacToe, TEST_SETTINGS));
+    const { result } = renderHook(() => useGameSession(games.TicTacToe, TEST_SETTINGS));
 
     act(() => {
       result.current.toggleAutoplay();

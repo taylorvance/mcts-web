@@ -1,19 +1,9 @@
 // src/games/TicTacToe.tsx
 import TicTacToeState from 'multimcts/tictactoe';
-import { Game, GameBoardProps } from '../types/Game';
-import { GameState } from 'multimcts';
+import { TypedGameBoardProps, TypedGameDefinition } from '../types/Game';
 import { FaX, FaO, FaCat } from "react-icons/fa6";
 
-// Type guard to check if state is TicTacToeState
-const isTicTacToeState = (state: GameState): state is TicTacToeState => {
-  return (state as TicTacToeState).board !== undefined;
-};
-
-const TicTacToeBoard = ({ state, onMove }: GameBoardProps) => {
-  if (!isTicTacToeState(state)) {
-    throw new Error("Invalid state type");
-  }
-
+const TicTacToeBoard = ({ state, onMove }: TypedGameBoardProps<TicTacToeState, number>) => {
   const isTerminal = state.isTerminal();
 
   let result = undefined;
@@ -31,7 +21,7 @@ const TicTacToeBoard = ({ state, onMove }: GameBoardProps) => {
         <button
           key={index}
           className={`w-20 h-20 bg-gray-200 flex items-center justify-center text-6xl ${cell===null ? '' : (cell ? 'text-red-600' : 'text-blue-600')}`}
-          onClick={() => onMove(index.toString())}
+          onClick={() => onMove(index)}
           disabled={cell!==null || isTerminal}
         >{cell!==null && (cell ? <FaX /> : <FaO />)}</button>
       ))}
@@ -44,9 +34,13 @@ const TicTacToeBoard = ({ state, onMove }: GameBoardProps) => {
   );
 };
 
-const TicTacToe: Game = {
+const TicTacToe: TypedGameDefinition<TicTacToeState, number> = {
+  id: "TicTacToe",
   name: "TicTacToe",
   createInitialState: () => new TicTacToeState(),
+  isState: (state): state is TicTacToeState => state instanceof TicTacToeState,
+  encodeMove: (move) => move.toString(),
+  decodeMove: (encodedMove) => parseInt(encodedMove, 10),
   Board: TicTacToeBoard,
 };
 

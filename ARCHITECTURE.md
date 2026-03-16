@@ -7,6 +7,7 @@
 - `src/hooks/` is for orchestration concerns shared across games, such as MCTS integration and hotkey registration.
 - `src/games/gameRegistry.ts` is the boundary where typed and legacy game definitions are adapted into the current shell-facing runtime API.
 - `src/games/` holds game-specific code only.
+- Migrated games should live in `src/games/<Game>/` with `state.ts`, `Board.tsx`, and `index.ts`.
 
 ## Game Module Convention
 Each game module should expose:

@@ -40,7 +40,7 @@ const createTypedGameEntry = <TState extends GameState, TMove>(
 });
 
 export const gameEntries: GameRegistryEntry[] = [
-  createLegacyGameEntry({ id: 'Filler', game: Filler }),
+  createTypedGameEntry(Filler),
   createLegacyGameEntry({ id: 'Onitama', game: Onitama }),
   createTypedGameEntry(TicTacToe),
   createTypedGameEntry(UltimateTicTacToe),

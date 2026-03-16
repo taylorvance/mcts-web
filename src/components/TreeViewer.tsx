@@ -1,6 +1,7 @@
 // src/components/TreeViewer.tsx
 import React, { useState, useEffect } from 'react';
 import { MCTS, Node } from 'multimcts';
+import { formatGameStateDebugLabel } from '../utils/gameStateDebug';
 
 interface TreeViewerProps {
   mcts: MCTS | null;
@@ -31,6 +32,8 @@ const NodeViewer: React.FC<{ node:Node; expanded:boolean; }> = ({ node, expanded
   }, [expanded, node]);
 
   const toggleExpand = () => { setIsExpanded(!isExpanded); };
+  const stateDebug = formatGameStateDebugLabel(node.state);
+  const rawStateDebug = node.state.toString();
 
   return (
     <>
@@ -38,8 +41,8 @@ const NodeViewer: React.FC<{ node:Node; expanded:boolean; }> = ({ node, expanded
         <span className={`mr-2 ${children.length>0 ? 'font-bold' : ''}`}>
           {children.length>0 ? (isExpanded?'-':'+') : '·'}
         </span>
-        <span className="mr-2 bg-gray-200 overflow-auto">{node.state.toString()}</span>
-        <span className="mr-2 bg-gray-200">{node.move}</span>
+        <span className="mr-2 bg-gray-200 overflow-auto" title={rawStateDebug}>{stateDebug}</span>
+        <span className="mr-2 bg-gray-200">{node.move ?? 'root'}</span>
         <span className="mr-2">n={node.visits}</span>
         <span className="mr-2">{JSON.stringify(node.rewards)}</span>
       </div>

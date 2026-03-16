@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import Filler from '.';
+import { expectEncodedReplayToMatchTypedReplay } from '../../test/gameReplay';
 import { FillerState, TOTAL_CELLS } from './state';
 
 const createBoard = (rows: number[][]) => new Uint8Array(rows.flat());
@@ -41,17 +42,11 @@ describe('FillerState', () => {
   });
 
   it('rebuilds the same state from encoded move history', () => {
-    const moves = [2, 4, 3];
-    let encodedReplayState = new FillerState(TEST_BOARD, true);
-    let typedReplayState = new FillerState(TEST_BOARD, true);
-
-    for(const move of moves) {
-      typedReplayState = typedReplayState.applyColorMove(move);
-      encodedReplayState = encodedReplayState.makeMove(
-        Filler.encodeMove(move, encodedReplayState),
-      );
-    }
-
-    expect(encodedReplayState.toString()).toBe(typedReplayState.toString());
+    expectEncodedReplayToMatchTypedReplay({
+      initialState: new FillerState(TEST_BOARD, true),
+      moves: [2, 4, 3],
+      definition: Filler,
+      applyMove: (state, move) => state.applyColorMove(move),
+    });
   });
 });

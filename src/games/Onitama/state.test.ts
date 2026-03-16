@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import Onitama from '.';
+import { expectEncodedReplayToMatchTypedReplay } from '../../test/gameReplay';
 import { OnitamaCards, OnitamaMove, OnitamaState } from './state';
 
 const OPENING_CARDS: OnitamaCards = {
@@ -62,18 +63,19 @@ describe('OnitamaState', () => {
   });
 
   it('rebuilds the same state from encoded typed history', () => {
-    const initialState = new OnitamaState(OnitamaState.initializeBoard(), true, OPENING_CARDS, 0);
     const move: OnitamaMove = {
       type: 'play',
       cardIdx: 2,
       srcIdx: 22,
       dstIdx: 17,
     };
+    const { encodedReplayState, typedReplayState } = expectEncodedReplayToMatchTypedReplay({
+      initialState: new OnitamaState(OnitamaState.initializeBoard(), true, OPENING_CARDS, 0),
+      moves: [move],
+      definition: Onitama,
+      applyMove: (state, nextMove) => state.makeTypedMove(nextMove),
+    });
 
-    const typedReplayState = initialState.makeTypedMove(move);
-    const encodedReplayState = initialState.makeMove(Onitama.encodeMove(move, initialState));
-
-    expect(encodedReplayState.toString()).toBe(typedReplayState.toString());
     expect(encodedReplayState.cards).toEqual(typedReplayState.cards);
   });
 });

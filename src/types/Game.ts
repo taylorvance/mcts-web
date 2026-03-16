@@ -27,11 +27,6 @@ export interface TypedGameDefinition<TState extends GameState, TMove> {
   Board: React.ComponentType<TypedGameBoardProps<TState, TMove>>;
 }
 
-export interface LegacyGameDefinition {
-  id: string;
-  game: Game;
-}
-
 export interface GameRegistryEntry {
   id: string;
   name: string;

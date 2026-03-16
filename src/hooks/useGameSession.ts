@@ -91,7 +91,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     game,
     (currentGame) => createSessionState(currentGame.createInitialState()),
   );
-  const { mcts, runSearch, resetMCTS } = useMCTS(settings);
+  const { mcts, runSearch, advanceSearchTree, resetMCTS } = useMCTS(settings);
   const previousGameRef = useRef(game);
 
   useEffect(() => {
@@ -117,12 +117,13 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
 
       const nextMove = move ?? runSearch(state.gameState);
       const nextState = state.gameState.makeMove(nextMove);
+      advanceSearchTree(nextMove, nextState);
       dispatch({ type: 'move_applied', gameState: nextState, move: nextMove });
       return nextMove;
     } finally {
       dispatch({ type: 'move_completed' });
     }
-  }, [runSearch, state.gameState, state.isMoveInProgress]);
+  }, [advanceSearchTree, runSearch, state.gameState, state.isMoveInProgress]);
 
   const doAIMove = useCallback(() => {
     if(canPlay) performMove();

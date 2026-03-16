@@ -1,0 +1,71 @@
+import { act, renderHook } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { games } from '../games/gameRegistry';
+import { useMCTS } from './useMCTS';
+
+const TEST_SETTINGS = {
+  explorationBias: 1.414,
+  maxIterations: 1,
+  maxTime: null,
+};
+
+describe('useMCTS', () => {
+  it('reuses the same root node for repeated searches from the same state', () => {
+    const state = games.TicTacToe.createInitialState();
+    const { result } = renderHook(() => useMCTS(TEST_SETTINGS));
+
+    act(() => {
+      result.current.runSearch(state);
+    });
+
+    const initialRoot = result.current.mcts?.rootNode;
+    const initialVisits = initialRoot?.visits ?? 0;
+
+    act(() => {
+      result.current.runSearch(state);
+    });
+
+    expect(result.current.mcts?.rootNode).toBe(initialRoot);
+    expect(result.current.mcts?.rootNode?.visits).toBeGreaterThan(initialVisits);
+  });
+
+  it('promotes an explored child node after applying its move', () => {
+    const state = games.TicTacToe.createInitialState();
+    const { result } = renderHook(() => useMCTS(TEST_SETTINGS));
+    let move = '';
+
+    act(() => {
+      move = result.current.runSearch(state);
+    });
+
+    const childNode = result.current.mcts?.rootNode?.children[move];
+    const nextState = state.makeMove(move);
+
+    act(() => {
+      result.current.advanceSearchTree(move, nextState);
+    });
+
+    expect(result.current.mcts?.rootNode).toBe(childNode);
+    expect(result.current.mcts?.rootNode?.parent).toBeNull();
+    expect(result.current.mcts?.rootNode?.state.toString()).toBe(nextState.toString());
+  });
+
+  it('clears the tree when the applied move was not explored', () => {
+    const state = games.TicTacToe.createInitialState();
+    const { result } = renderHook(() => useMCTS(TEST_SETTINGS));
+    let exploredMove = '';
+
+    act(() => {
+      exploredMove = result.current.runSearch(state);
+    });
+
+    const unexploredMove = state.getLegalMoves().find((move) => move !== exploredMove)!;
+    const nextState = state.makeMove(unexploredMove);
+
+    act(() => {
+      result.current.advanceSearchTree(unexploredMove, nextState);
+    });
+
+    expect(result.current.mcts).toBeNull();
+  });
+});

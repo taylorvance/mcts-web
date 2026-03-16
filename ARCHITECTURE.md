@@ -1,7 +1,9 @@
 # Architecture Notes
 
 ## Current Shape
-- `src/App.tsx` is the application shell. It should focus on layout, selected game, shared controls, and composing app-level hooks.
+- `src/App.tsx` is the application shell. It should focus on selected game, shared app settings, and high-level composition.
+- `src/components/GameSessionView.tsx` renders the active game session UI and consumes the session hook.
+- `src/hooks/useGameSession.ts` owns session concerns such as move history, replay, autoplay, and MCTS integration.
 - `src/hooks/` is for orchestration concerns shared across games, such as MCTS integration and hotkey registration.
 - `src/games/` holds game-specific code only.
 
@@ -22,6 +24,5 @@ Rules for game modules:
 - `npm run lint`, `npm run test -- --run`, and `npm run build` are the baseline local checks.
 
 ## Near-Term Direction
-- Extract more session logic out of `src/App.tsx`.
 - Move toward typed game definitions and per-game folders.
 - Keep the app shell generic and keep game logic isolated.

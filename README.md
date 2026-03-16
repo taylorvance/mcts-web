@@ -1,30 +1,91 @@
-# React + TypeScript + Vite
+# mcts-web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+`mcts-web` is a React playground for experimenting with Monte Carlo Tree Search across several turn-based board games. It lets you play moves manually, hand control to the AI, autoplay full games, inspect move history, and view the current search tree while tuning MCTS settings.
 
-Currently, two official plugins are available:
+Current games:
+- Tic-Tac-Toe
+- Ultimate Tic-Tac-Toe
+- Filler
+- Onitama
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Stack
 
-## Expanding the ESLint configuration
+- React 18 + TypeScript
+- Vite for local development and builds
+- Tailwind CSS for styling
+- [`multimcts`](https://www.npmjs.com/package/multimcts) for the core search engine
+- Vitest + Testing Library for tests
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Use Node 20 to match CI.
 
-- Configure the top-level `parserOptions` property like this:
+## Getting Started
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json', './tsconfig.app.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+```bash
+npm install
+npm run dev
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+Open the local Vite URL and choose a game from the selector. The app starts on `TicTacToe`.
+
+## Common Commands
+
+```bash
+npm run dev            # start the local dev server
+npm run lint           # run ESLint
+npm run test -- --run  # run tests once
+npm run build          # type-check and build for production
+npm run preview        # preview the production build
+```
+
+If you prefer `make`, the repo also provides `make setup`, `make lint`, `make test`, and `make build`.
+
+## Controls
+
+The session view exposes the same controls for every game:
+
+- `r`: reset
+- `z` / `x`: undo / redo
+- `h`: toggle history
+- `n`: request one AI move
+- `p`: toggle autoplay
+- `a`: toggle “AI moves after player”
+
+The right panel shows the current search tree and the active MCTS settings. Search trees are reused across repeated searches and advanced when the chosen move already exists in the explored tree.
+
+## Project Layout
+
+```text
+src/
+  components/   shared UI such as the session view, tree viewer, and controls
+  games/        per-game rules, boards, tests, and the game registry
+  hooks/        app/session orchestration and MCTS integration
+  test/         shared test helpers
+  utils/        small cross-cutting utilities
+```
+
+`src/App.tsx` is intentionally small and acts as the app shell. `src/components/GameSessionView.tsx` owns the common session UI. `src/hooks/useGameSession.ts` manages history, replay, autoplay, and AI flow. `src/games/gameRegistry.ts` is the only place where games are wired into the shell.
+
+## Adding or Changing a Game
+
+Prefer the typed game API. A migrated game should live in `src/games/<Game>/` and usually contain:
+
+- `state.ts` for rules and move/state transitions
+- `Board.tsx` for React UI and local interaction state
+- `index.ts` for the exported typed game definition
+- `state.test.ts` for rules coverage
+
+Game boards should work with typed moves locally and only encode to strings at the registry boundary.
+
+## Quality Bar
+
+Before committing, run:
+
+```bash
+npm run lint
+npm run test -- --run
+npm run build
+```
+
+Rules changes should include state-focused tests. UI or shell changes should include at least one behavioral test when flow changes.
+
+For more detail, see `ARCHITECTURE.md`, `ARCHITECTURE_IMPROVEMENT_PLAN.md`, and `AGENTS.md`.

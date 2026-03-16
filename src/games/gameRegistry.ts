@@ -8,15 +8,8 @@ import {
   Game,
   GameBoardProps,
   GameRegistryEntry,
-  LegacyGameDefinition,
   TypedGameDefinition,
 } from '../types/Game';
-
-const createLegacyGameEntry = ({ id, game }: LegacyGameDefinition): GameRegistryEntry => ({
-  id,
-  name: game.name,
-  game,
-});
 
 const createTypedGameEntry = <TState extends GameState, TMove>(
   definition: TypedGameDefinition<TState, TMove>,
@@ -41,7 +34,7 @@ const createTypedGameEntry = <TState extends GameState, TMove>(
 
 export const gameEntries: GameRegistryEntry[] = [
   createTypedGameEntry(Filler),
-  createLegacyGameEntry({ id: 'Onitama', game: Onitama }),
+  createTypedGameEntry(Onitama),
   createTypedGameEntry(TicTacToe),
   createTypedGameEntry(UltimateTicTacToe),
 ];

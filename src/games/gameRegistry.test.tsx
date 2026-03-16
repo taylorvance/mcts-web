@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { FillerState } from './Filler/state';
+import { OnitamaState } from './Onitama/state';
 import { games } from './gameRegistry';
 
 describe('gameRegistry', () => {
@@ -37,5 +38,23 @@ describe('gameRegistry', () => {
     fireEvent.click(screen.getAllByRole('button')[0]);
 
     expect(onMove).toHaveBeenCalledWith('2');
+  });
+
+  it('adapts typed board moves for Onitama', () => {
+    const onMove = vi.fn();
+    const state = new OnitamaState(
+      OnitamaState.initializeBoard(),
+      true,
+      { r: [2, 4], b: [1, 3], n: 0 },
+      0,
+    );
+
+    render(<games.Onitama.Board state={state} onMove={onMove} />);
+
+    fireEvent.click(screen.getByTestId('onitama-card-2'));
+    fireEvent.click(screen.getByTestId('onitama-cell-22'));
+    fireEvent.click(screen.getByTestId('onitama-cell-17'));
+
+    expect(onMove).toHaveBeenCalledWith('2,22,17');
   });
 });

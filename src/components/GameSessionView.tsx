@@ -24,6 +24,7 @@ interface GameSessionViewProps {
   selector: React.ReactNode;
   mctsSettings: MCTSSettings;
   setMctsSettings: React.Dispatch<React.SetStateAction<MCTSSettings>>;
+  onResetSavedData: () => void;
 }
 
 const GameSessionView: React.FC<GameSessionViewProps> = ({
@@ -31,6 +32,7 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
   selector,
   mctsSettings,
   setMctsSettings,
+  onResetSavedData,
 }) => {
   const [showHistory, setShowHistory] = useState(false);
   const {
@@ -137,6 +139,11 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
         <h1 className="text-2xl font-bold flex-none">MCTS Settings</h1>
         <div className="flex-none">
           <MCTSSettings settings={mctsSettings} setSettings={setMctsSettings} />
+        </div>
+        <div className="flex-none">
+          <Button onClick={onResetSavedData} className="justify-center">
+            Reset saved data
+          </Button>
         </div>
 
         <h2 className="text-xl font-bold flex-none">Search Tree</h2>

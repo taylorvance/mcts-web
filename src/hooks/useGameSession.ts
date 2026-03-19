@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { GameState } from 'multimcts';
 import { Game } from '../types/Game';
+import { getGameSessionStorageKey, readJsonStorage, writeJsonStorage } from '../utils/persistence';
 import { useMCTS } from './useMCTS';
 
 export const NULLMOVE = '__INITIAL_STATE__';
+const SESSION_STORAGE_VERSION = 1;
 
 interface MCTSSettings {
   explorationBias: number;
@@ -22,8 +24,16 @@ interface SessionState {
   isMoveInProgress: boolean;
 }
 
+interface PersistedSessionState {
+  version: number;
+  initialState: unknown;
+  history: string[];
+  historyIdx: number;
+  doAIMoveAfterPlayer: boolean;
+}
+
 type SessionAction =
-  | { type: 'initialize'; initialState: GameState }
+  | { type: 'initialize'; sessionState: SessionState }
   | { type: 'move_started' }
   | { type: 'move_applied'; gameState: GameState; move: string }
   | { type: 'move_completed' }
@@ -46,10 +56,59 @@ const createSessionState = (
   isMoveInProgress: false,
 });
 
+const restoreSessionState = (game: Game): SessionState => {
+  const persistedSession = readJsonStorage<PersistedSessionState>(getGameSessionStorageKey(game.id));
+
+  if(
+    !persistedSession
+    || persistedSession.version !== SESSION_STORAGE_VERSION
+    || !Array.isArray(persistedSession.history)
+    || persistedSession.history.some((move) => typeof move !== 'string')
+    || persistedSession.history[0] !== NULLMOVE
+    || !Number.isInteger(persistedSession.historyIdx)
+    || persistedSession.historyIdx < 0
+    || persistedSession.historyIdx >= persistedSession.history.length
+    || typeof persistedSession.doAIMoveAfterPlayer !== 'boolean'
+  ) {
+    return createSessionState(game.createInitialState());
+  }
+
+  try {
+    const initialState = game.deserializeState(persistedSession.initialState);
+    let replayState = initialState;
+    let currentState = initialState;
+
+    for(let i = 1; i < persistedSession.history.length; i++) {
+      const move = persistedSession.history[i];
+      if(!replayState.getLegalMoves().includes(move)) {
+        throw new Error('Invalid persisted move');
+      }
+
+      replayState = replayState.makeMove(move);
+      if(i === persistedSession.historyIdx) {
+        currentState = replayState;
+      }
+    }
+
+    return {
+      gameState: currentState,
+      initialState,
+      history: [...persistedSession.history],
+      historyIdx: persistedSession.historyIdx,
+      isAutoplaying: false,
+      doAIMoveAfterPlayer: persistedSession.doAIMoveAfterPlayer,
+      isPendingAIMove: false,
+      isMoveInProgress: false,
+    };
+  } catch {
+    return createSessionState(game.createInitialState());
+  }
+};
+
 const sessionReducer = (state: SessionState, action: SessionAction): SessionState => {
   switch(action.type) {
     case 'initialize':
-      return createSessionState(action.initialState, state.doAIMoveAfterPlayer);
+      return action.sessionState;
     case 'move_started':
       return { ...state, isMoveInProgress: true };
     case 'move_applied': {
@@ -89,7 +148,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
   const [state, dispatch] = useReducer(
     sessionReducer,
     game,
-    (currentGame) => createSessionState(currentGame.createInitialState()),
+    (currentGame) => restoreSessionState(currentGame),
   );
   const { mcts, searchStats, runSearch, advanceSearchTree, resetMCTS } = useMCTS(settings);
   const previousGameRef = useRef(game);
@@ -98,9 +157,19 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     if(previousGameRef.current === game) return;
 
     previousGameRef.current = game;
-    dispatch({ type: 'initialize', initialState: game.createInitialState() });
+    dispatch({ type: 'initialize', sessionState: restoreSessionState(game) });
     resetMCTS();
   }, [game, resetMCTS]);
+
+  useEffect(() => {
+    writeJsonStorage(getGameSessionStorageKey(game.id), {
+      version: SESSION_STORAGE_VERSION,
+      initialState: game.serializeState(state.initialState),
+      history: state.history,
+      historyIdx: state.historyIdx,
+      doAIMoveAfterPlayer: state.doAIMoveAfterPlayer,
+    } satisfies PersistedSessionState);
+  }, [game, state.doAIMoveAfterPlayer, state.history, state.historyIdx, state.initialState]);
 
   const isTerminal = state.gameState.isTerminal();
   const canPlay = !state.isAutoplaying && !state.isMoveInProgress && !isTerminal;
@@ -147,9 +216,9 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
       return;
     }
 
-    dispatch({ type: 'initialize', initialState: game.createInitialState() });
+    dispatch({ type: 'initialize', sessionState: createSessionState(game.createInitialState(), state.doAIMoveAfterPlayer) });
     resetMCTS();
-  }, [game, gotoHistoryIdx, resetMCTS, state.historyIdx]);
+  }, [game, gotoHistoryIdx, resetMCTS, state.doAIMoveAfterPlayer, state.historyIdx]);
 
   const handlePlayerMove = useCallback((move: string) => {
     if(!canPlay) return;

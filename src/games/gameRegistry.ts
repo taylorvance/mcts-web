@@ -17,8 +17,17 @@ const createTypedGameEntry = <TState extends GameState, TMove>(
   id: definition.id,
   name: definition.name,
   game: {
+    id: definition.id,
     name: definition.name,
     createInitialState: definition.createInitialState,
+    serializeState: (state) => {
+      if(!definition.isState(state)) {
+        throw new Error(`Invalid state type for ${definition.name}`);
+      }
+
+      return definition.serializeState(state);
+    },
+    deserializeState: (serializedState) => definition.deserializeState(serializedState),
     Board: ({ state, onMove }: GameBoardProps) => {
       if(!definition.isState(state)) {
         throw new Error(`Invalid state type for ${definition.name}`);

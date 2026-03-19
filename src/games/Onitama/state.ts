@@ -26,6 +26,7 @@ export interface OnitamaPassMove {
 }
 
 export type OnitamaMove = OnitamaPlayMove | OnitamaPassMove;
+export type OnitamaWinningMethod = 'stone' | 'stream';
 
 export const encodeOnitamaMove = (move: OnitamaMove) => {
   if(move.type === 'pass') {
@@ -218,6 +219,38 @@ export class OnitamaState extends GameState {
     return new OnitamaState(newBoard, !this.team, newCards, this.nmoves + 1);
   }
 
+  getWinner(): 'R' | 'B' | null {
+    if(this.board[2] === 'R') {
+      return 'R';
+    }
+
+    if(this.board[22] === 'B') {
+      return 'B';
+    }
+
+    if(!this.board.includes('R')) {
+      return 'B';
+    }
+
+    if(!this.board.includes('B')) {
+      return 'R';
+    }
+
+    return null;
+  }
+
+  getWinningMethod(): OnitamaWinningMethod | null {
+    if(this.board[2] === 'R' || this.board[22] === 'B') {
+      return 'stream';
+    }
+
+    if(!this.board.includes('R') || !this.board.includes('B')) {
+      return 'stone';
+    }
+
+    return null;
+  }
+
   isTerminal() {
     return this.isDraw() || this.hasWinner();
   }
@@ -265,10 +298,7 @@ export class OnitamaState extends GameState {
   }
 
   private hasWinner() {
-    return this.board[2] === 'R'
-      || this.board[22] === 'B'
-      || !this.board.includes('R')
-      || !this.board.includes('B');
+    return this.getWinner() !== null;
   }
 
   private isDraw() {

@@ -10,6 +10,7 @@ interface PendingMoveSelection {
 }
 
 const uniqueIndexes = (indexes: number[]) => [...new Set(indexes)];
+const teamLabel = (team: 'R' | 'B') => (team === 'R' ? 'Red' : 'Blue');
 
 const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, OnitamaMove>) => {
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
@@ -214,6 +215,12 @@ const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, Onita
   const footerMessage = pendingMove
     ? 'Multiple cards can make that move. Choose a card.'
     : (passCardIndexes.size > 0 ? 'No legal moves. Click a card to pass.' : null);
+  const winner = state.getWinner();
+  const winningMethod = state.getWinningMethod();
+  const outcomeMessage = winner && winningMethod
+      ? `${teamLabel(winner)} wins by ${winningMethod === 'stream' ? 'Way of the Stream' : 'Way of the Stone'}.`
+      : (state.isTerminal() ? 'Draw.' : null);
+  const rulesMessage = 'Win by Way of the Stone (capture the opposing master) or Way of the Stream (move your master into the opposing temple).';
 
   return (
     <div className="flex flex-col items-center gap-4" style={{ fontFamily: 'Papyrus,Trattatello,Luminari,cursive' }}>
@@ -235,7 +242,11 @@ const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, Onita
       {renderPlayerCards('R')}
 
       <div className="min-h-5 text-sm text-gray-700" aria-live="polite">
-        {footerMessage}
+        {outcomeMessage ?? footerMessage}
+      </div>
+
+      <div className="max-w-md text-center text-xs leading-relaxed text-gray-600">
+        {rulesMessage}
       </div>
     </div>
   );

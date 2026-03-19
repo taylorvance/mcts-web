@@ -78,4 +78,36 @@ describe('OnitamaState', () => {
 
     expect(encodedReplayState.cards).toEqual(typedReplayState.cards);
   });
+
+  it('identifies way of the stream and way of the stone wins', () => {
+    const streamState = new OnitamaState(
+      [
+        'r', 'r', 'R', 'r', 'r',
+        null, null, null, null, null,
+        null, null, null, null, null,
+        null, null, null, null, null,
+        'b', 'b', null, 'b', 'b',
+      ],
+      false,
+      OPENING_CARDS,
+      8,
+    );
+    const stoneState = new OnitamaState(
+      [
+        'b', 'b', null, 'b', 'b',
+        null, null, null, null, null,
+        null, null, null, null, null,
+        null, null, null, null, null,
+        'r', 'r', 'R', 'r', 'r',
+      ],
+      false,
+      OPENING_CARDS,
+      8,
+    );
+
+    expect(streamState.getWinner()).toBe('R');
+    expect(streamState.getWinningMethod()).toBe('stream');
+    expect(stoneState.getWinner()).toBe('R');
+    expect(stoneState.getWinningMethod()).toBe('stone');
+  });
 });

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { games } from '../gameRegistry';
-import { OnitamaCards, OnitamaState } from './state';
+import { OnitamaCards, OnitamaPiece, OnitamaState } from './state';
 
 const renderBoard = (cards: OnitamaCards, board = OnitamaState.initializeBoard()) => {
   const onMove = vi.fn();
@@ -37,7 +37,7 @@ describe('OnitamaBoard', () => {
   });
 
   it('renders the pass hint below the board', () => {
-    const blockedBoard = [
+    const blockedBoard: OnitamaPiece[] = [
       'R', 'r', 'r', 'r', 'r',
       null, null, null, null, null,
       null, null, null, null, null,
@@ -53,7 +53,7 @@ describe('OnitamaBoard', () => {
   });
 
   it('shows the victory rules and the winning method when the game is over', () => {
-    const streamBoard = [
+    const streamBoard: OnitamaPiece[] = [
       'r', 'r', 'R', 'r', 'r',
       null, null, null, null, null,
       null, null, null, null, null,

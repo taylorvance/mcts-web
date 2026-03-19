@@ -31,6 +31,9 @@ Open the local Vite URL and choose a game from the selector. The app starts on `
 
 ```bash
 npm run dev            # start the local dev server
+npm run benchmark      # benchmark deterministic MCTS search scenarios
+npm run benchmark:compare -- origin/main HEAD  # compare two refs
+npm run benchmark:strength -- origin/main HEAD  # play head-to-head matches between two refs
 npm run lint           # run ESLint
 npm run test -- --run  # run tests once
 npm run build          # type-check and build for production
@@ -51,6 +54,21 @@ The session view exposes the same controls for every game:
 - `a`: toggle “AI moves after player”
 
 The right panel shows the current search tree and the active MCTS settings. Search trees are reused across repeated searches and advanced when the chosen move already exists in the explored tree.
+
+## Benchmarking
+
+The repo includes a small CLI harness for measuring raw MCTS search speed on deterministic positions outside the browser. That makes branch-to-branch comparisons much less noisy than timing the UI by hand.
+
+```bash
+npm run benchmark -- --iterations 5000 --samples 25
+npm run benchmark -- --game Onitama --iterations 10000
+npm run benchmark:compare -- origin/main HEAD --iterations 5000 --samples 25
+npm run benchmark:strength -- origin/main HEAD --iterations 3000
+```
+
+The throughput compare command creates temporary worktrees for both refs, injects the benchmark harness, and prints a rounds-per-second delta. The strength compare command uses the same deterministic scenarios to play equal-budget head-to-head games while swapping who moves first.
+
+These commands measure search speed and move quality, not React render performance; use the browser profiler separately if the slowdown feels UI-specific.
 
 ## Project Layout
 

@@ -5,11 +5,12 @@ import {
   encodeOnitamaMove,
   OnitamaCards,
   OnitamaMove,
+  OnitamaPiece,
   OnitamaState,
 } from './state';
 
 interface SerializedOnitamaState {
-  board: (string | null)[];
+  board: OnitamaPiece[];
   team: boolean;
   cards: OnitamaCards;
   nmoves: number;

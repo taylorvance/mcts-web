@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import Onitama from '.';
 import { expectEncodedReplayToMatchTypedReplay } from '../../test/gameReplay';
-import { OnitamaCards, OnitamaMove, OnitamaState } from './state';
+import { OnitamaCards, OnitamaMove, OnitamaPiece, OnitamaState } from './state';
 
 const OPENING_CARDS: OnitamaCards = {
   r: [2, 4],
@@ -36,7 +36,7 @@ describe('OnitamaState', () => {
   });
 
   it('falls back to pass actions when no piece can move', () => {
-    const blockedBoard = [
+    const blockedBoard: OnitamaPiece[] = [
       'R', 'r', 'r', 'r', 'r',
       null, null, null, null, null,
       null, null, null, null, null,
@@ -87,7 +87,7 @@ describe('OnitamaState', () => {
         null, null, null, null, null,
         null, null, null, null, null,
         'b', 'b', null, 'b', 'b',
-      ],
+      ] satisfies OnitamaPiece[],
       false,
       OPENING_CARDS,
       8,
@@ -99,7 +99,7 @@ describe('OnitamaState', () => {
         null, null, null, null, null,
         null, null, null, null, null,
         'r', 'r', 'R', 'r', 'r',
-      ],
+      ] satisfies OnitamaPiece[],
       false,
       OPENING_CARDS,
       8,

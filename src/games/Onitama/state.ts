@@ -27,41 +27,6 @@ export interface OnitamaPassMove {
 
 export type OnitamaMove = OnitamaPlayMove | OnitamaPassMove;
 
-export const ONITAMA_DECK: OnitamaCard[] = [
-  { name: 'Dragon', color: '', first: 'R', moves: [[-1, -2], [-1, 2], [1, -1], [1, 1]] },
-  { name: 'Elephant', color: '', first: 'R', moves: [[-1, -1], [-1, 1], [0, -1], [0, 1]] },
-  { name: 'Boar', color: '', first: 'R', moves: [[-1, 0], [0, -1], [0, 1]] },
-  { name: 'Mantis', color: '', first: 'R', moves: [[-1, -1], [-1, 1], [1, 0]] },
-  { name: 'Tiger', color: '', first: 'B', moves: [[-2, 0], [1, 0]] },
-  { name: 'Monkey', color: '', first: 'B', moves: [[-1, -1], [-1, 1], [1, -1], [1, 1]] },
-  { name: 'Crab', color: '', first: 'B', moves: [[-1, 0], [0, -2], [0, 2]] },
-  { name: 'Crane', color: '', first: 'B', moves: [[-1, 0], [1, -1], [1, 1]] },
-  { name: 'Rabbit', color: 'R', first: 'B', moves: [[-1, 1], [0, 2], [1, -1]] },
-  { name: 'Rooster', color: 'R', first: 'R', moves: [[-1, 1], [0, -1], [0, 1], [1, -1]] },
-  { name: 'Ox', color: 'R', first: 'B', moves: [[-1, 0], [0, 1], [1, 0]] },
-  { name: 'Cobra', color: 'R', first: 'R', moves: [[-1, 1], [0, -1], [1, 1]] },
-  { name: 'Frog', color: 'B', first: 'R', moves: [[-1, -1], [0, -2], [1, 1]] },
-  { name: 'Goose', color: 'B', first: 'B', moves: [[-1, -1], [0, -1], [0, 1], [1, 1]] },
-  { name: 'Horse', color: 'B', first: 'R', moves: [[-1, 0], [0, -1], [1, 0]] },
-  { name: 'Eel', color: 'B', first: 'B', moves: [[-1, -1], [0, 1], [1, -1]] },
-  { name: 'Giraffe', color: '', first: 'B', moves: [[-1, -2], [-1, 2], [1, 0]] },
-  { name: 'Kirin', color: '', first: 'R', moves: [[-2, -1], [-2, 1], [2, 0]] },
-  { name: 'Phoenix', color: '', first: 'B', moves: [[-1, -1], [-1, 1], [0, -2], [0, 2]] },
-  { name: 'Turtle', color: '', first: 'R', moves: [[0, -2], [0, 2], [1, -1], [1, 1]] },
-  { name: 'Fox', color: 'R', first: 'R', moves: [[-1, 1], [0, 1], [1, 1]] },
-  { name: 'Panda', color: 'R', first: 'R', moves: [[-1, 0], [-1, 1], [1, -1]] },
-  { name: 'Sea Snake', color: 'R', first: 'B', moves: [[-1, 0], [0, 2], [1, -1]] },
-  { name: 'Mouse', color: 'R', first: 'B', moves: [[-1, 0], [0, 1], [1, -1]] },
-  { name: 'Tanuki', color: 'R', first: 'B', moves: [[-1, 0], [-1, 2], [1, -1]] },
-  { name: 'Sable', color: 'R', first: 'B', moves: [[-1, 1], [0, -2], [1, -1]] },
-  { name: 'Dog', color: 'B', first: 'B', moves: [[-1, -1], [0, -1], [1, -1]] },
-  { name: 'Bear', color: 'B', first: 'B', moves: [[-1, -1], [-1, 0], [1, 1]] },
-  { name: 'Viper', color: 'B', first: 'R', moves: [[-1, 0], [0, -2], [1, 1]] },
-  { name: 'Rat', color: 'B', first: 'R', moves: [[-1, 0], [0, -1], [1, 1]] },
-  { name: 'Iguana', color: 'B', first: 'R', moves: [[-1, -2], [-1, 0], [1, 1]] },
-  { name: 'Otter', color: 'B', first: 'R', moves: [[-1, -1], [0, 2], [1, 1]] },
-];
-
 export const encodeOnitamaMove = (move: OnitamaMove) => {
   if(move.type === 'pass') {
     return `pass ${move.cardIdx}`;
@@ -87,13 +52,42 @@ export const decodeOnitamaMove = (encodedMove: string): OnitamaMove => {
   };
 };
 
-const cloneCards = (cards: OnitamaCards): OnitamaCards => ({
-  r: [...cards.r],
-  b: [...cards.b],
-  n: cards.n,
-});
-
 export class OnitamaState extends GameState {
+  static _DECK: OnitamaCard[] = [
+    { name: 'Dragon', color: '', first: 'R', moves: [[-1, -2], [-1, 2], [1, -1], [1, 1]] },
+    { name: 'Elephant', color: '', first: 'R', moves: [[-1, -1], [-1, 1], [0, -1], [0, 1]] },
+    { name: 'Boar', color: '', first: 'R', moves: [[-1, 0], [0, -1], [0, 1]] },
+    { name: 'Mantis', color: '', first: 'R', moves: [[-1, -1], [-1, 1], [1, 0]] },
+    { name: 'Tiger', color: '', first: 'B', moves: [[-2, 0], [1, 0]] },
+    { name: 'Monkey', color: '', first: 'B', moves: [[-1, -1], [-1, 1], [1, -1], [1, 1]] },
+    { name: 'Crab', color: '', first: 'B', moves: [[-1, 0], [0, -2], [0, 2]] },
+    { name: 'Crane', color: '', first: 'B', moves: [[-1, 0], [1, -1], [1, 1]] },
+    { name: 'Rabbit', color: 'R', first: 'B', moves: [[-1, 1], [0, 2], [1, -1]] },
+    { name: 'Rooster', color: 'R', first: 'R', moves: [[-1, 1], [0, -1], [0, 1], [1, -1]] },
+    { name: 'Ox', color: 'R', first: 'B', moves: [[-1, 0], [0, 1], [1, 0]] },
+    { name: 'Cobra', color: 'R', first: 'R', moves: [[-1, 1], [0, -1], [1, 1]] },
+    { name: 'Frog', color: 'B', first: 'R', moves: [[-1, -1], [0, -2], [1, 1]] },
+    { name: 'Goose', color: 'B', first: 'B', moves: [[-1, -1], [0, -1], [0, 1], [1, 1]] },
+    { name: 'Horse', color: 'B', first: 'R', moves: [[-1, 0], [0, -1], [1, 0]] },
+    { name: 'Eel', color: 'B', first: 'B', moves: [[-1, -1], [0, 1], [1, -1]] },
+    { name: 'Giraffe', color: '', first: 'B', moves: [[-1, -2], [-1, 2], [1, 0]] },
+    { name: 'Kirin', color: '', first: 'R', moves: [[-2, -1], [-2, 1], [2, 0]] },
+    { name: 'Phoenix', color: '', first: 'B', moves: [[-1, -1], [-1, 1], [0, -2], [0, 2]] },
+    { name: 'Turtle', color: '', first: 'R', moves: [[0, -2], [0, 2], [1, -1], [1, 1]] },
+    { name: 'Fox', color: 'R', first: 'R', moves: [[-1, 1], [0, 1], [1, 1]] },
+    { name: 'Panda', color: 'R', first: 'R', moves: [[-1, 0], [-1, 1], [1, -1]] },
+    { name: 'Sea Snake', color: 'R', first: 'B', moves: [[-1, 0], [0, 2], [1, -1]] },
+    { name: 'Mouse', color: 'R', first: 'B', moves: [[-1, 0], [0, 1], [1, -1]] },
+    { name: 'Tanuki', color: 'R', first: 'B', moves: [[-1, 0], [-1, 2], [1, -1]] },
+    { name: 'Sable', color: 'R', first: 'B', moves: [[-1, 1], [0, -2], [1, -1]] },
+    { name: 'Dog', color: 'B', first: 'B', moves: [[-1, -1], [0, -1], [1, -1]] },
+    { name: 'Bear', color: 'B', first: 'B', moves: [[-1, -1], [-1, 0], [1, 1]] },
+    { name: 'Viper', color: 'B', first: 'R', moves: [[-1, 0], [0, -2], [1, 1]] },
+    { name: 'Rat', color: 'B', first: 'R', moves: [[-1, 0], [0, -1], [1, 1]] },
+    { name: 'Iguana', color: 'B', first: 'R', moves: [[-1, -2], [-1, 0], [1, 1]] },
+    { name: 'Otter', color: 'B', first: 'R', moves: [[-1, -1], [0, 2], [1, 1]] },
+  ];
+
   board: (string | null)[];
   team: boolean;
   cards: OnitamaCards;
@@ -106,9 +100,9 @@ export class OnitamaState extends GameState {
     nmoves = 0,
   ) {
     super();
-    this.board = board.length ? [...board] : OnitamaState.initializeBoard();
-    this.cards = cards ? cloneCards(cards) : OnitamaState.initializeCards('all');
-    this.team = team !== null ? team : ONITAMA_DECK[this.cards.n].first === 'R';
+    this.board = board.length ? board : OnitamaState.initializeBoard();
+    this.cards = cards || OnitamaState.initializeCards('all');
+    this.team = team !== null ? team : OnitamaState._DECK[this.cards.n].first === 'R';
     this.nmoves = nmoves;
   }
 
@@ -135,7 +129,7 @@ export class OnitamaState extends GameState {
     const row = Math.floor(srcIdx / 5);
     const col = srcIdx % 5;
 
-    for(const [moveRow, moveCol] of ONITAMA_DECK[cardIdx].moves) {
+    for(const [moveRow, moveCol] of OnitamaState._DECK[cardIdx].moves) {
       const nextRow = this.team ? row + moveRow : row - moveRow;
       const nextCol = this.team ? col + moveCol : col - moveCol;
       if(nextRow < 0 || nextRow >= 5 || nextCol < 0 || nextCol >= 5) {
@@ -153,54 +147,75 @@ export class OnitamaState extends GameState {
   }
 
   getLegalActions(): OnitamaMove[] {
-    const actions: OnitamaMove[] = [];
+    return this.getLegalMoves().map(decodeOnitamaMove);
+  }
 
-    for(const cardIdx of this.getCurrentTeamCards()) {
+  getLegalMoves() {
+    const moves: string[] = [];
+    const playerCards = this.team ? this.cards.r : this.cards.b;
+    const team = this.getCurrentTeam();
+
+    for(const cardIdx of playerCards) {
+      const cardMoves = OnitamaState._DECK[cardIdx].moves;
       for(let srcIdx = 0; srcIdx < 25; srcIdx++) {
-        for(const dstIdx of this.getDestinations(cardIdx, srcIdx)) {
-          actions.push({
-            type: 'play',
-            cardIdx,
-            srcIdx,
-            dstIdx,
-          });
+        const piece = this.board[srcIdx];
+        if(piece && piece.toUpperCase() === team) {
+          const row = Math.floor(srcIdx / 5);
+          const col = srcIdx % 5;
+          for(const [moveRow, moveCol] of cardMoves) {
+            const nextRow = this.team ? row + moveRow : row - moveRow;
+            const nextCol = this.team ? col + moveCol : col - moveCol;
+            if(nextRow >= 0 && nextRow < 5 && nextCol >= 0 && nextCol < 5) {
+              const dstIdx = nextRow * 5 + nextCol;
+              const dstPiece = this.board[dstIdx];
+              if(!dstPiece || dstPiece.toUpperCase() !== team) {
+                moves.push(`${cardIdx},${srcIdx},${dstIdx}`);
+              }
+            }
+          }
         }
       }
     }
 
-    if(actions.length > 0) {
-      return actions;
+    if(moves.length === 0) {
+      for(const cardIdx of playerCards) {
+        moves.push(`pass ${cardIdx}`);
+      }
     }
 
-    return this.getCurrentTeamCards().map((cardIdx) => ({
-      type: 'pass',
-      cardIdx,
-    }));
-  }
-
-  getLegalMoves(): string[] {
-    return this.getLegalActions().map(encodeOnitamaMove);
+    return moves;
   }
 
   makeTypedMove(move: OnitamaMove): OnitamaState {
-    const teamKey = this.team ? 'r' : 'b';
-    const newCards = cloneCards(this.cards);
-    newCards.n = move.cardIdx;
-    const playedCardIndex = newCards[teamKey].indexOf(move.cardIdx);
-    newCards[teamKey][playedCardIndex] = this.cards.n;
-
-    if(move.type === 'pass') {
-      return new OnitamaState(this.board, !this.team, newCards, this.nmoves + 1);
-    }
-
-    const newBoard = [...this.board];
-    newBoard[move.dstIdx] = newBoard[move.srcIdx];
-    newBoard[move.srcIdx] = null;
-    return new OnitamaState(newBoard, !this.team, newCards, this.nmoves + 1);
+    return this.makeMove(encodeOnitamaMove(move));
   }
 
   makeMove(move: string): OnitamaState {
-    return this.makeTypedMove(decodeOnitamaMove(move));
+    const teamKey = this.team ? 'r' : 'b';
+    if(move.startsWith('pass ')) {
+      const cardIdx = parseInt(move.split(' ')[1], 10);
+      const newCards = {
+        r: [...this.cards.r],
+        b: [...this.cards.b],
+        n: cardIdx,
+      };
+      const playedIdx = this.cards[teamKey].indexOf(cardIdx);
+      newCards[teamKey][playedIdx] = this.cards.n;
+      return new OnitamaState(this.board, !this.team, newCards, this.nmoves + 1);
+    }
+
+    const [cardIdx, srcIdx, dstIdx] = move.split(',').map((value) => parseInt(value, 10));
+    const newBoard = [...this.board];
+    newBoard[dstIdx] = newBoard[srcIdx];
+    newBoard[srcIdx] = null;
+    const newCards = {
+      r: [...this.cards.r],
+      b: [...this.cards.b],
+      n: cardIdx,
+    };
+    const playedIdx = this.cards[teamKey].indexOf(cardIdx);
+    newCards[teamKey][playedIdx] = this.cards.n;
+    return new OnitamaState(newBoard, !this.team, newCards, this.nmoves + 1);
   }
 
   isTerminal() {
@@ -218,12 +233,10 @@ export class OnitamaState extends GameState {
         const index = row * 5 + col;
         str += this.board[index] || '_';
       }
-
       if(row < 4) {
         str += '/';
       }
     }
-
     return str;
   }
 
@@ -237,13 +250,12 @@ export class OnitamaState extends GameState {
   }
 
   static initializeCards(which: 'all' | 'base' | 'sensei' = 'base') {
-    let idxs = Array.from(Array(ONITAMA_DECK.length).keys());
+    let idxs = Array.from(Array(OnitamaState._DECK.length).keys());
     if(which === 'base') {
       idxs = idxs.slice(0, 16);
     } else if(which === 'sensei') {
       idxs = idxs.slice(16);
     }
-
     idxs.sort(() => Math.random() - 0.5);
     return {
       r: idxs.slice(0, 2),
@@ -263,3 +275,5 @@ export class OnitamaState extends GameState {
     return this.nmoves >= 1000;
   }
 }
+
+export const ONITAMA_DECK = OnitamaState._DECK;

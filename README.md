@@ -3,6 +3,7 @@
 `mcts-web` is a React playground for experimenting with Monte Carlo Tree Search across several turn-based board games. It lets you play moves manually, hand control to the AI, autoplay full games, inspect move history, and view the current search tree while tuning MCTS settings.
 
 Current games:
+- Connect Four
 - Tic-Tac-Toe
 - Ultimate Tic-Tac-Toe
 - Filler

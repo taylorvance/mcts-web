@@ -1,5 +1,6 @@
 import React from 'react';
 import { GameState } from 'multimcts';
+import ConnectFour from './ConnectFour';
 import Filler from './Filler';
 import Onitama from './Onitama';
 import TicTacToe from './TicTacToe';
@@ -42,6 +43,7 @@ const createTypedGameEntry = <TState extends GameState, TMove>(
 });
 
 export const gameEntries: GameRegistryEntry[] = [
+  createTypedGameEntry(ConnectFour),
   createTypedGameEntry(Filler),
   createTypedGameEntry(Onitama),
   createTypedGameEntry(TicTacToe),

@@ -1,11 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { ConnectFourState } from './ConnectFour/state';
 import { FillerState } from './Filler/state';
 import { OnitamaState } from './Onitama/state';
 import { games } from './gameRegistry';
 
 describe('gameRegistry', () => {
   it.each([
+    ['ConnectFour', games.ConnectFour],
     ['TicTacToe', games.TicTacToe],
     ['UltimateTicTacToe', games.UltimateTicTacToe],
   ])('adapts typed board moves for %s', (_gameName, game) => {
@@ -18,6 +20,24 @@ describe('gameRegistry', () => {
     fireEvent.click(firstClickableElement!);
 
     expect(onMove).toHaveBeenCalledWith('0');
+  });
+
+  it('adapts typed board moves for Connect Four after some columns are filled', () => {
+    const onMove = vi.fn();
+    const state = new ConnectFourState([
+      null, null, null, null, null, null, null,
+      null, null, null, null, null, null, null,
+      null, null, null, null, null, null, null,
+      null, null, null, null, null, null, null,
+      null, null, null, true, null, null, null,
+      null, null, null, false, null, null, null,
+    ], true, 38);
+
+    render(<games.ConnectFour.Board state={state} onMove={onMove} />);
+
+    fireEvent.click(screen.getByTestId('connect-four-cell-3'));
+
+    expect(onMove).toHaveBeenCalledWith('3');
   });
 
   it('adapts typed board moves for Filler', () => {

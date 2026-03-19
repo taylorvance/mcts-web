@@ -180,6 +180,8 @@ const withSeededRandom = <T>(seed: number, factory: () => T) => {
 };
 
 const gameModuleLoaders = import.meta.glob([
+	'../src/games/ConnectFour/index.ts',
+	'../src/games/ConnectFour.tsx',
 	'../src/games/Filler/index.ts',
 	'../src/games/Filler.tsx',
 	'../src/games/Onitama/index.ts',
@@ -217,7 +219,7 @@ const extractGame = (module: unknown, label: string): BenchmarkGame => {
 	return module.default as BenchmarkGame;
 };
 
-const loadGame = async (name: 'Filler' | 'Onitama' | 'UltimateTicTacToe') => {
+const loadGame = async (name: 'ConnectFour' | 'Filler' | 'Onitama' | 'UltimateTicTacToe') => {
 	const module = await loadFirstAvailableModule([
 		`../src/games/${name}/index.ts`,
 		`../src/games/${name}.tsx`,
@@ -283,13 +285,27 @@ const runSearch = (
 };
 
 const loadScenarios = async (): Promise<BenchmarkScenario[]> => {
-	const [filler, onitama, ultimateTicTacToe] = await Promise.all([
+	const [connectFour, filler, onitama, ultimateTicTacToe] = await Promise.all([
+		loadGame('ConnectFour'),
 		loadGame('Filler'),
 		loadGame('Onitama'),
 		loadGame('UltimateTicTacToe'),
 	]);
 
 	return [
+		{
+			id: 'connect-four-midgame',
+			game: 'ConnectFour',
+			description: 'Open midgame after nine legal drops',
+			createState: () => playMoves(
+				connectFour.createInitialState(),
+				[3, 2, 3, 2, 4, 1, 4, 1, 5],
+			),
+			startingTeam: getCurrentTeam(playMoves(
+				connectFour.createInitialState(),
+				[3, 2, 3, 2, 4, 1, 4, 1, 5],
+			)),
+		},
 		{
 			id: 'filler-opening',
 			game: 'Filler',

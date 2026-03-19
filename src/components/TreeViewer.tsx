@@ -1,5 +1,5 @@
 // src/components/TreeViewer.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MCTS, Node } from 'multimcts';
 import { formatGameStateDebugLabel } from '../utils/gameStateDebug';
 
@@ -8,8 +8,7 @@ interface TreeViewerProps {
 }
 
 const TreeViewer: React.FC<TreeViewerProps> = ({ mcts }) => {
-  const [rootNode, setRootNode] = useState(mcts?.rootNode);
-  useEffect(() => { setRootNode(mcts?.rootNode); }, [mcts]);
+  const rootNode = mcts?.rootNode ?? null;
 
   return (
     <div className="bg-gray-100 p-2 rounded-lg overflow-auto text-sm font-mono">

@@ -91,7 +91,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     game,
     (currentGame) => createSessionState(currentGame.createInitialState()),
   );
-  const { mcts, runSearch, advanceSearchTree, resetMCTS } = useMCTS(settings);
+  const { mcts, searchStats, runSearch, advanceSearchTree, resetMCTS } = useMCTS(settings);
   const previousGameRef = useRef(game);
 
   useEffect(() => {
@@ -207,6 +207,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     isAutoplaying: state.isAutoplaying,
     doAIMoveAfterPlayer: state.doAIMoveAfterPlayer,
     mcts,
+    searchStats,
     isTerminal,
     canPlay,
     canUndo,

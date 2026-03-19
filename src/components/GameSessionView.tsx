@@ -40,6 +40,7 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
     isAutoplaying,
     doAIMoveAfterPlayer,
     mcts,
+    searchStats,
     isTerminal,
     canPlay,
     canUndo,
@@ -70,6 +71,9 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
   useAppHotkeys(hotkeys);
 
   const hotkeyHint = (keys:string) => <span className="text-xs">({keys})</span>;
+  const formatNumber = (value: number) => value.toLocaleString('en-US', {
+    maximumFractionDigits: 0,
+  });
 
   return (
     <>
@@ -136,6 +140,11 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
         </div>
 
         <h2 className="text-xl font-bold flex-none">Search Tree</h2>
+        {searchStats && (
+          <div className="flex-none text-sm text-gray-700">
+            Last search: {formatNumber(searchStats.iterations)} rounds &bull; {searchStats.elapsedMs.toFixed(1)} ms &bull; {formatNumber(searchStats.roundsPerSecond)} rounds/s
+          </div>
+        )}
         <div className="flex-shrink-0 overflow-x-auto whitespace-nowrap">
           <TreeViewer mcts={mcts} />
         </div>

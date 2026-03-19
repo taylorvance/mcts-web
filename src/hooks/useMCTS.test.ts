@@ -25,6 +25,8 @@ describe('useMCTS', () => {
       result.current.runSearch(state);
     });
 
+    expect(result.current.searchStats?.iterations).toBe(1);
+    expect(result.current.searchStats?.elapsedMs).toBeGreaterThanOrEqual(0);
     expect(result.current.mcts?.rootNode).toBe(initialRoot);
     expect(result.current.mcts?.rootNode?.visits).toBeGreaterThan(initialVisits);
   });

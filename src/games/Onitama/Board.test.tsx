@@ -1,0 +1,54 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { games } from '../gameRegistry';
+import { OnitamaCards, OnitamaState } from './state';
+
+const renderBoard = (cards: OnitamaCards, board = OnitamaState.initializeBoard()) => {
+  const onMove = vi.fn();
+  const state = new OnitamaState(board, true, cards, 0);
+
+  render(<games.Onitama.Board state={state} onMove={onMove} />);
+
+  return { onMove };
+};
+
+describe('OnitamaBoard', () => {
+  it('plays the only matching card implicitly after selecting a piece', () => {
+    const { onMove } = renderBoard({ r: [2, 4], b: [1, 3], n: 0 });
+
+    fireEvent.click(screen.getByTestId('onitama-cell-22'));
+    fireEvent.click(screen.getByTestId('onitama-cell-17'));
+
+    expect(onMove).toHaveBeenCalledWith('2,22,17');
+  });
+
+  it('prompts for a card when multiple cards allow the same destination', () => {
+    const { onMove } = renderBoard({ r: [2, 6], b: [1, 3], n: 0 });
+
+    fireEvent.click(screen.getByTestId('onitama-cell-22'));
+    fireEvent.click(screen.getByTestId('onitama-cell-17'));
+
+    expect(onMove).not.toHaveBeenCalled();
+    expect(screen.getByText('Multiple cards can make that move. Choose a card.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('onitama-card-6'));
+
+    expect(onMove).toHaveBeenCalledWith('6,22,17');
+  });
+
+  it('renders the pass hint below the board', () => {
+    const blockedBoard = [
+      'R', 'r', 'r', 'r', 'r',
+      null, null, null, null, null,
+      null, null, null, null, null,
+      null, null, null, null, null,
+      null, null, null, null, 'B',
+    ];
+    renderBoard({ r: [2, 1], b: [3, 4], n: 0 }, blockedBoard);
+
+    const board = screen.getByTestId('onitama-board');
+    const hint = screen.getByText('No legal moves. Click a card to pass.');
+
+    expect(board.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});

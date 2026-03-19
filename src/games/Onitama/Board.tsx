@@ -1,26 +1,62 @@
 import { useEffect, useState } from 'react';
 import { FaChessKing, FaChessPawn } from 'react-icons/fa6';
 import { TypedGameBoardProps } from '../../types/Game';
-import { OnitamaMove, OnitamaState, ONITAMA_DECK } from './state';
+import { OnitamaMove, OnitamaPlayMove, OnitamaState, ONITAMA_DECK } from './state';
+
+interface PendingMoveSelection {
+  srcIdx: number;
+  dstIdx: number;
+  cardIndexes: number[];
+}
+
+const uniqueIndexes = (indexes: number[]) => [...new Set(indexes)];
 
 const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, OnitamaMove>) => {
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
-  const [validMoves, setValidMoves] = useState<number[]>([]);
+  const [pendingMove, setPendingMove] = useState<PendingMoveSelection | null>(null);
+  const legalActions = state.getLegalActions();
+  const playMoves = legalActions.filter((move): move is OnitamaPlayMove => move.type === 'play');
   const passCardIndexes = new Set(
-    state.getLegalActions()
+    legalActions
       .flatMap((move) => (move.type === 'pass' ? [move.cardIdx] : [])),
   );
+  const pendingCardIndexes = new Set(pendingMove?.cardIndexes ?? []);
 
   const resetSelection = () => {
     setSelectedCard(null);
     setSelectedPiece(null);
-    setValidMoves([]);
+    setPendingMove(null);
   };
 
   useEffect(() => {
     resetSelection();
   }, [state]);
+
+  const filteredPlayMoves = playMoves.filter((move) => {
+    if(selectedPiece !== null && move.srcIdx !== selectedPiece) {
+      return false;
+    }
+
+    if(selectedCard !== null && move.cardIdx !== selectedCard) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const highlightedSourceIndexes = pendingMove
+    ? [pendingMove.srcIdx]
+    : selectedPiece !== null
+      ? [selectedPiece]
+      : selectedCard !== null
+        ? uniqueIndexes(playMoves
+          .filter((move) => move.cardIdx === selectedCard)
+          .map((move) => move.srcIdx))
+        : [];
+  const highlightedDestinationIndexes = pendingMove
+    ? [pendingMove.dstIdx]
+    : uniqueIndexes(filteredPlayMoves.map((move) => move.dstIdx));
 
   const handleCardClick = (cardIdx: number) => {
     if(passCardIndexes.has(cardIdx)) {
@@ -28,34 +64,57 @@ const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, Onita
       return;
     }
 
-    setSelectedCard(cardIdx);
-    setSelectedPiece(null);
-    setValidMoves([]);
+    if(pendingMove && pendingCardIndexes.has(cardIdx)) {
+      onMove({
+        type: 'play',
+        cardIdx,
+        srcIdx: pendingMove.srcIdx,
+        dstIdx: pendingMove.dstIdx,
+      });
+      return;
+    }
+
+    setPendingMove(null);
+    setSelectedCard((currentCard) => (currentCard === cardIdx ? null : cardIdx));
   };
 
   const handlePieceClick = (index: number) => {
-    if(selectedCard === null || !state.isCurrentTeamPiece(index)) {
+    if(!state.isCurrentTeamPiece(index)) {
       return;
     }
 
-    setSelectedPiece(index);
-    setValidMoves(state.getDestinations(selectedCard, index));
+    setPendingMove(null);
+    setSelectedPiece((currentPiece) => (currentPiece === index ? null : index));
   };
 
   const handleMoveClick = (index: number) => {
-    if(selectedCard === null || selectedPiece === null || !validMoves.includes(index)) {
+    if(selectedPiece === null) {
       return;
     }
 
-    onMove({
-      type: 'play',
-      cardIdx: selectedCard,
-      srcIdx: selectedPiece,
-      dstIdx: index,
+    const matchingMoves = playMoves.filter((move) => {
+      if(move.srcIdx !== selectedPiece || move.dstIdx !== index) {
+        return false;
+      }
+
+      return selectedCard === null || move.cardIdx === selectedCard;
     });
+
+    if(matchingMoves.length === 1) {
+      onMove(matchingMoves[0]);
+      return;
+    }
+
+    if(matchingMoves.length > 1) {
+      setPendingMove({
+        srcIdx: selectedPiece,
+        dstIdx: index,
+        cardIndexes: matchingMoves.map((move) => move.cardIdx),
+      });
+    }
   };
 
-  const renderCard = (cardIdx: number | null, isSelected = false) => {
+  const renderCard = (cardIdx: number | null, isSelected = false, isPendingChoice = false) => {
     if(cardIdx === null) {
       return (
         <div className="text-center text-xl p-1 bg-white rounded border border-white">
@@ -71,7 +130,9 @@ const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, Onita
 
     const card = ONITAMA_DECK[cardIdx];
     const cardColor = { R: 'bg-red-400', B: 'bg-blue-400', '': 'bg-yellow-400' }[card.color];
-    const highlight = isSelected ? 'ring-2 ring-gray-800' : '';
+    const highlight = isPendingChoice
+      ? 'ring-2 ring-yellow-500'
+      : (isSelected ? 'ring-2 ring-gray-800' : '');
 
     return (
       <div
@@ -98,6 +159,10 @@ const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, Onita
   const cellClass = (index: number) => {
     const cell = state.board[index];
     const size = 'RB'.includes(cell || '') ? 'text-4xl' : 'text-3xl';
+    const isCurrentTeamPiece = state.isCurrentTeamPiece(index);
+    const isHighlightedSource = highlightedSourceIndexes.includes(index);
+    const isHighlightedDestination = highlightedDestinationIndexes.includes(index);
+    const isClickableDestination = selectedPiece !== null && isHighlightedDestination;
 
     let bg = 'bg-gray-200';
     if(index % 5 === 2) {
@@ -109,10 +174,10 @@ const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, Onita
     }
 
     const fg = !cell ? '' : (cell.toUpperCase() === 'R' ? 'text-red-600' : 'text-blue-700');
-    const highlight = validMoves.includes(index)
-      ? 'bg-yellow-200'
-      : (selectedPiece === index ? 'bg-yellow-100' : '');
-    const cursor = validMoves.includes(index) || state.isCurrentTeamPiece(index)
+    const highlight = isHighlightedDestination
+      ? 'bg-yellow-200 ring-2 ring-inset ring-yellow-500'
+      : (isHighlightedSource ? 'bg-yellow-100 ring-2 ring-inset ring-amber-300' : '');
+    const cursor = isClickableDestination || isCurrentTeamPiece
       ? 'cursor-pointer'
       : 'cursor-default';
 
@@ -132,7 +197,11 @@ const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, Onita
             data-testid={`onitama-card-${cardIdx}`}
             onClick={() => isCurrentTeam && handleCardClick(cardIdx)}
           >
-            {renderCard(cardIdx, isCurrentTeam && selectedCard === cardIdx)}
+            {renderCard(
+              cardIdx,
+              isCurrentTeam && selectedCard === cardIdx,
+              isCurrentTeam && pendingCardIndexes.has(cardIdx),
+            )}
           </div>
         ))}
         <div className="scale-90 ml-6 opacity-70 cursor-default">
@@ -142,13 +211,13 @@ const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, Onita
     );
   };
 
+  const footerMessage = pendingMove
+    ? 'Multiple cards can make that move. Choose a card.'
+    : (passCardIndexes.size > 0 ? 'No legal moves. Click a card to pass.' : null);
+
   return (
     <div className="flex flex-col items-center gap-4" style={{ fontFamily: 'Papyrus,Trattatello,Luminari,cursive' }}>
       {renderPlayerCards('B')}
-
-      {passCardIndexes.size > 0 && (
-        <div className="text-sm text-gray-700">No legal moves. Click a card to pass.</div>
-      )}
 
       <div className="grid grid-cols-5 border-gray-500 border-t-2 border-l-2" data-testid="onitama-board">
         {state.board.map((cell, index) => (
@@ -156,7 +225,7 @@ const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, Onita
             key={index}
             className={cellClass(index)}
             data-testid={`onitama-cell-${index}`}
-            onClick={() => (validMoves.includes(index) ? handleMoveClick(index) : handlePieceClick(index))}
+            onClick={() => (state.isCurrentTeamPiece(index) ? handlePieceClick(index) : handleMoveClick(index))}
           >
             {cell ? ('RB'.includes(cell) ? <FaChessKing /> : <FaChessPawn />) : ''}
           </div>
@@ -164,6 +233,10 @@ const OnitamaBoard = ({ state, onMove }: TypedGameBoardProps<OnitamaState, Onita
       </div>
 
       {renderPlayerCards('R')}
+
+      <div className="min-h-5 text-sm text-gray-700" aria-live="polite">
+        {footerMessage}
+      </div>
     </div>
   );
 };

@@ -8,6 +8,7 @@ Current games:
 - Ultimate Tic-Tac-Toe
 - Filler
 - Onitama
+- Othello
 
 ## Stack
 

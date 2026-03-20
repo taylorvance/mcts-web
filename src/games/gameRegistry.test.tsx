@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ConnectFourState } from './ConnectFour/state';
 import { FillerState } from './Filler/state';
 import { OnitamaState } from './Onitama/state';
+import { OthelloState } from './Othello/state';
 import { games } from './gameRegistry';
 
 describe('gameRegistry', () => {
@@ -76,5 +77,15 @@ describe('gameRegistry', () => {
     fireEvent.click(screen.getByTestId('onitama-cell-17'));
 
     expect(onMove).toHaveBeenCalledWith('2,22,17');
+  });
+
+  it('adapts typed board moves for Othello', () => {
+    const onMove = vi.fn();
+
+    render(<games.Othello.Board state={new OthelloState()} onMove={onMove} />);
+
+    fireEvent.click(screen.getByTestId('othello-cell-19'));
+
+    expect(onMove).toHaveBeenCalledWith('19');
   });
 });

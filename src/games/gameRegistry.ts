@@ -3,6 +3,7 @@ import { GameState } from 'multimcts';
 import ConnectFour from './ConnectFour';
 import Filler from './Filler';
 import Onitama from './Onitama';
+import Othello from './Othello';
 import TicTacToe from './TicTacToe';
 import UltimateTicTacToe from './UltimateTicTacToe';
 import {
@@ -46,6 +47,7 @@ export const gameEntries: GameRegistryEntry[] = [
   createTypedGameEntry(ConnectFour),
   createTypedGameEntry(Filler),
   createTypedGameEntry(Onitama),
+  createTypedGameEntry(Othello),
   createTypedGameEntry(TicTacToe),
   createTypedGameEntry(UltimateTicTacToe),
 ];

@@ -9,6 +9,12 @@ interface SerializedUltimateTicTacToeState {
   boardStates: BoardState[];
 }
 
+const isValidCellState = (value: unknown): value is CellState =>
+  value === undefined || typeof value === 'boolean';
+
+const isValidBoardState = (value: unknown): value is BoardState =>
+  value === undefined || value === null || typeof value === 'boolean';
+
 const UltimateTicTacToe: TypedGameDefinition<UltimateTicTacToeState, number> = {
   id: 'UltimateTicTacToe',
   name: 'UltimateTicTacToe',
@@ -22,7 +28,16 @@ const UltimateTicTacToe: TypedGameDefinition<UltimateTicTacToeState, number> = {
   }),
   deserializeState: (serializedState) => {
     const { board, team, prevMove, boardStates } = serializedState as SerializedUltimateTicTacToeState;
-    if(!Array.isArray(board) || typeof team !== 'boolean' || !Array.isArray(boardStates)) {
+    if(
+      !Array.isArray(board)
+      || board.length !== 81
+      || board.some((cell) => !isValidCellState(cell))
+      || typeof team !== 'boolean'
+      || (prevMove !== undefined && (!Number.isInteger(prevMove) || prevMove < 0 || prevMove >= 81))
+      || !Array.isArray(boardStates)
+      || boardStates.length !== 9
+      || boardStates.some((boardState) => !isValidBoardState(boardState))
+    ) {
       throw new Error('Invalid Ultimate Tic-Tac-Toe state');
     }
 

@@ -55,6 +55,44 @@ describe('useGameSession', () => {
     expect(result.current.history).toHaveLength(1);
   });
 
+  it('clears persisted history on the second reset tap', async () => {
+    const { result } = renderHook(() => useGameSession(games.TicTacToe, TEST_SETTINGS));
+
+    act(() => {
+      result.current.toggleAIMoveAfterPlayer();
+      result.current.handlePlayerMove('0');
+    });
+
+    await waitFor(() => {
+      expect(readJsonStorage(getGameSessionStorageKey(games.TicTacToe.id))).toMatchObject({
+        history: ['__INITIAL_STATE__', '0'],
+        historyIdx: 1,
+      });
+    });
+
+    act(() => {
+      result.current.resetGame();
+    });
+
+    await waitFor(() => {
+      expect(readJsonStorage(getGameSessionStorageKey(games.TicTacToe.id))).toMatchObject({
+        history: ['__INITIAL_STATE__', '0'],
+        historyIdx: 0,
+      });
+    });
+
+    act(() => {
+      result.current.resetGame();
+    });
+
+    await waitFor(() => {
+      expect(readJsonStorage(getGameSessionStorageKey(games.TicTacToe.id))).toMatchObject({
+        history: ['__INITIAL_STATE__'],
+        historyIdx: 0,
+      });
+    });
+  });
+
   it('can autoplay forward from the current state', async () => {
     const { result } = renderHook(() => useGameSession(games.TicTacToe, TEST_SETTINGS));
 
@@ -115,5 +153,24 @@ describe('useGameSession', () => {
     expect(formatGameStateDebugLabel(result.current.gameState)).toBe(
       formatGameStateDebugLabel(restoredState),
     );
+  });
+
+  it('falls back to a clean Ultimate Tic-Tac-Toe state when persisted data is invalid', () => {
+    window.localStorage.setItem(getGameSessionStorageKey(games.UltimateTicTacToe.id), JSON.stringify({
+      version: 1,
+      initialState: {
+        board: Array(81).fill(0),
+        team: true,
+        boardStates: Array(9).fill(null),
+      },
+      history: ['__INITIAL_STATE__'],
+      historyIdx: 0,
+      doAIMoveAfterPlayer: true,
+    }));
+
+    const { result } = renderHook(() => useGameSession(games.UltimateTicTacToe, TEST_SETTINGS));
+    const state = result.current.gameState;
+
+    expect(formatGameStateDebugLabel(state)).toBe(formatGameStateDebugLabel(games.UltimateTicTacToe.createInitialState()));
   });
 });

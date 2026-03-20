@@ -5,6 +5,7 @@ import { useAppHotkeys } from '../hooks/useAppHotkeys';
 import Button from './Button';
 import ButtonGroup from './ButtonGroup';
 import GameBoard from './GameBoard';
+import GameComplexityPanel from './GameComplexityPanel';
 import MCTSSettings from './MCTSSettings';
 import TreeViewer from './TreeViewer';
 import { FaUndo, FaRedo } from "react-icons/fa";
@@ -155,6 +156,7 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
         <div className="flex-shrink-0 overflow-x-auto whitespace-nowrap">
           <TreeViewer mcts={mcts} />
         </div>
+        <GameComplexityPanel gameId={game.id} />
       </section>
     </>
   );

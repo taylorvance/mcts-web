@@ -1,7 +1,6 @@
 /// <reference types="vite/client" />
 
 import { argv } from 'node:process';
-import { GameState } from 'multimcts';
 import { games } from '../src/games/gameRegistry';
 
 interface Options {

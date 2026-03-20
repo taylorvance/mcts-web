@@ -184,15 +184,6 @@ const summarize = (values: number[]) => {
   };
 };
 
-const getRandomMove = (state: GameState) => {
-  const legalMoves = state.getLegalMoves();
-  if(legalMoves.length === 0) {
-    throw new Error('Encountered non-terminal state with no legal moves.');
-  }
-
-  return legalMoves[Math.floor(Math.random() * legalMoves.length)];
-};
-
 const bucketKey = (ply: number, bucketSize: number) => Math.floor(ply / bucketSize) * bucketSize;
 
 const nowMs = () => performance.now();
@@ -269,7 +260,6 @@ const profileGame = (
   }
 
   const gameLengthSummary = summarize(gameLengths);
-  const histogram = [...new Map<number, number>()];
   const histogramMap = new Map<number, number>();
   for(const length of gameLengths) {
     histogramMap.set(length, (histogramMap.get(length) ?? 0) + 1);

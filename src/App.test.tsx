@@ -13,6 +13,7 @@ describe('App', () => {
 
     expect(screen.getByText('MCTS Settings')).toBeInTheDocument();
     expect(screen.getByText('Search Tree')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'tvprograms.tech' })).toHaveAttribute('href', 'https://tvprograms.tech');
 
     const gameSelect = screen.getByRole('combobox');
     expect(gameSelect).toHaveValue('TicTacToe');

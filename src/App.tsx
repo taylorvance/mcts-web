@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Select from './components/Select';
+import BrandBadge from './components/BrandBadge';
 import GameSessionView from './components/GameSessionView';
 import { games, gameOptions } from './games/gameRegistry';
 import {
@@ -110,23 +111,29 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="container mx-auto flex flex-wrap gap-4 pt-4">
-      <GameSessionView
-        key={`${selectedGame}:${sessionResetVersion}`}
-        game={currentGame}
-        selector={(
-          <Select
-            value={selectedGame}
-            onChange={changeGame}
-            options={gameOptions}
-            className="text-xl px-4 py-2"
-            centerText={true}
-          />
-        )}
-        mctsSettings={mctsSettings}
-        setMctsSettings={setMctsSettings}
-        onResetSavedData={resetSavedData}
-      />
+    <div className="container mx-auto px-4 py-4">
+      <div className="flex flex-wrap gap-4">
+        <GameSessionView
+          key={`${selectedGame}:${sessionResetVersion}`}
+          game={currentGame}
+          selector={(
+            <Select
+              value={selectedGame}
+              onChange={changeGame}
+              options={gameOptions}
+              className="text-xl px-4 py-2"
+              centerText={true}
+            />
+          )}
+          mctsSettings={mctsSettings}
+          setMctsSettings={setMctsSettings}
+          onResetSavedData={resetSavedData}
+        />
+      </div>
+
+      <footer className="mt-8 flex justify-center border-t border-gray-200 pt-4 sm:justify-end">
+        <BrandBadge />
+      </footer>
     </div>
   );
 };

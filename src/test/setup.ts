@@ -29,4 +29,5 @@ Object.defineProperty(window, 'localStorage', {
 
 beforeEach(() => {
   window.localStorage.clear();
+  window.history.replaceState(null, '', '/mcts-web/');
 });

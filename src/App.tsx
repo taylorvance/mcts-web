@@ -14,6 +14,7 @@ import {
 
 const defaultGame = 'TicTacToe';
 const defaultMctsSettings = { explorationBias: 1.414, maxIterations: 1000, maxTime: 1 };
+const gameQueryParam = 'game';
 
 interface PersistedAppState {
   selectedGame: string;
@@ -39,13 +40,45 @@ const loadPersistedAppState = (): PersistedAppState | null => {
   return persistedState;
 };
 
+const readSelectedGameFromUrl = (): string | null => {
+  if(typeof window === 'undefined') {
+    return null;
+  }
+
+  const selectedGame = new URLSearchParams(window.location.search).get(gameQueryParam);
+  if(!selectedGame || !(selectedGame in games)) {
+    return null;
+  }
+
+  return selectedGame;
+};
+
+const writeSelectedGameToUrl = (selectedGame: string) => {
+  if(typeof window === 'undefined') {
+    return;
+  }
+
+  const nextUrl = new URL(window.location.href);
+  if(selectedGame === defaultGame) {
+    nextUrl.searchParams.delete(gameQueryParam);
+  } else {
+    nextUrl.searchParams.set(gameQueryParam, selectedGame);
+  }
+
+  const nextPath = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+  const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if(nextPath !== currentPath) {
+    window.history.replaceState(window.history.state, '', nextPath);
+  }
+};
+
 const App: React.FC = () => {
   const [persistedAppState] = useState(loadPersistedAppState);
   const [mctsSettings, setMctsSettings] = useState(
     () => persistedAppState?.mctsSettings ?? defaultMctsSettings,
   );
   const [selectedGame, setSelectedGame] = useState<string>(
-    () => persistedAppState?.selectedGame ?? defaultGame,
+    () => readSelectedGameFromUrl() ?? persistedAppState?.selectedGame ?? defaultGame,
   );
   const [sessionResetVersion, setSessionResetVersion] = useState(0);
   const currentGame = games[selectedGame] ?? games[defaultGame];
@@ -60,6 +93,10 @@ const App: React.FC = () => {
       mctsSettings,
     } satisfies PersistedAppState);
   }, [mctsSettings, selectedGame]);
+
+  useEffect(() => {
+    writeSelectedGameToUrl(selectedGame);
+  }, [selectedGame]);
 
   const resetSavedData = useCallback(() => {
     for(const game of Object.values(games)) {

@@ -2,32 +2,19 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run lint
-        run: npm run lint
-
-      - name: Run tests
-        run: npm run test -- --run
-
-      - name: Build the app
-        run: npm run build
+    uses: taylorvance/tv-shared/.github/workflows/verify.yml@main
+    with:
+      node-version: '20'
+      working-directory: .
+      install-command: npm ci
+      lint-command: npm run lint
+      test-command: npm run test
+      build-command: npm run build

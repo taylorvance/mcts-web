@@ -1,8 +1,8 @@
 // src/App.tsx
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { BrandBadge } from '@taylorvance/tv-shared-ui/BrandBadge';
 import Select from './components/Select';
-import BrandBadge from './components/BrandBadge';
 import GameSessionView from './components/GameSessionView';
 import { games, gameOptions } from './games/gameRegistry';
 import {
@@ -131,7 +131,7 @@ const App: React.FC = () => {
         />
       </div>
 
-      <footer className="mt-8 flex justify-center border-t border-gray-200 pt-4 sm:justify-end">
+      <footer className="mt-8 flex justify-center border-t border-gray-200 pt-4">
         <BrandBadge />
       </footer>
     </div>

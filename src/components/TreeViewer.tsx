@@ -1,5 +1,5 @@
 // src/components/TreeViewer.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { MCTS, Node } from 'multimcts';
 import { formatGameStateDebugLabel } from '../utils/gameStateDebug';
 
@@ -23,12 +23,10 @@ const TreeViewer: React.FC<TreeViewerProps> = ({ mcts }) => {
 
 const NodeViewer: React.FC<{ node:Node; expanded:boolean; }> = ({ node, expanded }) => {
   const [isExpanded, setIsExpanded] = useState(expanded);
-  const [children, setChildren] = useState<Node[]>([]);
-
-  useEffect(() => {
-    setChildren(Object.values(node.children).sort((a,b) => b.visits-a.visits));
-    setIsExpanded(expanded);
-  }, [expanded, node]);
+  const children = useMemo(
+    () => Object.values(node.children).sort((a,b) => b.visits-a.visits),
+    [node],
+  );
 
   const toggleExpand = () => { setIsExpanded(!isExpanded); };
   const stateDebug = formatGameStateDebugLabel(node.state);

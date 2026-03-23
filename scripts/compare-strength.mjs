@@ -149,11 +149,6 @@ const printDependencyWarning = (baselineRef, candidateRef) => {
 	}
 };
 
-const runBenchmarkCommand = (worktreeDir, args) => {
-	const viteNodePath = path.join(worktreeDir, 'node_modules', '.bin', 'vite-node');
-	return run(viteNodePath, ['scripts/benchmark.ts', ...args], { cwd: worktreeDir });
-};
-
 class BenchmarkWorker {
 	constructor(worktreeDir) {
 		this.nextId = 1;

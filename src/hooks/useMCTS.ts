@@ -1,9 +1,9 @@
 // src/hooks/useMCTS.ts
-import { useCallback, useReducer, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { GameState, MCTS } from 'multimcts';
 import { getStateKey, runSearchRounds, SearchMetrics } from '../utils/mctsSearch';
 
-interface SearchStats extends SearchMetrics {
+export interface SearchStats extends SearchMetrics {
 	roundsPerSecond: number;
 }
 
@@ -11,7 +11,8 @@ export const useMCTS = (settings: {explorationBias:number; maxIterations:number|
 	const { explorationBias, maxIterations, maxTime } = settings;
 	const mctsRef = useRef<MCTS | null>(null);
 	const searchStatsRef = useRef<SearchStats | null>(null);
-	const [, bumpVersion] = useReducer((version: number) => version + 1, 0);
+	const [mcts, setMcts] = useState<MCTS | null>(null);
+	const [searchStats, setSearchStats] = useState<SearchStats | null>(null);
 
 	const runSearch = useCallback((state: GameState) => {
 		const currentMCTS = mctsRef.current;
@@ -20,13 +21,15 @@ export const useMCTS = (settings: {explorationBias:number; maxIterations:number|
 			: new MCTS(explorationBias);
 		const { move, metrics } = runSearchRounds(nextMCTS, state, maxIterations, maxTime);
 		mctsRef.current = nextMCTS;
-		searchStatsRef.current = {
+		const nextSearchStats = {
 			...metrics,
 			roundsPerSecond: metrics.elapsedMs > 0
 				? (metrics.iterations / metrics.elapsedMs) * 1000
 				: 0,
 		};
-		bumpVersion();
+		searchStatsRef.current = nextSearchStats;
+		setMcts(nextMCTS);
+		setSearchStats(nextSearchStats);
 		return move;
 	}, [explorationBias, maxIterations, maxTime]);
 
@@ -41,23 +44,23 @@ export const useMCTS = (settings: {explorationBias:number; maxIterations:number|
 		) {
 			nextRootNode.parent = null;
 			currentMCTS.rootNode = nextRootNode;
-			bumpVersion();
+			setMcts(currentMCTS);
 			return;
 		}
 
 		mctsRef.current = null;
-		bumpVersion();
+		setMcts(null);
 	}, []);
 
 	const resetMCTS = useCallback(() => {
 		if(!mctsRef.current) return;
 		mctsRef.current = null;
-		bumpVersion();
+		setMcts(null);
 	}, []);
 
 	return {
-		mcts: mctsRef.current,
-		searchStats: searchStatsRef.current,
+		mcts,
+		searchStats,
 		runSearch,
 		advanceSearchTree,
 		resetMCTS,

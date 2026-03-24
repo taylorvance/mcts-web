@@ -5,8 +5,7 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
-		"dev:host": "vite --host 0.0.0.0",
+		"dev": "vite --host",
 		"benchmark": "vite-node scripts/benchmark.ts",
 		"benchmark:branching": "vite-node scripts/profile-branching.ts",
 		"benchmark:complexity": "vite-node scripts/profile-complexity.ts",

@@ -18,7 +18,7 @@ describe('useMCTS', () => {
       result.current.runSearch(state);
     });
 
-    const initialRoot = result.current.mcts?.rootNode;
+    const initialRoot = result.current.mcts?.root;
     const initialVisits = initialRoot?.visits ?? 0;
 
     act(() => {
@@ -27,8 +27,8 @@ describe('useMCTS', () => {
 
     expect(result.current.searchStats?.iterations).toBe(1);
     expect(result.current.searchStats?.elapsedMs).toBeGreaterThanOrEqual(0);
-    expect(result.current.mcts?.rootNode).toBe(initialRoot);
-    expect(result.current.mcts?.rootNode?.visits).toBeGreaterThan(initialVisits);
+    expect(result.current.mcts?.root).toBe(initialRoot);
+    expect(result.current.mcts?.root?.visits).toBeGreaterThan(initialVisits);
   });
 
   it('promotes an explored child node after applying its move', () => {
@@ -40,16 +40,16 @@ describe('useMCTS', () => {
       move = result.current.runSearch(state);
     });
 
-    const childNode = result.current.mcts?.rootNode?.children[move];
+    const childNode = result.current.mcts?.root?.children.get(move);
     const nextState = state.makeMove(move);
 
     act(() => {
       result.current.advanceSearchTree(move, nextState);
     });
 
-    expect(result.current.mcts?.rootNode).toBe(childNode);
-    expect(result.current.mcts?.rootNode?.parent).toBeNull();
-    expect(result.current.mcts?.rootNode?.state.toString()).toBe(nextState.toString());
+    expect(result.current.mcts?.root).toBe(childNode);
+    expect(result.current.mcts?.root?.parent).toBeNull();
+    expect(result.current.mcts?.root?.state.toString()).toBe(nextState.toString());
   });
 
   it('clears the tree when the applied move was not explored', () => {

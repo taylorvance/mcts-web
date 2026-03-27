@@ -1,6 +1,4 @@
-import { GameState, MCTS, Node } from 'multimcts';
-
-export const getStateKey = (state: GameState) => state.toString();
+import { GameState, MCTS } from 'multimcts';
 
 export interface SearchMetrics {
 	elapsedMs: number;
@@ -8,42 +6,29 @@ export interface SearchMetrics {
 }
 
 export const runSearchRounds = (
-	mcts: MCTS,
+	mcts: MCTS<GameState>,
 	state: GameState,
 	maxIterations: number | null,
 	maxTime: number | null,
 ) => {
-	if(
-		!mcts.rootNode
-		|| (mcts.rootNode.state !== state && getStateKey(mcts.rootNode.state) !== getStateKey(state))
-	) {
-		mcts.rootNode = new Node(state);
+	if(maxIterations === null && maxTime === null) {
+		throw new Error('At least one search limit is required.');
 	}
 
-	let iteration = 0;
-	const hasIterationLimit = maxIterations !== null;
-	const hasTimeLimit = maxTime !== null;
-	const endTime = hasTimeLimit ? Date.now() + (1000 * maxTime) : 0;
-	const startTime = performance.now();
+	const result = mcts.search(state, {
+		...(maxIterations !== null ? { maxIterations } : {}),
+		...(maxTime !== null ? { maxTimeMs: maxTime * 1000 } : {}),
+	});
 
-	do {
-		mcts.executeRound(mcts.rootNode);
-		iteration += 1;
-	} while(
-		(!hasIterationLimit || iteration < maxIterations)
-		&& (!hasTimeLimit || Date.now() < endTime)
-	);
-
-	const bestChild = mcts.rootNode.findBestChild(0);
-	if(!bestChild?.move) {
+	if(result.bestMove === null) {
 		throw new Error('MCTS search did not produce a legal move.');
 	}
 
 	return {
 		metrics: {
-			elapsedMs: performance.now() - startTime,
-			iterations: iteration,
+			elapsedMs: result.elapsedMs,
+			iterations: result.iterations,
 		},
-		move: bestChild.move,
+		move: result.bestMove,
 	};
 };

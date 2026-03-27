@@ -1,7 +1,7 @@
 // src/hooks/useMCTS.ts
 import { useCallback, useRef, useState } from 'react';
 import { GameState, MCTS } from 'multimcts';
-import { getStateKey, runSearchRounds, SearchMetrics } from '../utils/mctsSearch';
+import { runSearchRounds, SearchMetrics } from '../utils/mctsSearch';
 
 export interface SearchStats extends SearchMetrics {
 	roundsPerSecond: number;
@@ -9,16 +9,15 @@ export interface SearchStats extends SearchMetrics {
 
 export const useMCTS = (settings: {explorationBias:number; maxIterations:number|null; maxTime:number|null}) => {
 	const { explorationBias, maxIterations, maxTime } = settings;
-	const mctsRef = useRef<MCTS | null>(null);
-	const searchStatsRef = useRef<SearchStats | null>(null);
-	const [mcts, setMcts] = useState<MCTS | null>(null);
+	const mctsRef = useRef<MCTS<GameState> | null>(null);
+	const [mcts, setMcts] = useState<MCTS<GameState> | null>(null);
 	const [searchStats, setSearchStats] = useState<SearchStats | null>(null);
 
 	const runSearch = useCallback((state: GameState) => {
 		const currentMCTS = mctsRef.current;
 		const nextMCTS = currentMCTS && currentMCTS.explorationBias === explorationBias
 			? currentMCTS
-			: new MCTS(explorationBias);
+			: new MCTS<GameState>({ explorationBias });
 		const { move, metrics } = runSearchRounds(nextMCTS, state, maxIterations, maxTime);
 		mctsRef.current = nextMCTS;
 		const nextSearchStats = {
@@ -27,7 +26,6 @@ export const useMCTS = (settings: {explorationBias:number; maxIterations:number|
 				? (metrics.iterations / metrics.elapsedMs) * 1000
 				: 0,
 		};
-		searchStatsRef.current = nextSearchStats;
 		setMcts(nextMCTS);
 		setSearchStats(nextSearchStats);
 		return move;
@@ -35,15 +33,9 @@ export const useMCTS = (settings: {explorationBias:number; maxIterations:number|
 
 	const advanceSearchTree = useCallback((move: string, nextState: GameState) => {
 		const currentMCTS = mctsRef.current;
-		if(!currentMCTS?.rootNode) return;
+		if(!currentMCTS?.root) return;
 
-		const nextRootNode = currentMCTS.rootNode.children[move];
-		if(
-			nextRootNode
-			&& (nextRootNode.state === nextState || getStateKey(nextRootNode.state) === getStateKey(nextState))
-		) {
-			nextRootNode.parent = null;
-			currentMCTS.rootNode = nextRootNode;
+		if(currentMCTS.advanceToChild(move, nextState)) {
 			setMcts(currentMCTS);
 			return;
 		}
@@ -54,6 +46,7 @@ export const useMCTS = (settings: {explorationBias:number; maxIterations:number|
 
 	const resetMCTS = useCallback(() => {
 		if(!mctsRef.current) return;
+		mctsRef.current.reset();
 		mctsRef.current = null;
 		setMcts(null);
 	}, []);

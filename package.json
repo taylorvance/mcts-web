@@ -22,7 +22,7 @@
 	},
 	"dependencies": {
 		"@taylorvance/tv-shared-ui": "^0.2.0",
-		"multimcts": "^1.2.3",
+		"multimcts": "^2.0.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-hotkeys-hook": "^4.5.0",

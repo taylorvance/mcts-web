@@ -81,6 +81,7 @@ These commands measure search speed and move quality, not React render performan
 ## Project Layout
 
 ```text
+docs/          durable project docs and deferred plans
 src/
   components/   shared UI such as the session view, tree viewer, and controls
   games/        per-game rules, boards, tests, and the game registry
@@ -114,4 +115,4 @@ npm run build
 
 Rules changes should include state-focused tests. UI or shell changes should include at least one behavioral test when flow changes.
 
-For more detail, see `ARCHITECTURE.md`, `ARCHITECTURE_IMPROVEMENT_PLAN.md`, and `AGENTS.md`.
+Lightweight reminders live in `TODO.md`. Durable plans live under `docs/plans/`. Start with `docs/README.md`, then see `docs/plans/tak.md` for an example. Repository-specific working conventions live in `AGENTS.md`.

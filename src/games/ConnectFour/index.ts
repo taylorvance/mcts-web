@@ -8,7 +8,10 @@ interface SerializedConnectFourState {
   lastMove: number | null;
 }
 
-const ConnectFour: TypedGameDefinition<ConnectFourState, number> = {
+const isValidCellState = (cell: unknown): cell is CellState =>
+  cell === null || cell === 'R' || cell === 'Y';
+
+const ConnectFour: TypedGameDefinition<ConnectFourState, string, 'R' | 'Y'> = {
   id: 'ConnectFour',
   name: 'Connect Four',
   createInitialState: () => new ConnectFourState(),
@@ -24,7 +27,7 @@ const ConnectFour: TypedGameDefinition<ConnectFourState, number> = {
     if(
       !Array.isArray(board)
       || board.length !== TOTAL_CELLS
-      || board.some((cell) => cell !== null && typeof cell !== 'boolean')
+      || board.some((cell) => !isValidCellState(cell))
       || typeof team !== 'boolean'
       || (lastMove !== null && !Number.isInteger(lastMove))
     ) {
@@ -33,8 +36,8 @@ const ConnectFour: TypedGameDefinition<ConnectFourState, number> = {
 
     return new ConnectFourState([...board], team, lastMove);
   },
-  encodeMove: (move) => move.toString(),
-  decodeMove: (encodedMove) => Number.parseInt(encodedMove, 10),
+  serializeMove: (move) => move,
+  deserializeMove: (serializedMove) => serializedMove,
   Board: ConnectFourBoard,
 };
 

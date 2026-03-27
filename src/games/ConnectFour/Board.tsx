@@ -1,21 +1,28 @@
 import { TypedGameBoardProps } from '../../types/Game';
-import { COLS, ConnectFourState, ROWS } from './state';
+import {
+  COLS,
+  ConnectFourState,
+  getLegalColumns,
+  getWinner,
+  getWinningLine,
+  ROWS,
+} from './state';
 
 const teamLabel = (team: boolean) => (team ? 'Red' : 'Yellow');
-const discClass = (cell: boolean | null) => (
+const discClass = (cell: 'R' | 'Y' | null) => (
   cell === null
     ? 'bg-white'
-    : (cell ? 'bg-red-500' : 'bg-yellow-400')
+    : (cell === 'R' ? 'bg-red-500' : 'bg-yellow-400')
 );
 
-const ConnectFourBoard = ({ state, onMove }: TypedGameBoardProps<ConnectFourState, number>) => {
-  const legalColumns = new Set(state.getLegalColumns());
-  const winningLine = new Set(state.getWinningLine() ?? []);
-  const winner = state.getWinner();
+const ConnectFourBoard = ({ state, onMove }: TypedGameBoardProps<ConnectFourState, string>) => {
+  const legalColumns = new Set(getLegalColumns(state));
+  const winningLine = new Set(getWinningLine(state) ?? []);
+  const winner = getWinner(state);
   const isTerminal = state.isTerminal();
 
   const statusMessage = winner !== null
-    ? `${teamLabel(winner)} wins.`
+    ? `${winner === 'R' ? 'Red' : 'Yellow'} wins.`
     : (isTerminal
       ? 'Draw.'
       : `${teamLabel(state.team)} to move. Click a column to drop a disc.`);
@@ -41,7 +48,7 @@ const ConnectFourBoard = ({ state, onMove }: TypedGameBoardProps<ConnectFourStat
                       ? 'cursor-pointer bg-blue-500 hover:bg-blue-400'
                       : 'bg-blue-700')
                 }`}
-                onClick={() => isPlayableColumn && onMove(column)}
+                onClick={() => isPlayableColumn && onMove(column.toString())}
                 data-testid={`connect-four-cell-${index}`}
               >
                 <div

@@ -24,8 +24,8 @@ const Filler: TypedGameDefinition<FillerState, number> = {
 
     return new FillerState(Uint8Array.from(board), team);
   },
-  encodeMove: (move) => move.toString(),
-  decodeMove: (encodedMove) => parseInt(encodedMove, 10),
+  serializeMove: (move) => move.toString(),
+  deserializeMove: (serializedMove) => parseInt(serializedMove, 10),
   Board: FillerBoard,
 };
 

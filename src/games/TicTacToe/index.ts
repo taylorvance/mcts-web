@@ -57,8 +57,8 @@ const TicTacToe: TypedGameDefinition<TicTacToeState, number> = {
 
     return new TicTacToeState(board.map(normalizeCell), normalizeTeam(team));
   },
-  encodeMove: (move) => move.toString(),
-  decodeMove: (encodedMove) => parseInt(encodedMove, 10),
+  serializeMove: (move) => move.toString(),
+  deserializeMove: (serializedMove) => parseInt(serializedMove, 10),
   Board: TicTacToeBoard,
 };
 

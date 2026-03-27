@@ -48,8 +48,8 @@ const Onitama: TypedGameDefinition<OnitamaState, OnitamaMove> = {
       nmoves,
     );
   },
-  encodeMove: (move) => encodeOnitamaMove(move),
-  decodeMove: (encodedMove) => decodeOnitamaMove(encodedMove),
+  serializeMove: (move) => encodeOnitamaMove(move),
+  deserializeMove: (serializedMove) => decodeOnitamaMove(serializedMove),
   Board: OnitamaBoard,
 };
 

@@ -6,7 +6,7 @@ export const TOTAL_CELLS = ROWS * COLS;
 export const COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
 export const COLOR_COUNT = COLORS.length;
 
-export class FillerState extends GameState {
+export class FillerState extends GameState<number, '1' | '2', FillerState> {
   board: Uint8Array;
   team: boolean;
 
@@ -16,7 +16,7 @@ export class FillerState extends GameState {
     this.team = team;
   }
 
-  getCurrentTeam(): string {
+  getCurrentTeam(): '1' | '2' {
     return this.team ? '1' : '2';
   }
 
@@ -38,8 +38,8 @@ export class FillerState extends GameState {
     return moves;
   }
 
-  getLegalMoves(): string[] {
-    return this.getLegalColorMoves().map((move) => move.toString());
+  getLegalMoves(): number[] {
+    return this.getLegalColorMoves();
   }
 
   applyColorMove(newColor: number): FillerState {
@@ -49,8 +49,12 @@ export class FillerState extends GameState {
     return new FillerState(newBoard, !this.team);
   }
 
-  makeMove(move: string): FillerState {
-    return this.applyColorMove(parseInt(move, 10));
+  makeMove(move: number): FillerState {
+    if(!Number.isInteger(move) || move < 0 || move >= COLOR_COUNT) {
+      throw new Error(`Invalid Filler move: ${move}`);
+    }
+
+    return this.applyColorMove(move);
   }
 
   isTerminal(): boolean {

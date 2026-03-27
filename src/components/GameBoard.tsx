@@ -1,12 +1,11 @@
 // src/components/GameBoard.tsx
 import React from 'react';
-import { GameState } from 'multimcts';
-import { GameBoardProps as GameRendererProps } from '../types/Game';
+import { AppGameState, GameBoardProps as GameRendererProps } from '../types/Game';
 
 interface GameBoardContainerProps {
   Board: React.ComponentType<GameRendererProps>;
-  gameState: GameState;
-  onMove: (move:string) => void;
+  gameState: AppGameState;
+  onMove: (move: unknown) => void;
 }
 
 const GameBoard: React.FC<GameBoardContainerProps> = ({ Board, gameState, onMove }) => {

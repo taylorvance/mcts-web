@@ -98,7 +98,7 @@ const cloneCards = (cards: OnitamaCards): OnitamaCards => ({
   n: cards.n,
 });
 
-export class OnitamaState extends GameState {
+export class OnitamaState extends GameState<OnitamaMove, 'R' | 'B', OnitamaState> {
   board: OnitamaPiece[];
   team: boolean;
   cards: OnitamaCards;
@@ -117,7 +117,7 @@ export class OnitamaState extends GameState {
     this.nmoves = nmoves;
   }
 
-  getCurrentTeam(): string {
+  getCurrentTeam(): 'R' | 'B' {
     return this.team ? 'R' : 'B';
   }
 
@@ -183,8 +183,8 @@ export class OnitamaState extends GameState {
     }));
   }
 
-  getLegalMoves(): string[] {
-    return this.getLegalActions().map((move) => encodeOnitamaMove(move));
+  getLegalMoves(): OnitamaMove[] {
+    return this.getLegalActions();
   }
 
   makeTypedMove(move: OnitamaMove): OnitamaState {
@@ -209,8 +209,8 @@ export class OnitamaState extends GameState {
     return new OnitamaState(nextBoard, !this.team, nextCards, this.nmoves + 1);
   }
 
-  makeMove(move: string): OnitamaState {
-    return this.makeTypedMove(decodeOnitamaMove(move));
+  makeMove(move: OnitamaMove): OnitamaState {
+    return this.makeTypedMove(move);
   }
 
   isTerminal(): boolean {

@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { games } from '../games/gameRegistry';
+import TicTacToeState from '../games/TicTacToe/state';
 import { useMCTS } from './useMCTS';
 
 const TEST_SETTINGS = {
@@ -11,8 +12,8 @@ const TEST_SETTINGS = {
 
 describe('useMCTS', () => {
   it('reuses the same root node for repeated searches from the same state', () => {
-    const state = games.TicTacToe.createInitialState();
-    const { result } = renderHook(() => useMCTS(TEST_SETTINGS));
+    const state = new TicTacToeState();
+    const { result } = renderHook(() => useMCTS(games.TicTacToe, TEST_SETTINGS));
 
     act(() => {
       result.current.runSearch(state);
@@ -32,12 +33,12 @@ describe('useMCTS', () => {
   });
 
   it('promotes an explored child node after applying its move', () => {
-    const state = games.TicTacToe.createInitialState();
-    const { result } = renderHook(() => useMCTS(TEST_SETTINGS));
-    let move = '';
+    const state = new TicTacToeState();
+    const { result } = renderHook(() => useMCTS(games.TicTacToe, TEST_SETTINGS));
+    let move = -1;
 
     act(() => {
-      move = result.current.runSearch(state);
+      move = result.current.runSearch(state) as number;
     });
 
     const childNode = result.current.mcts?.root?.children.get(move);
@@ -53,12 +54,12 @@ describe('useMCTS', () => {
   });
 
   it('clears the tree when the applied move was not explored', () => {
-    const state = games.TicTacToe.createInitialState();
-    const { result } = renderHook(() => useMCTS(TEST_SETTINGS));
-    let exploredMove = '';
+    const state = new TicTacToeState();
+    const { result } = renderHook(() => useMCTS(games.TicTacToe, TEST_SETTINGS));
+    let exploredMove = -1;
 
     act(() => {
-      exploredMove = result.current.runSearch(state);
+      exploredMove = result.current.runSearch(state) as number;
     });
 
     const unexploredMove = state.getLegalMoves().find((move) => move !== exploredMove)!;

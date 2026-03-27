@@ -12,12 +12,12 @@ describe('UltimateTicTacToeState', () => {
 
     expect(state.getLegalMoves()).toHaveLength(81);
 
-    const next = state.makeMove('40');
+    const next = state.makeMove(40);
 
     expect(next.getCurrentTeam()).toBe('O');
     expect(next.prevMove).toBe(40);
     expect(next.board[40]).toBe(true);
-    expect(next.getLegalMoves()).toEqual(['36', '37', '38', '39', '41', '42', '43', '44']);
+    expect(next.getLegalMoves()).toEqual([36, 37, 38, 39, 41, 42, 43, 44]);
   });
 
   it('allows a free move when the destination sub-board is closed', () => {
@@ -32,12 +32,9 @@ describe('UltimateTicTacToeState', () => {
     const legalMoves = state.getLegalMoves();
 
     expect(legalMoves).toHaveLength(72);
-    expect(legalMoves.some((move) => {
-      const moveIdx = parseInt(move, 10);
-      return moveIdx >= 36 && moveIdx <= 44;
-    })).toBe(false);
-    expect(legalMoves).toContain('0');
-    expect(legalMoves).toContain('80');
+    expect(legalMoves.some((move) => move >= 36 && move <= 44)).toBe(false);
+    expect(legalMoves).toContain(0);
+    expect(legalMoves).toContain(80);
   });
 
   it('detects local board wins, global wins, and terminal rewards', () => {
@@ -68,9 +65,9 @@ describe('UltimateTicTacToeState', () => {
   it('rebuilds the same state from encoded move history', () => {
     expectEncodedReplayToMatchTypedReplay({
       initialState: new UltimateTicTacToeState(),
-      moves: [40, 36, 28],
+      moves: [40, 36, 4],
       definition: UltimateTicTacToe,
-      applyMove: (state, move) => state.makeMove(move.toString()),
+      applyMove: (state, move) => state.makeMove(move),
     });
   });
 });

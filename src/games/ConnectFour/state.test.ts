@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import ConnectFour from '.';
 import { expectEncodedReplayToMatchTypedReplay } from '../../test/gameReplay';
-import { COLS, ConnectFourState, ROWS } from './state';
+import { COLS, ConnectFourState, getLegalColumns, getWinner, ROWS } from './state';
 
-const createBoard = (rows: Array<Array<boolean | null>>) => rows.flat();
+const createBoard = (rows: Array<Array<'R' | 'Y' | null>>) => rows.flat();
 
 describe('ConnectFourState', () => {
   it('lists open columns and drops discs to the bottom-most open slot', () => {
     const state = new ConnectFourState();
 
-    expect(state.getLegalColumns()).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(getLegalColumns(state)).toEqual([0, 1, 2, 3, 4, 5, 6]);
 
-    const next = state.makeColumnMove(3);
+    const next = state.makeMove('3');
 
-    expect(next.board[((ROWS - 1) * COLS) + 3]).toBe(true);
+    expect(next.board[((ROWS - 1) * COLS) + 3]).toBe('R');
     expect(next.team).toBe(false);
     expect(next.lastMove).toBe(((ROWS - 1) * COLS) + 3);
   });
@@ -25,28 +25,28 @@ describe('ConnectFourState', () => {
       [null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null],
-      [true, true, true, true, null, null, null],
-    ]), false);
+      ['R', 'R', 'R', 'R', null, null, null],
+    ]), false, 38);
     const vertical = new ConnectFourState(createBoard([
       [null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null],
-      [false, null, null, null, null, null, null],
-      [false, null, null, null, null, null, null],
-      [false, null, null, null, null, null, null],
-      [false, null, null, null, null, null, null],
-    ]), true);
+      ['Y', null, null, null, null, null, null],
+      ['Y', null, null, null, null, null, null],
+      ['Y', null, null, null, null, null, null],
+      ['Y', null, null, null, null, null, null],
+    ]), true, 35);
     const diagonal = new ConnectFourState(createBoard([
       [null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null],
-      [null, null, null, true, null, null, null],
-      [null, null, true, false, null, null, null],
-      [null, true, false, false, null, null, null],
-      [true, false, false, false, null, null, null],
-    ]), false);
+      [null, null, null, 'R', null, null, null],
+      [null, null, 'R', 'Y', null, null, null],
+      [null, 'R', 'Y', 'Y', null, null, null],
+      ['R', 'Y', 'Y', 'Y', null, null, null],
+    ]), false, 35);
 
-    expect(horizontal.getWinner()).toBe(true);
-    expect(vertical.getWinner()).toBe(false);
-    expect(diagonal.getWinner()).toBe(true);
+    expect(getWinner(horizontal)).toBe('R');
+    expect(getWinner(vertical)).toBe('Y');
+    expect(getWinner(diagonal)).toBe('R');
     expect(horizontal.getReward()).toBe(1);
     expect(vertical.getReward()).toBe(1);
     expect(diagonal.getReward()).toBe(1);
@@ -54,16 +54,16 @@ describe('ConnectFourState', () => {
 
   it('detects drawn boards without a winner', () => {
     const drawState = new ConnectFourState(createBoard([
-      [true, true, false, false, true, true, false],
-      [false, false, true, true, false, false, true],
-      [true, true, false, false, true, true, false],
-      [false, false, true, true, false, false, true],
-      [true, true, false, false, true, true, false],
-      [false, false, true, true, false, false, true],
+      ['R', 'R', 'Y', 'Y', 'R', 'R', 'Y'],
+      ['Y', 'Y', 'R', 'R', 'Y', 'Y', 'R'],
+      ['R', 'R', 'Y', 'Y', 'R', 'R', 'Y'],
+      ['Y', 'Y', 'R', 'R', 'Y', 'Y', 'R'],
+      ['R', 'R', 'Y', 'Y', 'R', 'R', 'Y'],
+      ['Y', 'Y', 'R', 'R', 'Y', 'Y', 'R'],
     ]), true);
 
     expect(drawState.isTerminal()).toBe(true);
-    expect(drawState.getWinner()).toBeNull();
+    expect(getWinner(drawState)).toBeNull();
     expect(drawState.getReward()).toBe(0);
     expect(drawState.getLegalMoves()).toEqual([]);
   });
@@ -71,9 +71,9 @@ describe('ConnectFourState', () => {
   it('rebuilds the same state from encoded move history', () => {
     expectEncodedReplayToMatchTypedReplay({
       initialState: new ConnectFourState(),
-      moves: [3, 2, 3, 2, 4, 2, 4],
+      moves: ['3', '2', '3', '2', '4', '2', '4'],
       definition: ConnectFour,
-      applyMove: (state, move) => state.makeColumnMove(move),
+      applyMove: (state, move) => state.makeMove(move),
     });
   });
 });

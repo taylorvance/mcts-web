@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react';
-import { GameState } from 'multimcts';
-import { Game } from '../types/Game';
+import { AppGameState, Game } from '../types/Game';
 import { getGameSessionStorageKey, readJsonStorage, writeJsonStorage } from '../utils/persistence';
 import { useMCTS } from './useMCTS';
 
@@ -14,8 +13,8 @@ interface MCTSSettings {
 }
 
 interface SessionState {
-  gameState: GameState;
-  initialState: GameState;
+  gameState: AppGameState;
+  initialState: AppGameState;
   history: string[];
   historyIdx: number;
   isAutoplaying: boolean;
@@ -35,15 +34,15 @@ interface PersistedSessionState {
 type SessionAction =
   | { type: 'initialize'; sessionState: SessionState }
   | { type: 'move_started' }
-  | { type: 'move_applied'; gameState: GameState; move: string }
+  | { type: 'move_applied'; gameState: AppGameState; move: string }
   | { type: 'move_completed' }
   | { type: 'set_pending_ai'; value: boolean }
   | { type: 'set_autoplay'; value: boolean }
   | { type: 'toggle_ai_after_player' }
-  | { type: 'goto_history'; gameState: GameState; idx: number };
+  | { type: 'goto_history'; gameState: AppGameState; idx: number };
 
 const createSessionState = (
-  initialState: GameState,
+  initialState: AppGameState,
   doAIMoveAfterPlayer = true,
 ): SessionState => ({
   gameState: initialState,
@@ -79,12 +78,9 @@ const restoreSessionState = (game: Game): SessionState => {
     let currentState = initialState;
 
     for(let i = 1; i < persistedSession.history.length; i++) {
-      const move = persistedSession.history[i];
-      if(!replayState.getLegalMoves().includes(move)) {
-        throw new Error('Invalid persisted move');
-      }
-
-      replayState = replayState.makeMove(move);
+      const serializedMove = persistedSession.history[i];
+      const move = game.deserializeMove(serializedMove, replayState);
+      replayState = game.applyMove(replayState, move);
       if(i === persistedSession.historyIdx) {
         currentState = replayState;
       }
@@ -150,7 +146,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     game,
     (currentGame) => restoreSessionState(currentGame),
   );
-  const { mcts, searchStats, runSearch, advanceSearchTree, resetMCTS } = useMCTS(settings);
+  const { mcts, searchStats, runSearch, advanceSearchTree, resetMCTS } = useMCTS(game, settings);
   const previousGameRef = useRef(game);
 
   useEffect(() => {
@@ -176,7 +172,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
   const canUndo = state.historyIdx > 0;
   const canRedo = state.historyIdx < state.history.length-1;
 
-  const performMove = useCallback((move: string | null = null) => {
+  const performMove = useCallback((move: unknown | null = null) => {
     if(state.isMoveInProgress) return null;
 
     dispatch({ type: 'move_started' });
@@ -185,14 +181,15 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
       if(state.gameState.isTerminal()) return null;
 
       const nextMove = move ?? runSearch(state.gameState);
-      const nextState = state.gameState.makeMove(nextMove);
+      const serializedMove = game.serializeMove(nextMove, state.gameState);
+      const nextState = game.applyMove(state.gameState, nextMove);
       advanceSearchTree(nextMove, nextState);
-      dispatch({ type: 'move_applied', gameState: nextState, move: nextMove });
+      dispatch({ type: 'move_applied', gameState: nextState, move: serializedMove });
       return nextMove;
     } finally {
       dispatch({ type: 'move_completed' });
     }
-  }, [advanceSearchTree, runSearch, state.gameState, state.isMoveInProgress]);
+  }, [advanceSearchTree, game, runSearch, state.gameState, state.isMoveInProgress]);
 
   const doAIMove = useCallback(() => {
     if(canPlay) performMove();
@@ -203,12 +200,15 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
 
     let replayState = state.initialState;
     for(let i=1; i<=idx; i++) {
-      replayState = replayState.makeMove(state.history[i]);
+      replayState = game.applyMove(
+        replayState,
+        game.deserializeMove(state.history[i], replayState),
+      );
     }
 
     dispatch({ type: 'goto_history', gameState: replayState, idx });
     resetMCTS();
-  }, [resetMCTS, state.history, state.initialState]);
+  }, [game, resetMCTS, state.history, state.initialState]);
 
   const resetGame = useCallback(() => {
     if(state.historyIdx > 0) {
@@ -220,7 +220,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     resetMCTS();
   }, [game, gotoHistoryIdx, resetMCTS, state.doAIMoveAfterPlayer, state.historyIdx]);
 
-  const handlePlayerMove = useCallback((move: string) => {
+  const handlePlayerMove = useCallback((move: unknown) => {
     if(!canPlay) return;
 
     performMove(move);

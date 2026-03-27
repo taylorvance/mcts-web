@@ -8,7 +8,10 @@ interface SerializedOthelloState {
   lastMove: number | null;
 }
 
-const Othello: TypedGameDefinition<OthelloState, OthelloMove> = {
+const isValidCellState = (cell: unknown): cell is CellState =>
+  cell === null || cell === 'B' || cell === 'W';
+
+const Othello: TypedGameDefinition<OthelloState, OthelloMove, 'B' | 'W'> = {
   id: 'Othello',
   name: 'Othello',
   createInitialState: () => new OthelloState(),
@@ -24,7 +27,7 @@ const Othello: TypedGameDefinition<OthelloState, OthelloMove> = {
     if(
       !Array.isArray(board)
       || board.length !== TOTAL_CELLS
-      || board.some((cell) => cell !== null && typeof cell !== 'boolean')
+      || board.some((cell) => !isValidCellState(cell))
       || typeof team !== 'boolean'
       || (lastMove !== null && (!Number.isInteger(lastMove) || lastMove < 0 || lastMove >= TOTAL_CELLS))
     ) {
@@ -33,8 +36,8 @@ const Othello: TypedGameDefinition<OthelloState, OthelloMove> = {
 
     return new OthelloState([...board], team, lastMove);
   },
-  encodeMove: (move) => move === 'pass' ? 'pass' : move.toString(),
-  decodeMove: (encodedMove) => encodedMove === 'pass' ? 'pass' : Number.parseInt(encodedMove, 10),
+  serializeMove: (move) => move,
+  deserializeMove: (serializedMove) => serializedMove,
   Board: OthelloBoard,
 };
 

@@ -38,7 +38,7 @@ const UltimateTicTacToeBoard = ({ state, onMove }: TypedGameBoardProps<UltimateT
             <div className="grid grid-cols-3 gap-0.5">
               {board.map((cell, cellIdxWithinBoard) => {
                 const cellIdx = (9 * boardIdx) + cellIdxWithinBoard;
-                const isPlayable = !isTerminal && isOpen && legalMoves.includes(cellIdx.toString());
+                const isPlayable = !isTerminal && isOpen && legalMoves.includes(cellIdx);
 
                 let cellClass = 'w-9 h-9 flex items-center justify-center border border-gray-700';
                 if(isPlayable) {

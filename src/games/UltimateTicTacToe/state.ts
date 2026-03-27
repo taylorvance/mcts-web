@@ -3,7 +3,7 @@ import { GameState } from 'multimcts';
 export type CellState = boolean | undefined;
 export type BoardState = boolean | null | undefined;
 
-export class UltimateTicTacToeState extends GameState {
+export class UltimateTicTacToeState extends GameState<number, 'X' | 'O', UltimateTicTacToeState> {
   board: CellState[];
   team: boolean;
   prevMove?: number;
@@ -22,16 +22,16 @@ export class UltimateTicTacToeState extends GameState {
     this.boardStates = boardStates;
   }
 
-  getCurrentTeam(): string {
+  getCurrentTeam(): 'X' | 'O' {
     return this.team ? 'X' : 'O';
   }
 
-  getLegalMoves(): string[] {
-    const moves: string[] = [];
+  getLegalMoves(): number[] {
+    const moves: number[] = [];
 
     if(this.prevMove === undefined) {
       for(let i = 0; i < 81; i++) {
-        moves.push(i.toString());
+        moves.push(i);
       }
       return moves;
     }
@@ -41,7 +41,7 @@ export class UltimateTicTacToeState extends GameState {
       const maxIdx = minIdx + 9;
       for(let i = minIdx; i < maxIdx; i++) {
         if(this.board[i] === undefined) {
-          moves.push(i.toString());
+          moves.push(i);
         }
       }
     };
@@ -59,8 +59,16 @@ export class UltimateTicTacToeState extends GameState {
     return moves;
   }
 
-  makeMove(move: string): UltimateTicTacToeState {
-    const moveIdx = parseInt(move, 10);
+  makeMove(move: number): UltimateTicTacToeState {
+    if(!Number.isInteger(move) || move < 0 || move >= 81) {
+      throw new Error(`Invalid Ultimate Tic-Tac-Toe move: ${move}`);
+    }
+
+    const moveIdx = move;
+    if(this.board[moveIdx] !== undefined || !this.getLegalMoves().includes(moveIdx)) {
+      throw new Error(`Illegal Ultimate Tic-Tac-Toe move: ${move}`);
+    }
+
     const newBoard = [...this.board];
     newBoard[moveIdx] = this.team;
 

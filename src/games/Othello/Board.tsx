@@ -1,20 +1,28 @@
 import { TypedGameBoardProps } from '../../types/Game';
-import { COLS, OthelloMove, OthelloState, ROWS } from './state';
+import {
+  COLS,
+  getLegalPlacementMoves,
+  getScore,
+  getWinner,
+  OthelloMove,
+  OthelloState,
+  ROWS,
+} from './state';
 
 const teamLabel = (team: boolean) => (team ? 'Black' : 'White');
 
 const OthelloBoard = ({ state, onMove }: TypedGameBoardProps<OthelloState, OthelloMove>) => {
-  const legalMoves = new Set(state.getLegalPlacementMoves());
+  const legalMoves = new Set(getLegalPlacementMoves(state));
   const isTerminal = state.isTerminal();
-  const winner = state.getWinner();
-  const { black, white } = state.getScore();
+  const winner = getWinner(state);
+  const { black, white } = getScore(state);
   const canPass = !isTerminal && legalMoves.size === 0;
 
   const statusMessage = isTerminal
     ? (
       winner === null
         ? `Draw. Final score ${black}-${white}.`
-        : `${teamLabel(winner)} wins ${black}-${white}.`
+        : `${winner === 'B' ? 'Black' : 'White'} wins ${black}-${white}.`
     )
     : (
       canPass
@@ -48,14 +56,14 @@ const OthelloBoard = ({ state, onMove }: TypedGameBoardProps<OthelloState, Othel
                   ? 'bg-emerald-700 hover:bg-emerald-600'
                   : 'bg-emerald-800'
               }`}
-              onClick={() => isLegalMove && onMove(index)}
+              onClick={() => isLegalMove && onMove(index.toString())}
               disabled={!isLegalMove}
               data-testid={`othello-cell-${index}`}
             >
               {cell !== null ? (
                 <div
                   className={`h-8 w-8 rounded-full ${
-                    cell ? 'bg-slate-900' : 'bg-slate-100'
+                    cell === 'B' ? 'bg-slate-900' : 'bg-slate-100'
                   } ${
                     isLastMove ? 'ring-4 ring-amber-300/70' : ''
                   }`}

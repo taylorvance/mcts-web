@@ -8,10 +8,10 @@ import { games } from './gameRegistry';
 
 describe('gameRegistry', () => {
   it.each([
-    ['ConnectFour', games.ConnectFour],
-    ['TicTacToe', games.TicTacToe],
-    ['UltimateTicTacToe', games.UltimateTicTacToe],
-  ])('adapts typed board moves for %s', (_gameName, game) => {
+    ['ConnectFour', games.ConnectFour, '0'],
+    ['TicTacToe', games.TicTacToe, 0],
+    ['UltimateTicTacToe', games.UltimateTicTacToe, 0],
+  ])('adapts typed board moves for %s', (_gameName, game, expectedMove) => {
     const onMove = vi.fn();
     const { container } = render(<game.Board state={game.createInitialState()} onMove={onMove} />);
 
@@ -20,7 +20,7 @@ describe('gameRegistry', () => {
     expect(firstClickableElement).not.toBeNull();
     fireEvent.click(firstClickableElement!);
 
-    expect(onMove).toHaveBeenCalledWith('0');
+    expect(onMove).toHaveBeenCalledWith(expectedMove);
   });
 
   it('adapts typed board moves for Connect Four after some columns are filled', () => {
@@ -30,8 +30,8 @@ describe('gameRegistry', () => {
       null, null, null, null, null, null, null,
       null, null, null, null, null, null, null,
       null, null, null, null, null, null, null,
-      null, null, null, true, null, null, null,
-      null, null, null, false, null, null, null,
+      null, null, null, 'R', null, null, null,
+      null, null, null, 'Y', null, null, null,
     ], true, 38);
 
     render(<games.ConnectFour.Board state={state} onMove={onMove} />);
@@ -58,7 +58,7 @@ describe('gameRegistry', () => {
 
     fireEvent.click(screen.getAllByRole('button')[0]);
 
-    expect(onMove).toHaveBeenCalledWith('2');
+    expect(onMove).toHaveBeenCalledWith(2);
   });
 
   it('adapts typed board moves for Onitama', () => {
@@ -76,7 +76,12 @@ describe('gameRegistry', () => {
     fireEvent.click(screen.getByTestId('onitama-cell-22'));
     fireEvent.click(screen.getByTestId('onitama-cell-17'));
 
-    expect(onMove).toHaveBeenCalledWith('2,22,17');
+    expect(onMove).toHaveBeenCalledWith({
+      type: 'play',
+      cardIdx: 2,
+      srcIdx: 22,
+      dstIdx: 17,
+    });
   });
 
   it('adapts typed board moves for Othello', () => {

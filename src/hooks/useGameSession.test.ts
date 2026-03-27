@@ -23,7 +23,7 @@ describe('useGameSession', () => {
 
     act(() => {
       result.current.toggleAIMoveAfterPlayer();
-      result.current.handlePlayerMove('0');
+      result.current.handlePlayerMove(0);
     });
 
     expect(result.current.historyIdx).toBe(1);
@@ -60,7 +60,7 @@ describe('useGameSession', () => {
 
     act(() => {
       result.current.toggleAIMoveAfterPlayer();
-      result.current.handlePlayerMove('0');
+      result.current.handlePlayerMove(0);
     });
 
     await waitFor(() => {
@@ -116,7 +116,7 @@ describe('useGameSession', () => {
 
     act(() => {
       result.current.toggleAIMoveAfterPlayer();
-      result.current.handlePlayerMove('0');
+      result.current.handlePlayerMove(0);
     });
 
     await waitFor(() => {
@@ -135,7 +135,7 @@ describe('useGameSession', () => {
       { r: [2, 4], b: [1, 3], n: 0 },
       0,
     );
-    const restoredState = initialState.makeMove('2,22,17');
+    const restoredState = initialState.makeMove({ type: 'play', cardIdx: 2, srcIdx: 22, dstIdx: 17 });
 
     window.localStorage.setItem(getGameSessionStorageKey(games.Onitama.id), JSON.stringify({
       version: 1,

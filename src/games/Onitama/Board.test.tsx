@@ -19,7 +19,12 @@ describe('OnitamaBoard', () => {
     fireEvent.click(screen.getByTestId('onitama-cell-22'));
     fireEvent.click(screen.getByTestId('onitama-cell-17'));
 
-    expect(onMove).toHaveBeenCalledWith('2,22,17');
+    expect(onMove).toHaveBeenCalledWith({
+      type: 'play',
+      cardIdx: 2,
+      srcIdx: 22,
+      dstIdx: 17,
+    });
   });
 
   it('prompts for a card when multiple cards allow the same destination', () => {
@@ -33,7 +38,12 @@ describe('OnitamaBoard', () => {
 
     fireEvent.click(screen.getByTestId('onitama-card-6'));
 
-    expect(onMove).toHaveBeenCalledWith('6,22,17');
+    expect(onMove).toHaveBeenCalledWith({
+      type: 'play',
+      cardIdx: 6,
+      srcIdx: 22,
+      dstIdx: 17,
+    });
   });
 
   it('renders the pass hint below the board', () => {

@@ -43,8 +43,8 @@ const UltimateTicTacToe: TypedGameDefinition<UltimateTicTacToeState, number> = {
 
     return new UltimateTicTacToeState([...board], team, prevMove, [...boardStates]);
   },
-  encodeMove: (move) => move.toString(),
-  decodeMove: (encodedMove) => parseInt(encodedMove, 10),
+  serializeMove: (move) => move.toString(),
+  deserializeMove: (serializedMove) => parseInt(serializedMove, 10),
   Board: UltimateTicTacToeBoard,
 };
 

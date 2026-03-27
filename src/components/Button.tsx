@@ -37,7 +37,16 @@ const Button: React.FC<ButtonProps> = ({
 
   const fullClassName = `${baseClassName} ${roundingClass} ${marginClass} ${className} ${disabledClassName}`.trim();
 
-  const button = <button className={fullClassName} onClick={onClick} disabled={disabled}>{children}</button>;
+  const button = (
+    <button
+      className={fullClassName}
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={tooltip}
+    >
+      {children}
+    </button>
+  );
 
   if(tooltip) {
     return <Tooltip content={tooltip}>{button}</Tooltip>;

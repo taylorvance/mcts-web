@@ -3,6 +3,7 @@ import { FaAngleDown } from "react-icons/fa6";
 
 interface SelectProps {
   label?: string;
+  ariaLabel?: string;
   value: string;
   onChange: (value:string) => void;
   options: {[key:string]: string};
@@ -10,7 +11,7 @@ interface SelectProps {
   centerText?: boolean;
 }
 
-const Select: React.FC<SelectProps> = ({label, value, onChange, options, className='', centerText=false}) => {
+const Select: React.FC<SelectProps> = ({label, ariaLabel, value, onChange, options, className='', centerText=false}) => {
   const baseClassName = 'appearance-none text-lg pl-3 pr-8 py-1 rounded-lg border border-gray-400 group-hover:border-gray-800 focus:outline-none';
   const textAlignStyle:React.CSSProperties = (centerText ? {textAlignLast:'center'} : {});
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -24,6 +25,7 @@ const Select: React.FC<SelectProps> = ({label, value, onChange, options, classNa
       <div className="relative group">
         <select
           ref={selectRef}
+          aria-label={ariaLabel ?? label}
           value={value}
           onChange={(e) => {
             selectRef.current?.blur();

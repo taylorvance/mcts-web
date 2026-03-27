@@ -11,7 +11,20 @@ permissions:
   id-token: write
 
 jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+
   deploy:
+    needs: e2e
     uses: taylorvance/tv-shared/.github/workflows/deploy-pages.yml@main
     with:
       node-version: '20'

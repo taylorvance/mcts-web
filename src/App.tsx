@@ -118,6 +118,7 @@ const App: React.FC = () => {
           game={currentGame}
           selector={(
             <Select
+              ariaLabel="Game"
               value={selectedGame}
               onChange={changeGame}
               options={gameOptions}

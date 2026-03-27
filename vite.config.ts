@@ -10,5 +10,6 @@ export default defineConfig({
 		globals: true,
 		setupFiles: './src/test/setup.ts',
 		css: true,
+		exclude: ['e2e/**', 'test-results/**', '**/node_modules/**', '**/dist/**', '**/cypress/**', '**/.{idea,git,cache,output,temp}/**'],
 	},
 })

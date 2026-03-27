@@ -1,13 +1,16 @@
+import { BreakthroughState } from './Breakthrough/state';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ConnectFourState } from './ConnectFour/state';
 import { FillerState } from './Filler/state';
+import { HexState } from './Hex/state';
 import { OnitamaState } from './Onitama/state';
 import { OthelloState } from './Othello/state';
 import { games } from './gameRegistry';
 
 describe('gameRegistry', () => {
   it.each([
+    ['Hex', games.Hex, 0],
     ['ConnectFour', games.ConnectFour, '0'],
     ['TicTacToe', games.TicTacToe, 0],
     ['UltimateTicTacToe', games.UltimateTicTacToe, 0],
@@ -61,6 +64,17 @@ describe('gameRegistry', () => {
     expect(onMove).toHaveBeenCalledWith(2);
   });
 
+  it('adapts typed board moves for Breakthrough', () => {
+    const onMove = vi.fn();
+
+    render(<games.Breakthrough.Board state={new BreakthroughState()} onMove={onMove} />);
+
+    fireEvent.click(screen.getByTestId('breakthrough-cell-48'));
+    fireEvent.click(screen.getByTestId('breakthrough-cell-40'));
+
+    expect(onMove).toHaveBeenCalledWith('48:40');
+  });
+
   it('adapts typed board moves for Onitama', () => {
     const onMove = vi.fn();
     const state = new OnitamaState(
@@ -92,5 +106,16 @@ describe('gameRegistry', () => {
     fireEvent.click(screen.getByTestId('othello-cell-19'));
 
     expect(onMove).toHaveBeenCalledWith('19');
+  });
+
+  it('renders Hex from a typed state instance', () => {
+    const onMove = vi.fn();
+    const state = new HexState();
+
+    render(<games.Hex.Board state={state} onMove={onMove} />);
+
+    fireEvent.click(screen.getByTestId('hex-cell-8'));
+
+    expect(onMove).toHaveBeenCalledWith(8);
   });
 });

@@ -1,7 +1,9 @@
 import React from 'react';
 import { GameState, MCTS } from 'multimcts';
+import Breakthrough from './Breakthrough';
 import ConnectFour from './ConnectFour';
 import Filler from './Filler';
+import Hex from './Hex';
 import Onitama from './Onitama';
 import Othello from './Othello';
 import TicTacToe from './TicTacToe';
@@ -110,8 +112,10 @@ const createTypedGameEntry = <
 });
 
 export const gameEntries: GameRegistryEntry[] = [
+  createTypedGameEntry(Breakthrough),
   createTypedGameEntry(ConnectFour),
   createTypedGameEntry(Filler),
+  createTypedGameEntry(Hex),
   createTypedGameEntry(Onitama),
   createTypedGameEntry(Othello),
   createTypedGameEntry(TicTacToe),

@@ -15,6 +15,15 @@ const isValidCellState = (value: unknown): value is CellState =>
 const isValidBoardState = (value: unknown): value is BoardState =>
   value === undefined || value === null || typeof value === 'boolean';
 
+const deserializeMove = (serializedMove: string) => {
+  const move = Number.parseInt(serializedMove, 10);
+  if(!Number.isInteger(move) || move < 0 || move >= 81) {
+    throw new Error(`Invalid Ultimate Tic-Tac-Toe move: ${serializedMove}`);
+  }
+
+  return move;
+};
+
 const UltimateTicTacToe: TypedGameDefinition<UltimateTicTacToeState, number> = {
   id: 'UltimateTicTacToe',
   name: 'UltimateTicTacToe',
@@ -44,7 +53,7 @@ const UltimateTicTacToe: TypedGameDefinition<UltimateTicTacToeState, number> = {
     return new UltimateTicTacToeState([...board], team, prevMove, [...boardStates]);
   },
   serializeMove: (move) => move.toString(),
-  deserializeMove: (serializedMove) => parseInt(serializedMove, 10),
+  deserializeMove,
   Board: UltimateTicTacToeBoard,
 };
 

@@ -26,6 +26,25 @@ export class UltimateTicTacToeState extends GameState<number, 'X' | 'O', Ultimat
     return this.team ? 'X' : 'O';
   }
 
+  private isOpenBoard(boardIdx: number): boolean {
+    return this.boardStates[boardIdx] === undefined;
+  }
+
+  private canPlayInBoard(boardIdx: number): boolean {
+    if(!this.isOpenBoard(boardIdx)) {
+      return false;
+    }
+
+    if(this.prevMove === undefined) {
+      return true;
+    }
+
+    const requiredBoardIdx = this.prevMove % 9;
+    return this.isOpenBoard(requiredBoardIdx)
+      ? boardIdx === requiredBoardIdx
+      : true;
+  }
+
   getLegalMoves(): number[] {
     const moves: number[] = [];
 
@@ -37,6 +56,10 @@ export class UltimateTicTacToeState extends GameState<number, 'X' | 'O', Ultimat
     }
 
     const addMovesForBoard = (boardIdx: number) => {
+      if(!this.canPlayInBoard(boardIdx)) {
+        return;
+      }
+
       const minIdx = 9 * boardIdx;
       const maxIdx = minIdx + 9;
       for(let i = minIdx; i < maxIdx; i++) {
@@ -60,15 +83,7 @@ export class UltimateTicTacToeState extends GameState<number, 'X' | 'O', Ultimat
   }
 
   makeMove(move: number): UltimateTicTacToeState {
-    if(!Number.isInteger(move) || move < 0 || move >= 81) {
-      throw new Error(`Invalid Ultimate Tic-Tac-Toe move: ${move}`);
-    }
-
     const moveIdx = move;
-    if(this.board[moveIdx] !== undefined || !this.getLegalMoves().includes(moveIdx)) {
-      throw new Error(`Illegal Ultimate Tic-Tac-Toe move: ${move}`);
-    }
-
     const newBoard = [...this.board];
     newBoard[moveIdx] = this.team;
 

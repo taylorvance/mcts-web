@@ -37,6 +37,14 @@ describe('UltimateTicTacToeState', () => {
     expect(legalMoves).toContain(80);
   });
 
+  it('rejects invalid serialized moves at the boundary', () => {
+    const state = new UltimateTicTacToeState();
+
+    expect(() => UltimateTicTacToe.deserializeMove('abc', state)).toThrow('Invalid Ultimate Tic-Tac-Toe move: abc');
+    expect(() => UltimateTicTacToe.deserializeMove('-1', state)).toThrow('Invalid Ultimate Tic-Tac-Toe move: -1');
+    expect(() => UltimateTicTacToe.deserializeMove('81', state)).toThrow('Invalid Ultimate Tic-Tac-Toe move: 81');
+  });
+
   it('detects local board wins, global wins, and terminal rewards', () => {
     expect(UltimateTicTacToeState.calcBoardState([
       true, true, true,

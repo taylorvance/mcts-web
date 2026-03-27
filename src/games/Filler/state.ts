@@ -50,10 +50,6 @@ export class FillerState extends GameState<number, '1' | '2', FillerState> {
   }
 
   makeMove(move: number): FillerState {
-    if(!Number.isInteger(move) || move < 0 || move >= COLOR_COUNT) {
-      throw new Error(`Invalid Filler move: ${move}`);
-    }
-
     return this.applyColorMove(move);
   }
 

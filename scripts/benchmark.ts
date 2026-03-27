@@ -2,19 +2,27 @@
 
 import { argv } from 'node:process';
 import { createInterface } from 'node:readline';
-import { GameState, MCTS, Node } from 'multimcts';
+import { GameState, MCTS } from 'multimcts';
 
-interface BenchmarkGame {
+interface BenchmarkGame<
+	TState extends GameState = GameState,
+	TMove = unknown,
+> {
 	name: string;
-	createInitialState: () => GameState;
+	createInitialState: () => TState;
+	decodeMove?: (encodedMove: string, state: TState) => TMove;
+	deserializeMove?: (serializedMove: string, state: TState) => TMove;
+	encodeMove?: (move: TMove, state: TState) => string;
+	serializeMove?: (move: TMove, state: TState) => string;
 }
 
 interface BenchmarkScenario {
 	id: string;
 	game: string;
 	description: string;
+	gameDefinition: BenchmarkGame;
 	createState: () => GameState;
-	startingTeam: string;
+	startingTeam: unknown;
 }
 
 interface BenchmarkOptions {
@@ -228,30 +236,69 @@ const loadGame = async (name: 'ConnectFour' | 'Filler' | 'Onitama' | 'UltimateTi
 	return extractGame(module, name);
 };
 
-const playMoves = (initialState: GameState, moves: number[]) => {
+const deserializeMove = <TState extends GameState, TMove>(
+	game: BenchmarkGame<TState, TMove>,
+	serializedMove: string,
+	state: TState,
+): TMove | string => {
+	if(state.getLegalMoves().includes(serializedMove as never)) {
+		return serializedMove;
+	}
+
+	if(typeof game.deserializeMove === 'function') {
+		return game.deserializeMove(serializedMove, state);
+	}
+
+	if(typeof game.decodeMove === 'function') {
+		return game.decodeMove(serializedMove, state);
+	}
+
+	return serializedMove;
+};
+
+const serializeMove = <TState extends GameState, TMove>(
+	game: BenchmarkGame<TState, TMove>,
+	move: TMove | string,
+	state: TState,
+) => {
+	if(typeof move === 'string') {
+		return move;
+	}
+
+	if(typeof game.serializeMove === 'function') {
+		return game.serializeMove(move as TMove, state);
+	}
+
+	if(typeof game.encodeMove === 'function') {
+		return game.encodeMove(move as TMove, state);
+	}
+
+	return String(move);
+};
+
+const playMoves = (
+	game: BenchmarkGame,
+	initialState: GameState,
+	moves: string[],
+) => {
 	let state = initialState;
 
-	for(const move of moves) {
-		const encodedMove = move.toString();
-		if(!state.getLegalMoves().includes(encodedMove)) {
-			throw new Error(`Illegal setup move: ${encodedMove}`);
-		}
-
-		state = state.makeMove(encodedMove);
+	for(const serializedMove of moves) {
+		state = state.makeMove(deserializeMove(game, serializedMove, state));
 	}
 
 	return state;
 };
 
-const applyMoves = (initialState: GameState, moves: string[]) => {
+const applyMoves = (
+	game: BenchmarkGame,
+	initialState: GameState,
+	moves: string[],
+) => {
 	let state = initialState;
 
-	for(const move of moves) {
-		if(!state.getLegalMoves().includes(move)) {
-			throw new Error(`Illegal move in replay: ${move}`);
-		}
-
-		state = state.makeMove(move);
+	for(const serializedMove of moves) {
+		state = state.makeMove(deserializeMove(game, serializedMove, state));
 	}
 
 	return state;
@@ -266,22 +313,18 @@ const getCurrentTeam = (state: GameState) => {
 };
 
 const runSearch = (
-	mcts: MCTS,
 	state: GameState,
+	explorationBias: number,
 	maxIterations: number,
 ) => {
-	mcts.rootNode = new Node(state);
-
-	for(let iteration = 0; iteration < maxIterations; iteration += 1) {
-		mcts.executeRound(mcts.rootNode);
-	}
-
-	const bestChild = mcts.rootNode.findBestChild(0);
-	if(!bestChild?.move) {
+	const result = new MCTS({
+		explorationBias,
+	}).search(state, { maxIterations });
+	if(result.bestMove === null) {
 		throw new Error('Benchmark search did not produce a legal move.');
 	}
 
-	return bestChild.move;
+	return result.bestMove;
 };
 
 const loadScenarios = async (): Promise<BenchmarkScenario[]> => {
@@ -297,19 +340,23 @@ const loadScenarios = async (): Promise<BenchmarkScenario[]> => {
 			id: 'connect-four-midgame',
 			game: 'ConnectFour',
 			description: 'Open midgame after nine legal drops',
+			gameDefinition: connectFour,
 			createState: () => playMoves(
+				connectFour,
 				connectFour.createInitialState(),
-				[3, 2, 3, 2, 4, 1, 4, 1, 5],
+				['3', '2', '3', '2', '4', '1', '4', '1', '5'],
 			),
 			startingTeam: getCurrentTeam(playMoves(
+				connectFour,
 				connectFour.createInitialState(),
-				[3, 2, 3, 2, 4, 1, 4, 1, 5],
+				['3', '2', '3', '2', '4', '1', '4', '1', '5'],
 			)),
 		},
 		{
 			id: 'filler-opening',
 			game: 'Filler',
 			description: 'Seeded opening board',
+			gameDefinition: filler,
 			createState: () => withSeededRandom(0xc0ffee, () => filler.createInitialState()),
 			startingTeam: withSeededRandom(0xc0ffee, () => getCurrentTeam(filler.createInitialState())),
 		},
@@ -317,6 +364,7 @@ const loadScenarios = async (): Promise<BenchmarkScenario[]> => {
 			id: 'onitama-opening',
 			game: 'Onitama',
 			description: 'Seeded opening cards',
+			gameDefinition: onitama,
 			createState: () => withSeededRandom(0xbadc0de, () => onitama.createInitialState()),
 			startingTeam: withSeededRandom(0xbadc0de, () => getCurrentTeam(onitama.createInitialState())),
 		},
@@ -324,13 +372,16 @@ const loadScenarios = async (): Promise<BenchmarkScenario[]> => {
 			id: 'ultimate-tictactoe-midgame',
 			game: 'UltimateTicTacToe',
 			description: 'Forced-board midgame after eight legal moves',
+			gameDefinition: ultimateTicTacToe,
 			createState: () => playMoves(
+				ultimateTicTacToe,
 				ultimateTicTacToe.createInitialState(),
-				[40, 36, 4, 41, 45, 0, 1, 9],
+				['40', '36', '4', '41', '45', '0', '1', '9'],
 			),
 			startingTeam: getCurrentTeam(playMoves(
+				ultimateTicTacToe,
 				ultimateTicTacToe.createInitialState(),
-				[40, 36, 4, 41, 45, 0, 1, 9],
+				['40', '36', '4', '41', '45', '0', '1', '9'],
 			)),
 		},
 	];
@@ -353,7 +404,7 @@ const getWinner = (
 		return reward['1'] > reward['2'] ? 'first' : 'second';
 	}
 
-	const reward = state.getReward(scenario.startingTeam);
+	const reward = state.getReward(scenario.startingTeam as never);
 	if(typeof reward === 'number' && reward === 0) {
 		return 'draw';
 	}
@@ -390,8 +441,8 @@ const benchmarkScenario = (
 ): BenchmarkResult => {
 	for(let warmupIndex = 0; warmupIndex < options.warmup; warmupIndex += 1) {
 		runSearch(
-			new MCTS(options.explorationBias),
 			scenario.createState(),
+			options.explorationBias,
 			options.iterations,
 		);
 	}
@@ -399,9 +450,12 @@ const benchmarkScenario = (
 	const elapsedSamplesMs: number[] = [];
 
 	for(let sampleIndex = 0; sampleIndex < options.samples; sampleIndex += 1) {
-		const mcts = new MCTS(options.explorationBias);
 		const start = performance.now();
-		runSearch(mcts, scenario.createState(), options.iterations);
+		runSearch(
+			scenario.createState(),
+			options.explorationBias,
+			options.iterations,
+		);
 		elapsedSamplesMs.push(performance.now() - start);
 	}
 
@@ -425,14 +479,15 @@ const createServerResponse = (
 	request: ServerRequest,
 ) => {
 	const scenario = selectScenario(scenarios, request.scenario);
-	const state = applyMoves(scenario.createState(), request.moves ?? []);
+	const state = applyMoves(scenario.gameDefinition, scenario.createState(), request.moves ?? []);
 
 	if(request.mode === 'choose-move') {
 		const iterations = request.iterations ?? DEFAULT_OPTIONS.iterations;
 		const explorationBias = request.explorationBias ?? DEFAULT_OPTIONS.explorationBias;
+		const move = runSearch(state, explorationBias, iterations);
 		return {
 			id: request.id,
-			move: runSearch(new MCTS(explorationBias), state, iterations),
+			move: serializeMove(scenario.gameDefinition, move, state),
 		};
 	}
 
@@ -515,15 +570,15 @@ const profileSearchScenario = (
 	scenario: BenchmarkScenario,
 	options: BenchmarkOptions,
 ) => {
-	const sampleState = scenario.createState();
+	const sampleState = scenario.createState() as GameState;
 	const { methodStats, restore } = instrumentStatePrototype(sampleState);
 	const elapsedSamplesMs: number[] = [];
 
 	try {
 		for(let warmupIndex = 0; warmupIndex < options.warmup; warmupIndex += 1) {
 			runSearch(
-				new MCTS(options.explorationBias),
 				scenario.createState(),
+				options.explorationBias,
 				options.iterations,
 			);
 		}
@@ -534,9 +589,12 @@ const profileSearchScenario = (
 		}
 
 		for(let sampleIndex = 0; sampleIndex < options.samples; sampleIndex += 1) {
-			const mcts = new MCTS(options.explorationBias);
 			const start = performance.now();
-			runSearch(mcts, scenario.createState(), options.iterations);
+			runSearch(
+				scenario.createState(),
+				options.explorationBias,
+				options.iterations,
+			);
 			elapsedSamplesMs.push(performance.now() - start);
 		}
 	} finally {
@@ -613,10 +671,12 @@ const main = async () => {
 
 		const scenario = selectScenario(scenarios, options.scenario);
 
-		const state = applyMoves(scenario.createState(), options.moves);
+		const state = applyMoves(scenario.gameDefinition, scenario.createState(), options.moves);
 		if(options.mode === 'choose-move') {
-			const move = runSearch(new MCTS(options.explorationBias), state, options.iterations);
-			console.log(JSON.stringify({ move }, null, options.json ? 2 : 0));
+			const move = runSearch(state, options.explorationBias, options.iterations);
+			console.log(JSON.stringify({
+				move: serializeMove(scenario.gameDefinition, move, state),
+			}, null, options.json ? 2 : 0));
 			return;
 		}
 

@@ -1,6 +1,6 @@
 import { TypedGameDefinition } from '../../types/Game';
 import FillerBoard from './Board';
-import { FillerState } from './state';
+import { COLOR_COUNT, FillerState } from './state';
 
 interface SerializedFillerState {
   board: number[];
@@ -25,7 +25,14 @@ const Filler: TypedGameDefinition<FillerState, number> = {
     return new FillerState(Uint8Array.from(board), team);
   },
   serializeMove: (move) => move.toString(),
-  deserializeMove: (serializedMove) => parseInt(serializedMove, 10),
+  deserializeMove: (serializedMove) => {
+    const move = Number.parseInt(serializedMove, 10);
+    if(!Number.isInteger(move) || move < 0 || move >= COLOR_COUNT) {
+      throw new Error(`Invalid Filler move: ${serializedMove}`);
+    }
+
+    return move;
+  },
   Board: FillerBoard,
 };
 

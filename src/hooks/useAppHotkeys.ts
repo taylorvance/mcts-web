@@ -1,4 +1,5 @@
-import { useHotkeys } from 'react-hotkeys-hook';
+import type { RefObject } from 'react';
+import { useHotkeys } from '@taylorvance/tv-shared-runtime';
 
 interface HotkeyConfig {
   keys: string;
@@ -15,12 +16,14 @@ interface AppHotkeysConfig {
   aiAfterPlayer: HotkeyConfig;
 }
 
-export const useAppHotkeys = (hotkeys: AppHotkeysConfig) => {
-  useHotkeys(hotkeys.reset.keys, hotkeys.reset.callback);
-  useHotkeys(hotkeys.undo.keys, hotkeys.undo.callback);
-  useHotkeys(hotkeys.redo.keys, hotkeys.redo.callback);
-  useHotkeys(hotkeys.toggleHistory.keys, hotkeys.toggleHistory.callback);
-  useHotkeys(hotkeys.aiMove.keys, hotkeys.aiMove.callback);
-  useHotkeys(hotkeys.autoplay.keys, hotkeys.autoplay.callback);
-  useHotkeys(hotkeys.aiAfterPlayer.keys, hotkeys.aiAfterPlayer.callback);
+export const useAppHotkeys = (hotkeys: AppHotkeysConfig): RefObject<HTMLDivElement> => {
+  return useHotkeys<HTMLDivElement>([
+    { keys: hotkeys.reset.keys, callback: hotkeys.reset.callback },
+    { keys: hotkeys.undo.keys, callback: hotkeys.undo.callback },
+    { keys: hotkeys.redo.keys, callback: hotkeys.redo.callback },
+    { keys: hotkeys.toggleHistory.keys, callback: hotkeys.toggleHistory.callback },
+    { keys: hotkeys.aiMove.keys, callback: hotkeys.aiMove.callback },
+    { keys: hotkeys.autoplay.keys, callback: hotkeys.autoplay.callback },
+    { keys: hotkeys.aiAfterPlayer.keys, callback: hotkeys.aiAfterPlayer.callback },
+  ]) as RefObject<HTMLDivElement>;
 };

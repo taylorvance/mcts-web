@@ -71,15 +71,35 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
     autoplay: {keys:'p', callback:toggleAutoplay},
     aiAfterPlayer: {keys:'a', callback:toggleAIMoveAfterPlayer},
   };
-  useAppHotkeys(hotkeys);
+  const hotkeyScopeRef = useAppHotkeys(hotkeys);
 
   const hotkeyHint = (keys:string) => <span className="text-xs">({keys})</span>;
   const formatNumber = (value: number) => value.toLocaleString('en-US', {
     maximumFractionDigits: 0,
   });
+  const focusHotkeyScope = (event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target;
+
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const interactiveAncestor = target.closest(
+      'a, button, input, select, textarea, [contenteditable="true"], [tabindex]:not([tabindex="-1"])',
+    );
+
+    if (!interactiveAncestor) {
+      event.currentTarget.focus();
+    }
+  };
 
   return (
-    <>
+    <div
+      ref={hotkeyScopeRef}
+      className="flex flex-wrap gap-4 w-full"
+      onMouseDownCapture={focusHotkeyScope}
+      tabIndex={-1}
+    >
       <section className="flex flex-col flex-1 items-center gap-4">
         {selector}
 
@@ -158,7 +178,7 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
         </div>
         <GameComplexityPanel gameId={game.id} />
       </section>
-    </>
+    </div>
   );
 };
 

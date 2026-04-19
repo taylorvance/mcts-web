@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
 	base: '/mcts-web/',
 	plugins: [react()],
+	server: {
+		allowedHosts: ['tvmini'],
+	},
 	test: {
 		environment: 'jsdom',
 		globals: true,

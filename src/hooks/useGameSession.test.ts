@@ -155,6 +155,27 @@ describe('useGameSession', () => {
     );
   });
 
+  it('restores a persisted Ultimate Tic-Tac-Toe session with JSON null placeholders', () => {
+    const initialState = games.UltimateTicTacToe.createInitialState();
+    const restoredState = games.UltimateTicTacToe.applyMove(initialState, 0);
+
+    window.localStorage.setItem(getGameSessionStorageKey(games.UltimateTicTacToe.id), JSON.stringify({
+      version: 1,
+      initialState: games.UltimateTicTacToe.serializeState(initialState),
+      history: ['__INITIAL_STATE__', '0'],
+      historyIdx: 1,
+      doAIMoveAfterPlayer: true,
+    }));
+
+    const { result } = renderHook(() => useGameSession(games.UltimateTicTacToe, TEST_SETTINGS));
+
+    expect(result.current.history).toEqual(['__INITIAL_STATE__', '0']);
+    expect(result.current.historyIdx).toBe(1);
+    expect(formatGameStateDebugLabel(result.current.gameState)).toBe(
+      formatGameStateDebugLabel(restoredState),
+    );
+  });
+
   it('falls back to a clean Ultimate Tic-Tac-Toe state when persisted data is invalid', () => {
     window.localStorage.setItem(getGameSessionStorageKey(games.UltimateTicTacToe.id), JSON.stringify({
       version: 1,

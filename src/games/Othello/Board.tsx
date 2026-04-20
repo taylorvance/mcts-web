@@ -1,13 +1,13 @@
-import { TypedGameBoardProps } from '../../types/Game';
+import type { TypedGameBoardProps } from '../../types/Game';
 import {
   COLS,
   getLegalPlacementMoves,
   getScore,
   getWinner,
-  OthelloMove,
   OthelloState,
   ROWS,
 } from './state';
+import type { OthelloMove } from './state';
 
 const teamLabel = (team: boolean) => (team ? 'Black' : 'White');
 

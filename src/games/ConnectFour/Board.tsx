@@ -1,4 +1,4 @@
-import { TypedGameBoardProps } from '../../types/Game';
+import type { TypedGameBoardProps } from '../../types/Game';
 import {
   COLS,
   ConnectFourState,

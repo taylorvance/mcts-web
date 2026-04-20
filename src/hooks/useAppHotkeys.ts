@@ -1,5 +1,4 @@
-import type { RefObject } from 'react';
-import { useHotkeys } from '@taylorvance/tv-shared-runtime';
+import { useHotkeys } from '@taylorvance/tv-shared-web/hotkeys';
 
 interface HotkeyConfig {
   keys: string;
@@ -16,8 +15,8 @@ interface AppHotkeysConfig {
   aiAfterPlayer: HotkeyConfig;
 }
 
-export const useAppHotkeys = (hotkeys: AppHotkeysConfig): RefObject<HTMLDivElement> => {
-  return useHotkeys<HTMLDivElement>([
+export const useAppHotkeys = (hotkeys: AppHotkeysConfig) => {
+  useHotkeys([
     { keys: hotkeys.reset.keys, callback: hotkeys.reset.callback },
     { keys: hotkeys.undo.keys, callback: hotkeys.undo.callback },
     { keys: hotkeys.redo.keys, callback: hotkeys.redo.callback },
@@ -25,5 +24,7 @@ export const useAppHotkeys = (hotkeys: AppHotkeysConfig): RefObject<HTMLDivEleme
     { keys: hotkeys.aiMove.keys, callback: hotkeys.aiMove.callback },
     { keys: hotkeys.autoplay.keys, callback: hotkeys.autoplay.callback },
     { keys: hotkeys.aiAfterPlayer.keys, callback: hotkeys.aiAfterPlayer.callback },
-  ]) as RefObject<HTMLDivElement>;
+  ], {
+    enableOnFormTags: false,
+  });
 };

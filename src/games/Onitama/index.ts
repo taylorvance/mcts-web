@@ -1,13 +1,11 @@
-import { TypedGameDefinition } from '../../types/Game';
+import type { TypedGameDefinition } from '../../types/Game';
 import OnitamaBoard from './Board';
 import {
   decodeOnitamaMove,
   encodeOnitamaMove,
-  OnitamaCards,
-  OnitamaMove,
-  OnitamaPiece,
   OnitamaState,
 } from './state';
+import type { OnitamaCards, OnitamaMove, OnitamaPiece } from './state';
 
 interface SerializedOnitamaState {
   board: OnitamaPiece[];

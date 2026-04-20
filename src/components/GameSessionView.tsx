@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Game } from '../types/Game';
+import type { Game } from '../types/Game';
 import { NULLMOVE, useGameSession } from '../hooks/useGameSession';
 import { useAppHotkeys } from '../hooks/useAppHotkeys';
 import Button from './Button';
@@ -71,35 +71,14 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
     autoplay: {keys:'p', callback:toggleAutoplay},
     aiAfterPlayer: {keys:'a', callback:toggleAIMoveAfterPlayer},
   };
-  const hotkeyScopeRef = useAppHotkeys(hotkeys);
+  useAppHotkeys(hotkeys);
 
   const hotkeyHint = (keys:string) => <span className="text-xs">({keys})</span>;
   const formatNumber = (value: number) => value.toLocaleString('en-US', {
     maximumFractionDigits: 0,
   });
-  const focusHotkeyScope = (event: React.MouseEvent<HTMLDivElement>) => {
-    const target = event.target;
-
-    if (!(target instanceof HTMLElement)) {
-      return;
-    }
-
-    const interactiveAncestor = target.closest(
-      'a, button, input, select, textarea, [contenteditable="true"], [tabindex]:not([tabindex="-1"])',
-    );
-
-    if (!interactiveAncestor) {
-      event.currentTarget.focus();
-    }
-  };
-
   return (
-    <div
-      ref={hotkeyScopeRef}
-      className="flex flex-wrap gap-4 w-full"
-      onMouseDownCapture={focusHotkeyScope}
-      tabIndex={-1}
-    >
+    <div className="flex flex-wrap gap-4 w-full">
       <section className="flex flex-col flex-1 items-center gap-4">
         {selector}
 

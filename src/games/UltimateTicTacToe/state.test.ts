@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import UltimateTicTacToe from '.';
 import { expectEncodedReplayToMatchTypedReplay } from '../../test/gameReplay';
-import { BoardState, CellState, UltimateTicTacToeState } from './state';
+import { UltimateTicTacToeState } from './state';
+import type { BoardState, CellState } from './state';
 
 const createBoard = () => Array<CellState>(81).fill(undefined);
 const createBoardStates = () => Array<BoardState>(9).fill(undefined);
@@ -77,5 +78,21 @@ describe('UltimateTicTacToeState', () => {
       definition: UltimateTicTacToe,
       applyMove: (state, move) => state.makeMove(move),
     });
+  });
+
+  it('preserves open and tied sub-board states through serialization', () => {
+    const boardStates = createBoardStates();
+    boardStates[0] = undefined;
+    boardStates[1] = null;
+    boardStates[2] = true;
+    boardStates[3] = false;
+
+    const state = new UltimateTicTacToeState(createBoard(), true, undefined, boardStates);
+    const restoredState = UltimateTicTacToe.deserializeState(UltimateTicTacToe.serializeState(state));
+
+    expect(restoredState.boardStates[0]).toBeUndefined();
+    expect(restoredState.boardStates[1]).toBeNull();
+    expect(restoredState.boardStates[2]).toBe(true);
+    expect(restoredState.boardStates[3]).toBe(false);
   });
 });

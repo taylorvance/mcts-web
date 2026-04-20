@@ -1,6 +1,7 @@
-import { TypedGameDefinition } from '../../types/Game';
+import type { TypedGameDefinition } from '../../types/Game';
 import OthelloBoard from './Board';
-import { CellState, OthelloMove, OthelloState, TOTAL_CELLS } from './state';
+import { OthelloState, TOTAL_CELLS } from './state';
+import type { CellState, OthelloMove } from './state';
 
 interface SerializedOthelloState {
   board: CellState[];

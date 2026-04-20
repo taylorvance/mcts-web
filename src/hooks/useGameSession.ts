@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react';
-import { AppGameState, Game } from '../types/Game';
+import type { AppGameState, Game } from '../types/Game';
 import { getGameSessionStorageKey, readJsonStorage, writeJsonStorage } from '../utils/persistence';
 import { useMCTS } from './useMCTS';
 

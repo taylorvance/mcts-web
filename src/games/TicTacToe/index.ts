@@ -1,4 +1,4 @@
-import { TypedGameDefinition } from '../../types/Game';
+import type { TypedGameDefinition } from '../../types/Game';
 import TicTacToeBoard from './Board';
 import TicTacToeState from './state';
 

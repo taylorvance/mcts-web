@@ -1,6 +1,7 @@
-import { TypedGameDefinition } from '../../types/Game';
+import type { TypedGameDefinition } from '../../types/Game';
 import ConnectFourBoard from './Board';
-import { CellState, ConnectFourState, TOTAL_CELLS } from './state';
+import { ConnectFourState, TOTAL_CELLS } from './state';
+import type { CellState } from './state';
 
 interface SerializedConnectFourState {
   board: CellState[];

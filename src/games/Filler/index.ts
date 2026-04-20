@@ -1,4 +1,4 @@
-import { TypedGameDefinition } from '../../types/Game';
+import type { TypedGameDefinition } from '../../types/Game';
 import FillerBoard from './Board';
 import { COLOR_COUNT, FillerState } from './state';
 

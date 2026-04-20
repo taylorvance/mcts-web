@@ -1,6 +1,6 @@
 import {
-  ConnectFourCell,
   ConnectFourState,
+  type ConnectFourCell,
 } from 'multimcts/connect-four';
 
 export const ROWS = 6;

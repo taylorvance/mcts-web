@@ -1,6 +1,6 @@
 // src/components/GameBoard.tsx
 import React from 'react';
-import { AppGameState, GameBoardProps as GameRendererProps } from '../types/Game';
+import type { AppGameState, GameBoardProps as GameRendererProps } from '../types/Game';
 
 interface GameBoardContainerProps {
   Board: React.ComponentType<GameRendererProps>;

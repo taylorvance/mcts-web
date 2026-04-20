@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import Othello from '.';
 import { expectEncodedReplayToMatchTypedReplay } from '../../test/gameReplay';
-import { CellState, getLegalPlacementMoves, getScore, getWinner, OthelloMove, OthelloState } from './state';
+import { getLegalPlacementMoves, getScore, getWinner, OthelloState } from './state';
+import type { CellState, OthelloMove } from './state';
 
 const createBoard = (rows: Array<Array<CellState>>) => rows.flat();
 

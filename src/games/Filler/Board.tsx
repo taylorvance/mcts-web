@@ -1,4 +1,4 @@
-import { TypedGameBoardProps } from '../../types/Game';
+import type { TypedGameBoardProps } from '../../types/Game';
 import { COLORS, COLS, FillerState, TOTAL_CELLS } from './state';
 
 const FillerBoard = ({ state, onMove }: TypedGameBoardProps<FillerState, number>) => {

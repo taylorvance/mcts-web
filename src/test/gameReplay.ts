@@ -1,6 +1,6 @@
 import { expect } from 'vitest';
-import { GameState } from 'multimcts';
-import { TypedGameDefinition } from '../types/Game';
+import type { GameState } from 'multimcts';
+import type { TypedGameDefinition } from '../types/Game';
 import { formatGameStateDebugLabel } from '../utils/gameStateDebug';
 
 interface ReplayExpectationOptions<

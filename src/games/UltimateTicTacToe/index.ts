@@ -1,19 +1,98 @@
-import { TypedGameDefinition } from '../../types/Game';
+import type { TypedGameDefinition } from '../../types/Game';
 import UltimateTicTacToeBoard from './Board';
-import { BoardState, CellState, UltimateTicTacToeState } from './state';
+import { UltimateTicTacToeState } from './state';
+import type { BoardState, CellState } from './state';
+
+type SerializedCellState = 'X' | 'O' | '';
+type SerializedBoardState = 'X' | 'O' | 'T' | '';
 
 interface SerializedUltimateTicTacToeState {
-  board: CellState[];
+  board: Array<SerializedCellState | CellState | null>;
   team: boolean;
   prevMove?: number;
-  boardStates: BoardState[];
+  boardStates: Array<SerializedBoardState | BoardState | null>;
 }
 
-const isValidCellState = (value: unknown): value is CellState =>
-  value === undefined || typeof value === 'boolean';
+const serializeCellState = (value: CellState): SerializedCellState => {
+  if(value === undefined) {
+    return '';
+  }
 
-const isValidBoardState = (value: unknown): value is BoardState =>
-  value === undefined || value === null || typeof value === 'boolean';
+  return value ? 'X' : 'O';
+};
+
+const serializeBoardState = (value: BoardState): SerializedBoardState => {
+  if(value === undefined) {
+    return '';
+  }
+
+  if(value === null) {
+    return 'T';
+  }
+
+  return value ? 'X' : 'O';
+};
+
+const isValidCellState = (value: unknown): value is SerializedCellState | CellState | null =>
+  value === undefined
+  || value === null
+  || typeof value === 'boolean'
+  || value === ''
+  || value === 'X'
+  || value === 'O';
+
+const isValidBoardState = (value: unknown): value is SerializedBoardState | BoardState | null =>
+  value === undefined
+  || value === null
+  || typeof value === 'boolean'
+  || value === ''
+  || value === 'X'
+  || value === 'O'
+  || value === 'T';
+
+const normalizeCellState = (value: unknown): CellState => {
+  if(value === '' || value === null || value === undefined) {
+    return undefined;
+  }
+
+  if(value === 'X') {
+    return true;
+  }
+
+  if(value === 'O') {
+    return false;
+  }
+
+  if(typeof value === 'boolean') {
+    return value;
+  }
+
+  throw new Error('Invalid Ultimate Tic-Tac-Toe cell');
+};
+
+const normalizeBoardState = (value: unknown): BoardState => {
+  if(value === '' || value === undefined) {
+    return undefined;
+  }
+
+  if(value === 'T' || value === null) {
+    return null;
+  }
+
+  if(value === 'X') {
+    return true;
+  }
+
+  if(value === 'O') {
+    return false;
+  }
+
+  if(typeof value === 'boolean') {
+    return value;
+  }
+
+  throw new Error('Invalid Ultimate Tic-Tac-Toe board state');
+};
 
 const deserializeMove = (serializedMove: string) => {
   const move = Number.parseInt(serializedMove, 10);
@@ -30,10 +109,10 @@ const UltimateTicTacToe: TypedGameDefinition<UltimateTicTacToeState, number> = {
   createInitialState: () => new UltimateTicTacToeState(),
   isState: (state): state is UltimateTicTacToeState => state instanceof UltimateTicTacToeState,
   serializeState: (state) => ({
-    board: [...state.board],
+    board: state.board.map(serializeCellState),
     team: state.team,
     prevMove: state.prevMove,
-    boardStates: [...state.boardStates],
+    boardStates: state.boardStates.map(serializeBoardState),
   }),
   deserializeState: (serializedState) => {
     const { board, team, prevMove, boardStates } = serializedState as SerializedUltimateTicTacToeState;
@@ -50,7 +129,12 @@ const UltimateTicTacToe: TypedGameDefinition<UltimateTicTacToeState, number> = {
       throw new Error('Invalid Ultimate Tic-Tac-Toe state');
     }
 
-    return new UltimateTicTacToeState([...board], team, prevMove, [...boardStates]);
+    return new UltimateTicTacToeState(
+      board.map(normalizeCellState),
+      team,
+      prevMove,
+      boardStates.map(normalizeBoardState),
+    );
   },
   serializeMove: (move) => move.toString(),
   deserializeMove,

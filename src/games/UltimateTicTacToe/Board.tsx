@@ -1,6 +1,7 @@
 import { FaCat, FaO, FaX } from 'react-icons/fa6';
-import { TypedGameBoardProps } from '../../types/Game';
-import { BoardState, UltimateTicTacToeState } from './state';
+import type { TypedGameBoardProps } from '../../types/Game';
+import { UltimateTicTacToeState } from './state';
+import type { BoardState } from './state';
 
 const UltimateTicTacToeBoard = ({ state, onMove }: TypedGameBoardProps<UltimateTicTacToeState, number>) => {
   const xForeground = 'text-red-600';

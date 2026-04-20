@@ -1,5 +1,6 @@
 // src/types/Game.ts
-import { GameState, SearchMetrics } from 'multimcts';
+import type { ComponentType } from 'react';
+import type { GameState, SearchMetrics } from 'multimcts';
 
 export interface AppGameState {
   isTerminal(): boolean;
@@ -52,7 +53,7 @@ export interface Game {
   ) => SearchResult;
   advanceSearchTree: (search: SearchTreeLike, move: unknown, nextState: AppGameState) => boolean;
   resetSearchTree: (search: SearchTreeLike) => void;
-  Board: React.ComponentType<GameBoardProps>;
+  Board: ComponentType<GameBoardProps>;
 }
 
 export interface TypedGameBoardProps<TState extends AppGameState, TMove> {
@@ -73,7 +74,7 @@ export interface TypedGameDefinition<
   deserializeState: (serializedState: unknown) => TState;
   serializeMove: (move: TMove, state: TState) => string;
   deserializeMove: (serializedMove: string, state: TState) => TMove;
-  Board: React.ComponentType<TypedGameBoardProps<TState, TMove>>;
+  Board: ComponentType<TypedGameBoardProps<TState, TMove>>;
 }
 
 export interface GameRegistryEntry {

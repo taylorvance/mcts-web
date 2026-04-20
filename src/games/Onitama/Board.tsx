@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { FaChessKing, FaChessPawn } from 'react-icons/fa6';
-import { TypedGameBoardProps } from '../../types/Game';
-import { OnitamaMove, OnitamaPlayMove, OnitamaState, ONITAMA_DECK } from './state';
+import type { TypedGameBoardProps } from '../../types/Game';
+import { OnitamaState, ONITAMA_DECK } from './state';
+import type { OnitamaMove, OnitamaPlayMove } from './state';
 
 interface PendingMoveSelection {
   srcIdx: number;

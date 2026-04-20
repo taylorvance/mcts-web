@@ -1,12 +1,13 @@
 import React from 'react';
-import { GameState, MCTS } from 'multimcts';
+import { MCTS } from 'multimcts';
+import type { GameState } from 'multimcts';
 import ConnectFour from './ConnectFour';
 import Filler from './Filler';
 import Onitama from './Onitama';
 import Othello from './Othello';
 import TicTacToe from './TicTacToe';
 import UltimateTicTacToe from './UltimateTicTacToe';
-import {
+import type {
   Game,
   GameBoardProps,
   GameRegistryEntry,

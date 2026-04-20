@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { games } from '../gameRegistry';
-import { OnitamaCards, OnitamaPiece, OnitamaState } from './state';
+import { OnitamaState } from './state';
+import type { OnitamaCards, OnitamaPiece } from './state';
 
 const renderBoard = (cards: OnitamaCards, board = OnitamaState.initializeBoard()) => {
   const onMove = vi.fn();

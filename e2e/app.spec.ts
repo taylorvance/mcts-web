@@ -57,3 +57,27 @@ test('supports querystring game selection and reset on the built site', async ({
 
   expectNoErrors();
 });
+
+test('persists Ultimate Tic-Tac-Toe state across reloads', async ({ page }) => {
+  const { expectNoErrors } = attachErrorCollectors(page);
+
+  await page.goto('/mcts-web/');
+
+  const gameSelect = page.getByLabel('Game');
+  await gameSelect.selectOption('UltimateTicTacToe');
+  await expect(gameSelect).toHaveValue('UltimateTicTacToe');
+
+  const playableOpeningCells = page.locator('.game-board .bg-red-200');
+  await expect(playableOpeningCells).toHaveCount(81);
+
+  await playableOpeningCells.first().click();
+  await expect(page.locator('.game-board .bg-blue-200')).toHaveCount(8);
+
+  await page.reload();
+
+  await expect(gameSelect).toHaveValue('UltimateTicTacToe');
+  await expect(page.locator('.game-board .bg-blue-200')).toHaveCount(8);
+  await expect(page.locator('.game-board .bg-red-200')).toHaveCount(0);
+
+  expectNoErrors();
+});

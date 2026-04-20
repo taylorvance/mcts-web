@@ -1,5 +1,5 @@
 import { FaCat, FaO, FaX } from 'react-icons/fa6';
-import { TypedGameBoardProps } from '../../types/Game';
+import type { TypedGameBoardProps } from '../../types/Game';
 import TicTacToeState from './state';
 
 const TicTacToeBoard = ({ state, onMove }: TypedGameBoardProps<TicTacToeState, number>) => {

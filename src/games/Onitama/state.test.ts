@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import Onitama from '.';
 import { expectEncodedReplayToMatchTypedReplay } from '../../test/gameReplay';
-import { OnitamaCards, OnitamaMove, OnitamaPiece, OnitamaState } from './state';
+import { OnitamaState } from './state';
+import type { OnitamaCards, OnitamaMove, OnitamaPiece } from './state';
 
 const OPENING_CARDS: OnitamaCards = {
   r: [2, 4],

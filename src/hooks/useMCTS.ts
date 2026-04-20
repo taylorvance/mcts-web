@@ -1,7 +1,7 @@
 // src/hooks/useMCTS.ts
 import { useCallback, useRef, useState } from 'react';
-import { SearchMetrics } from 'multimcts';
-import { AppGameState, Game, SearchTreeLike } from '../types/Game';
+import type { SearchMetrics } from 'multimcts';
+import type { AppGameState, Game, SearchTreeLike } from '../types/Game';
 
 export interface SearchStats extends SearchMetrics {
 	roundsPerSecond: number;

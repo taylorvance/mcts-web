@@ -1,7 +1,7 @@
 // src/App.tsx
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { BrandBadge } from '@taylorvance/tv-shared-ui/BrandBadge';
+import { BrandBadge } from '@taylorvance/tv-shared-web/BrandBadge';
 import Select from './components/Select';
 import GameSessionView from './components/GameSessionView';
 import { games, gameOptions } from './games/gameRegistry';

@@ -1,6 +1,6 @@
 import {
-  OthelloCell,
   OthelloState,
+  type OthelloCell,
 } from 'multimcts/othello';
 
 export const ROWS = 8;

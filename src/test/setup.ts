@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { beforeEach } from 'vitest';
+import { beforeEach, vi } from 'vitest';
 
 const createStorageMock = () => {
   const storage = new Map<string, string>();
@@ -27,7 +27,23 @@ Object.defineProperty(window, 'localStorage', {
   configurable: true,
 });
 
+const fetchMock = vi.fn((input: RequestInfo | URL) => {
+  const url = String(input);
+
+  if(url.endsWith('/generated/complexity.json')) {
+    return new Promise<Response>(() => {
+      // App tests do not assert on complexity data, so keep the background
+      // fetch pending to avoid un-awaited state updates from this panel.
+    });
+  }
+
+  throw new Error(`Unhandled fetch in tests: ${url}`);
+});
+
+vi.stubGlobal('fetch', fetchMock);
+
 beforeEach(() => {
   window.localStorage.clear();
   window.history.replaceState(null, '', '/mcts-web/');
+  fetchMock.mockClear();
 });

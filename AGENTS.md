@@ -17,7 +17,7 @@ Use npm for dependency management because `package-lock.json` is checked in.
 This repo uses React 18, TypeScript, Vite, Tailwind, and ESLint. Prefer functional components and strict typing; `tsconfig.app.json` enables `strict`, `noUnusedLocals`, and `noUnusedParameters`. Match the surrounding file style, but prefer two-space indentation, semicolons, and single quotes in new TS/TSX. Use PascalCase for components and game modules (`UltimateTicTacToe.tsx`), `use...` naming for hooks (`useMCTS.ts`), and keep shared UI generic rather than game-specific.
 
 ## Testing Guidelines
-There is no automated test runner configured yet. Until one is added, treat `npm run lint` and `npm run build` as the required pre-PR checks. If you introduce automated tests, place them near the feature or under `src/__tests__/` and add the command to `package.json` in the same change.
+Vitest is configured for automated tests. Treat `npm run lint`, `npm run test`, and `npm run build` as the required pre-PR checks. Place new tests near the feature or under `src/__tests__/` and keep the corresponding command in `package.json`.
 
 ## Commit & Pull Request Guidelines
 Recent history uses short, imperative commit subjects with no trailing period, for example `Tweak filler tie scoring` and `Remove artificial delay for moves`. Keep commits narrowly scoped. Pull requests should explain the behavior change, summarize local validation, link the relevant issue when applicable, and include screenshots or GIFs for UI updates. If you change deployment behavior, verify the GitHub Pages workflow and Vite `base` setting still match `/mcts-web/`.

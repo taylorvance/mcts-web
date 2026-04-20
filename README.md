@@ -38,7 +38,7 @@ npm run benchmark:complexity -- --samples 100 --max-plies 160  # generate comple
 npm run benchmark:compare -- origin/main HEAD  # compare two refs
 npm run benchmark:strength -- origin/main HEAD  # play head-to-head matches between two refs
 npm run lint           # run ESLint
-npm run test -- --run  # run tests once
+npm run test           # run tests once
 npm run build          # type-check and build for production
 npm run preview        # preview the production build
 ```
@@ -109,7 +109,7 @@ Before committing, run:
 
 ```bash
 npm run lint
-npm run test -- --run
+npm run test
 npm run build
 ```
 

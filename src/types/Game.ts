@@ -96,5 +96,15 @@ export interface TypedGameDefinition<
 export interface GameRegistryEntry {
   id: string;
   name: string;
+  familyId: string;
+  familyName: string;
+  variantName?: string;
   game: Game;
+}
+
+export interface GameFamilyEntry {
+  id: string;
+  name: string;
+  defaultGameId: string;
+  gameIds: string[];
 }

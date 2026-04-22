@@ -28,8 +28,9 @@ describe('App', () => {
       screen.getByRole('link', { name: 'tvprograms.tech' }),
     ).toHaveAttribute('href', 'https://tvprograms.tech');
 
-    const gameSelect = screen.getByRole('combobox');
+    const gameSelect = screen.getByLabelText('Game');
     expect(gameSelect).toHaveValue('TicTacToe');
+    expect(screen.queryByLabelText('Variant')).not.toBeInTheDocument();
 
     fireEvent.change(gameSelect, { target: { value: 'Onitama' } });
 
@@ -41,18 +42,21 @@ describe('App', () => {
     window.localStorage.setItem(
       APP_STORAGE_KEY,
       JSON.stringify({
-        selectedGame: 'Onitama',
+        selectedGameId: 'Onitama',
         mctsSettings: {
           explorationBias: 2.5,
           maxIterations: 250,
           maxTime: 3,
+        },
+        lastSelectedGameIdByFamily: {
+          Onitama: 'Onitama',
         },
       }),
     );
 
     render(<App />);
 
-    expect(screen.getByRole('combobox')).toHaveValue('Onitama');
+    expect(screen.getByLabelText('Game')).toHaveValue('Onitama');
     expect(screen.getByTestId('onitama-board')).toBeInTheDocument();
     expect(screen.getByLabelText('Exploration Bias')).toHaveValue(2.5);
     expect(screen.getByLabelText('Max Iterations')).toHaveValue(250);
@@ -63,11 +67,14 @@ describe('App', () => {
     window.localStorage.setItem(
       APP_STORAGE_KEY,
       JSON.stringify({
-        selectedGame: 'Onitama',
+        selectedGameId: 'Onitama',
         mctsSettings: {
           explorationBias: 2.5,
           maxIterations: 250,
           maxTime: 3,
+        },
+        lastSelectedGameIdByFamily: {
+          Onitama: 'Onitama',
         },
       }),
     );
@@ -75,20 +82,20 @@ describe('App', () => {
 
     render(<App />);
 
-    expect(screen.getByRole('combobox')).toHaveValue('Othello');
+    expect(screen.getByLabelText('Game')).toHaveValue('Othello');
   });
 
   it('keeps the querystring in sync with the selected game', async () => {
     render(<App />);
 
-    let gameSelect = screen.getByRole('combobox');
+    let gameSelect = screen.getByLabelText('Game');
 
     fireEvent.change(gameSelect, { target: { value: 'Onitama' } });
     await waitFor(() => {
       expect(window.location.search).toBe('?game=Onitama');
     });
 
-    gameSelect = screen.getByRole('combobox');
+    gameSelect = screen.getByLabelText('Game');
     fireEvent.change(gameSelect, { target: { value: 'TicTacToe' } });
     await waitFor(() => {
       expect(window.location.search).toBe('');
@@ -99,11 +106,14 @@ describe('App', () => {
     window.localStorage.setItem(
       APP_STORAGE_KEY,
       JSON.stringify({
-        selectedGame: 'Onitama',
+        selectedGameId: 'Onitama',
         mctsSettings: {
           explorationBias: 2.5,
           maxIterations: 250,
           maxTime: 3,
+        },
+        lastSelectedGameIdByFamily: {
+          Onitama: 'Onitama',
         },
       }),
     );
@@ -122,18 +132,21 @@ describe('App', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Reset saved data' }));
 
-    expect(screen.getByRole('combobox')).toHaveValue('TicTacToe');
+    expect(screen.getByLabelText('Game')).toHaveValue('TicTacToe');
     expect(window.location.search).toBe('');
     expect(screen.getByLabelText('Exploration Bias')).toHaveValue(1.414);
     expect(screen.getByLabelText('Max Iterations')).toHaveValue(1000);
     expect(screen.getByLabelText('Max Time (s)')).toHaveValue(1);
     expect(readJsonStorage(getGameSessionStorageKey('Onitama'))).toBeNull();
     expect(readJsonStorage(APP_STORAGE_KEY)).toMatchObject({
-      selectedGame: 'TicTacToe',
+      selectedGameId: 'TicTacToe',
       mctsSettings: {
         explorationBias: 1.414,
         maxIterations: 1000,
         maxTime: 1,
+      },
+      lastSelectedGameIdByFamily: {
+        TicTacToe: 'TicTacToe',
       },
     });
   });
@@ -176,7 +189,7 @@ describe('App', () => {
       screen.getByRole('dialog', { name: 'TicTacToe Help' }),
     ).toBeInTheDocument();
 
-    fireEvent.change(screen.getByRole('combobox'), {
+    fireEvent.change(screen.getByLabelText('Game'), {
       target: { value: 'Onitama' },
     });
 
@@ -225,5 +238,23 @@ describe('App', () => {
     expect(
       screen.getByRole('dialog', { name: 'TicTacToe Help' }),
     ).toBeInTheDocument();
+  });
+
+  it('persists the most recently selected game for the active family', async () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText('Game'), {
+      target: { value: 'Onitama' },
+    });
+
+    await waitFor(() => {
+      expect(readJsonStorage(APP_STORAGE_KEY)).toMatchObject({
+        selectedGameId: 'Onitama',
+        lastSelectedGameIdByFamily: {
+          TicTacToe: 'TicTacToe',
+          Onitama: 'Onitama',
+        },
+      });
+    });
   });
 });

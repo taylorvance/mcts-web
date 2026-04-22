@@ -8,7 +8,13 @@ import HelpModal, { type HelpTopic } from './components/HelpModal';
 import Select from './components/Select';
 import Tooltip from './components/Tooltip';
 import GameSessionView from './components/GameSessionView';
-import { games, gameOptions } from './games/gameRegistry';
+import {
+  gameEntriesById,
+  gameFamilies,
+  gameFamilyOptions,
+  gameIdToFamilyId,
+  games,
+} from './games/gameRegistry';
 import type { HelpContent } from './types/Game';
 import {
   APP_STORAGE_KEY,
@@ -18,7 +24,7 @@ import {
   writeJsonStorage,
 } from './utils/persistence';
 
-const defaultGame = 'TicTacToe';
+const defaultGameId = 'TicTacToe';
 const defaultMctsSettings = {
   explorationBias: 1.414,
   maxIterations: 1000,
@@ -57,9 +63,30 @@ const appHelpContent: HelpContent = {
 };
 
 interface PersistedAppState {
-  selectedGame: string;
+  selectedGameId: string;
   mctsSettings: typeof defaultMctsSettings;
+  lastSelectedGameIdByFamily: Record<string, string>;
 }
+
+const isValidGameId = (gameId: unknown): gameId is string => (
+  typeof gameId === 'string' && gameId in games
+);
+
+const sanitizeLastSelectedGameIdByFamily = (
+  value: unknown,
+): Record<string, string> => {
+  if (typeof value !== 'object' || value === null) {
+    return {};
+  }
+
+  const entries = Object.entries(value).filter(([familyId, gameId]) => (
+    familyId in gameFamilies
+    && isValidGameId(gameId)
+    && gameIdToFamilyId[gameId] === familyId
+  ));
+
+  return Object.fromEntries(entries);
+};
 
 const loadPersistedAppState = (): PersistedAppState | null => {
   const persistedState = readJsonStorage<PersistedAppState>(APP_STORAGE_KEY);
@@ -68,8 +95,7 @@ const loadPersistedAppState = (): PersistedAppState | null => {
   }
 
   if (
-    typeof persistedState.selectedGame !== 'string' ||
-    !(persistedState.selectedGame in games) ||
+    !isValidGameId(persistedState.selectedGameId) ||
     typeof persistedState.mctsSettings?.explorationBias !== 'number' ||
     typeof persistedState.mctsSettings?.maxIterations !== 'number' ||
     typeof persistedState.mctsSettings?.maxTime !== 'number'
@@ -77,34 +103,40 @@ const loadPersistedAppState = (): PersistedAppState | null => {
     return null;
   }
 
-  return persistedState;
+  return {
+    selectedGameId: persistedState.selectedGameId,
+    mctsSettings: persistedState.mctsSettings,
+    lastSelectedGameIdByFamily: sanitizeLastSelectedGameIdByFamily(
+      persistedState.lastSelectedGameIdByFamily,
+    ),
+  };
 };
 
-const readSelectedGameFromUrl = (): string | null => {
+const readSelectedGameIdFromUrl = (): string | null => {
   if (typeof window === 'undefined') {
     return null;
   }
 
-  const selectedGame = new URLSearchParams(window.location.search).get(
+  const selectedGameId = new URLSearchParams(window.location.search).get(
     gameQueryParam,
   );
-  if (!selectedGame || !(selectedGame in games)) {
+  if (!isValidGameId(selectedGameId)) {
     return null;
   }
 
-  return selectedGame;
+  return selectedGameId;
 };
 
-const writeSelectedGameToUrl = (selectedGame: string) => {
+const writeSelectedGameIdToUrl = (selectedGameId: string) => {
   if (typeof window === 'undefined') {
     return;
   }
 
   const nextUrl = new URL(window.location.href);
-  if (selectedGame === defaultGame) {
+  if (selectedGameId === defaultGameId) {
     nextUrl.searchParams.delete(gameQueryParam);
   } else {
-    nextUrl.searchParams.set(gameQueryParam, selectedGame);
+    nextUrl.searchParams.set(gameQueryParam, selectedGameId);
   }
 
   const nextPath = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
@@ -116,23 +148,75 @@ const writeSelectedGameToUrl = (selectedGame: string) => {
 
 const App: React.FC = () => {
   const [persistedAppState] = useState(loadPersistedAppState);
+  const initialSelectedGameId = (
+    readSelectedGameIdFromUrl()
+    ?? persistedAppState?.selectedGameId
+    ?? defaultGameId
+  );
   const [mctsSettings, setMctsSettings] = useState(
     () => persistedAppState?.mctsSettings ?? defaultMctsSettings,
   );
-  const [selectedGame, setSelectedGame] = useState<string>(
-    () =>
-      readSelectedGameFromUrl() ??
-      persistedAppState?.selectedGame ??
-      defaultGame,
+  const [selectedGameId, setSelectedGameId] = useState<string>(
+    initialSelectedGameId,
   );
+  const [lastSelectedGameIdByFamily, setLastSelectedGameIdByFamily] = useState<
+    Record<string, string>
+  >(() => {
+    const selectedFamilyId = gameIdToFamilyId[initialSelectedGameId];
+    return {
+      ...sanitizeLastSelectedGameIdByFamily(
+        persistedAppState?.lastSelectedGameIdByFamily,
+      ),
+      [selectedFamilyId]: initialSelectedGameId,
+    };
+  });
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [helpTopic, setHelpTopic] = useState<HelpTopic>('app');
   const [sessionResetVersion, setSessionResetVersion] = useState(0);
-  const currentGame = games[selectedGame] ?? games[defaultGame];
+  const selectedFamilyId = gameIdToFamilyId[selectedGameId] ?? gameIdToFamilyId[defaultGameId];
+  const currentFamily = gameFamilies[selectedFamilyId];
+  const currentGame = games[selectedGameId] ?? games[defaultGameId];
+  const currentFamilyVariantOptions = Object.fromEntries(
+    currentFamily.gameIds.map((gameId) => {
+      const entry = gameEntriesById[gameId];
+      return [gameId, entry.variantName ?? entry.name];
+    }),
+  );
+  const hasVariantPicker = currentFamily.gameIds.length > 1;
 
-  const changeGame = useCallback((game: string) => {
-    setSelectedGame(game);
+  const changeSelectedGame = useCallback((gameId: string) => {
+    if (!(gameId in games)) {
+      return;
+    }
+
+    setSelectedGameId(gameId);
+    setLastSelectedGameIdByFamily((current) => {
+      const familyId = gameIdToFamilyId[gameId];
+      if (current[familyId] === gameId) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [familyId]: gameId,
+      };
+    });
   }, []);
+
+  const changeFamily = useCallback((familyId: string) => {
+    const family = gameFamilies[familyId];
+    if (!family) {
+      return;
+    }
+
+    changeSelectedGame(
+      lastSelectedGameIdByFamily[familyId] ?? family.defaultGameId,
+    );
+  }, [changeSelectedGame, lastSelectedGameIdByFamily]);
+
+  const changeVariant = useCallback((gameId: string) => {
+    changeSelectedGame(gameId);
+  }, [changeSelectedGame]);
 
   const openHelpModal = useCallback(() => {
     setIsHelpModalOpen(true);
@@ -163,14 +247,15 @@ const App: React.FC = () => {
 
   useEffect(() => {
     writeJsonStorage(APP_STORAGE_KEY, {
-      selectedGame,
+      selectedGameId,
       mctsSettings,
+      lastSelectedGameIdByFamily,
     } satisfies PersistedAppState);
-  }, [mctsSettings, selectedGame]);
+  }, [lastSelectedGameIdByFamily, mctsSettings, selectedGameId]);
 
   useEffect(() => {
-    writeSelectedGameToUrl(selectedGame);
-  }, [selectedGame]);
+    writeSelectedGameIdToUrl(selectedGameId);
+  }, [selectedGameId]);
 
   const resetSavedData = useCallback(() => {
     for (const game of Object.values(games)) {
@@ -178,7 +263,10 @@ const App: React.FC = () => {
     }
 
     removeStorageKey(APP_STORAGE_KEY);
-    setSelectedGame(defaultGame);
+    setSelectedGameId(defaultGameId);
+    setLastSelectedGameIdByFamily({
+      [gameIdToFamilyId[defaultGameId]]: defaultGameId,
+    });
     setMctsSettings(defaultMctsSettings);
     setSessionResetVersion((version) => version + 1);
   }, []);
@@ -187,18 +275,33 @@ const App: React.FC = () => {
     <div className="mx-auto w-full max-w-7xl overflow-x-hidden px-4 py-4">
       <div className="flex w-full max-w-full flex-wrap gap-4 overflow-x-hidden">
         <GameSessionView
-          key={`${selectedGame}:${sessionResetVersion}`}
+          key={`${selectedGameId}:${sessionResetVersion}`}
           game={currentGame}
           selector={
-            <div className="flex w-full items-center justify-center gap-2">
-              <Select
-                ariaLabel="Game"
-                value={selectedGame}
-                onChange={changeGame}
-                options={gameOptions}
-                className="px-4 py-2 text-xl"
-                centerText={true}
-              />
+            <div className="grid w-full max-w-3xl grid-cols-[minmax(0,1fr)_auto] items-center justify-center gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+              <div className="min-w-0">
+                <Select
+                  ariaLabel="Game"
+                  value={selectedFamilyId}
+                  onChange={changeFamily}
+                  options={gameFamilyOptions}
+                  className="w-full px-4 py-2 text-xl"
+                  centerText={true}
+                />
+              </div>
+              <div className="hidden min-w-0 sm:block">
+                {hasVariantPicker ? (
+                  <Select
+                    ariaLabel="Variant"
+                    value={selectedGameId}
+                    onChange={changeVariant}
+                    options={currentFamilyVariantOptions}
+                    className="w-full px-4 py-2 text-base"
+                  />
+                ) : (
+                  <div aria-hidden="true" className="h-12" />
+                )}
+              </div>
               <Tooltip content="Help" placement="bottom">
                 <button
                   type="button"
@@ -209,6 +312,17 @@ const App: React.FC = () => {
                   <FiHelpCircle className="text-lg" />
                 </button>
               </Tooltip>
+              {hasVariantPicker && (
+                <div className="min-w-0 sm:hidden">
+                  <Select
+                    ariaLabel="Variant"
+                    value={selectedGameId}
+                    onChange={changeVariant}
+                    options={currentFamilyVariantOptions}
+                    className="w-full px-4 py-2 text-base"
+                  />
+                </div>
+              )}
             </div>
           }
           mctsSettings={mctsSettings}

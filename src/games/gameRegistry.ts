@@ -10,11 +10,18 @@ import TicTacToe from './TicTacToe';
 import UltimateTicTacToe from './UltimateTicTacToe';
 import type {
   Game,
+  GameFamilyEntry,
   GameBoardProps,
   GameRegistryEntry,
   SearchTreeLike,
   TypedGameDefinition,
 } from '../types/Game';
+
+interface GameEntryMetadata {
+  familyId?: string;
+  familyName?: string;
+  variantName?: string;
+}
 
 const createTypedGameEntry = <
   TState extends GameState<TMove, TTeam, TState>,
@@ -22,9 +29,13 @@ const createTypedGameEntry = <
   TTeam = string,
 >(
   definition: TypedGameDefinition<TState, TMove, TTeam>,
+  metadata: GameEntryMetadata = {},
 ): GameRegistryEntry => ({
   id: definition.id,
   name: definition.name,
+  familyId: metadata.familyId ?? definition.id,
+  familyName: metadata.familyName ?? definition.name,
+  variantName: metadata.variantName,
   game: {
     id: definition.id,
     name: definition.name,
@@ -122,6 +133,35 @@ const createTypedGameEntry = <
   },
 });
 
+export const buildGameFamilies = (
+  entries: GameRegistryEntry[],
+): GameFamilyEntry[] => {
+  const families = new Map<string, GameFamilyEntry>();
+
+  for (const entry of entries) {
+    const existingFamily = families.get(entry.familyId);
+    if (existingFamily) {
+      if (existingFamily.name !== entry.familyName) {
+        throw new Error(
+          `Conflicting family names for ${entry.familyId}: ${existingFamily.name} vs ${entry.familyName}`,
+        );
+      }
+
+      existingFamily.gameIds.push(entry.id);
+      continue;
+    }
+
+    families.set(entry.familyId, {
+      id: entry.familyId,
+      name: entry.familyName,
+      defaultGameId: entry.id,
+      gameIds: [entry.id],
+    });
+  }
+
+  return [...families.values()];
+};
+
 export const gameEntries: GameRegistryEntry[] = [
   createTypedGameEntry(ConnectFour),
   createTypedGameEntry(DobutsuShogi),
@@ -134,6 +174,22 @@ export const gameEntries: GameRegistryEntry[] = [
 
 export const games: Record<string, Game> = Object.fromEntries(
   gameEntries.map((entry) => [entry.id, entry.game]),
+);
+
+export const gameEntriesById: Record<string, GameRegistryEntry> = Object.fromEntries(
+  gameEntries.map((entry) => [entry.id, entry]),
+);
+
+export const gameFamilies: Record<string, GameFamilyEntry> = Object.fromEntries(
+  buildGameFamilies(gameEntries).map((family) => [family.id, family]),
+);
+
+export const gameIdToFamilyId: Record<string, string> = Object.fromEntries(
+  gameEntries.map((entry) => [entry.id, entry.familyId]),
+);
+
+export const gameFamilyOptions: Record<string, string> = Object.fromEntries(
+  Object.values(gameFamilies).map((family) => [family.id, family.name]),
 );
 
 export const gameOptions: Record<string, string> = Object.fromEntries(

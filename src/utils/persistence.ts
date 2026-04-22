@@ -1,4 +1,4 @@
-export const APP_STORAGE_KEY = 'mcts-web:app:v1';
+export const APP_STORAGE_KEY = 'mcts-web:app:v2';
 export const GAME_SESSION_STORAGE_KEY_PREFIX = 'mcts-web:session:v1:';
 
 export const getGameSessionStorageKey = (gameId: string) => `${GAME_SESSION_STORAGE_KEY_PREFIX}${gameId}`;

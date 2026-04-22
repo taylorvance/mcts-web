@@ -5,7 +5,7 @@ import { DobutsuShogiState } from './DobutsuShogi/state';
 import { FillerState } from './Filler/state';
 import { OnitamaState } from './Onitama/state';
 import { OthelloState } from './Othello/state';
-import { games } from './gameRegistry';
+import { buildGameFamilies, gameFamilies, gameIdToFamilyId, games } from './gameRegistry';
 
 describe('gameRegistry', () => {
   it.each([
@@ -108,5 +108,45 @@ describe('gameRegistry', () => {
     fireEvent.click(screen.getByTestId('othello-cell-19'));
 
     expect(onMove).toHaveBeenCalledWith('19');
+  });
+
+  it('creates singleton families for existing games', () => {
+    expect(gameIdToFamilyId.DobutsuShogi).toBe('DobutsuShogi');
+    expect(gameFamilies.DobutsuShogi).toMatchObject({
+      id: 'DobutsuShogi',
+      name: 'Dobutsu Shogi',
+      defaultGameId: 'DobutsuShogi',
+      gameIds: ['DobutsuShogi'],
+    });
+  });
+
+  it('groups multiple games into one family when entries share family metadata', () => {
+    const families = buildGameFamilies([
+      {
+        id: 'DobutsuShogi',
+        name: 'Dobutsu Shogi',
+        familyId: 'Shogi',
+        familyName: 'Shogi',
+        variantName: 'Dobutsu',
+        game: games.DobutsuShogi,
+      },
+      {
+        id: 'MiniShogi',
+        name: 'Mini Shogi',
+        familyId: 'Shogi',
+        familyName: 'Shogi',
+        variantName: 'Mini',
+        game: games.DobutsuShogi,
+      },
+    ]);
+
+    expect(families).toEqual([
+      {
+        id: 'Shogi',
+        name: 'Shogi',
+        defaultGameId: 'DobutsuShogi',
+        gameIds: ['DobutsuShogi', 'MiniShogi'],
+      },
+    ]);
   });
 });

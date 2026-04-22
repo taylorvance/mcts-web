@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-20T20:00:56.429Z",
+  "generatedAt": "2026-04-22T01:29:25.266Z",
   "methodology": {
     "costPolicy": "measured with performance.now() across sampled random playout positions in the same run",
     "movePolicy": "uniform-random legal move playouts with deterministic seeded randomness",
@@ -581,6 +581,657 @@
           "median": 4,
           "min": 4,
           "p90": 5
+        }
+      ]
+    },
+    {
+      "gameId": "DobutsuShogi",
+      "gameName": "Dobutsu Shogi",
+      "sampling": {
+        "samples": 100,
+        "maxPlies": 160,
+        "bucketSize": 5,
+        "truncatedSamples": 0
+      },
+      "openingBranching": 4,
+      "averageBranching": 8.156021897810218,
+      "averageGameLength": 10.96,
+      "gameLength": {
+        "max": 46,
+        "mean": 10.96,
+        "median": 9,
+        "min": 3,
+        "p90": 20,
+        "histogram": [
+          {
+            "plies": 3,
+            "count": 5
+          },
+          {
+            "plies": 4,
+            "count": 10
+          },
+          {
+            "plies": 5,
+            "count": 10
+          },
+          {
+            "plies": 6,
+            "count": 11
+          },
+          {
+            "plies": 7,
+            "count": 4
+          },
+          {
+            "plies": 8,
+            "count": 7
+          },
+          {
+            "plies": 9,
+            "count": 6
+          },
+          {
+            "plies": 10,
+            "count": 3
+          },
+          {
+            "plies": 11,
+            "count": 7
+          },
+          {
+            "plies": 12,
+            "count": 7
+          },
+          {
+            "plies": 13,
+            "count": 2
+          },
+          {
+            "plies": 14,
+            "count": 4
+          },
+          {
+            "plies": 15,
+            "count": 3
+          },
+          {
+            "plies": 16,
+            "count": 3
+          },
+          {
+            "plies": 17,
+            "count": 2
+          },
+          {
+            "plies": 18,
+            "count": 2
+          },
+          {
+            "plies": 19,
+            "count": 2
+          },
+          {
+            "plies": 20,
+            "count": 2
+          },
+          {
+            "plies": 21,
+            "count": 2
+          },
+          {
+            "plies": 23,
+            "count": 3
+          },
+          {
+            "plies": 24,
+            "count": 1
+          },
+          {
+            "plies": 28,
+            "count": 1
+          },
+          {
+            "plies": 29,
+            "count": 1
+          },
+          {
+            "plies": 35,
+            "count": 1
+          },
+          {
+            "plies": 46,
+            "count": 1
+          }
+        ]
+      },
+      "complexity": {
+        "averageLogBranchingPerPly": 2.7369078703439835,
+        "averageCumulativeLogBranching": 31.486332393116978
+      },
+      "runtime": {
+        "averageGetLegalMovesMs": 0.004277489051094481,
+        "averageMakeMoveMs": 0.006571443430656808,
+        "averageRandomPlayoutMs": 0.1721333700000025,
+        "averageRandomPlayoutLength": 10.96,
+        "playoutPliesPerSecond": 63671.558861595746
+      },
+      "branchingByPly": [
+        {
+          "ply": 0,
+          "positions": 100,
+          "max": 4,
+          "mean": 4,
+          "median": 4,
+          "min": 4,
+          "p90": 4
+        },
+        {
+          "ply": 1,
+          "positions": 100,
+          "max": 5,
+          "mean": 4.35,
+          "median": 4,
+          "min": 4,
+          "p90": 5
+        },
+        {
+          "ply": 2,
+          "positions": 100,
+          "max": 11,
+          "mean": 7.93,
+          "median": 7,
+          "min": 6,
+          "p90": 11
+        },
+        {
+          "ply": 3,
+          "positions": 95,
+          "max": 14,
+          "mean": 8.052631578947368,
+          "median": 7,
+          "min": 4,
+          "p90": 12
+        },
+        {
+          "ply": 4,
+          "positions": 85,
+          "max": 14,
+          "mean": 8.08235294117647,
+          "median": 6,
+          "min": 4,
+          "p90": 13
+        },
+        {
+          "ply": 5,
+          "positions": 75,
+          "max": 19,
+          "mean": 8.546666666666667,
+          "median": 7,
+          "min": 3,
+          "p90": 14
+        },
+        {
+          "ply": 6,
+          "positions": 64,
+          "max": 15,
+          "mean": 9.265625,
+          "median": 8,
+          "min": 5,
+          "p90": 14
+        },
+        {
+          "ply": 7,
+          "positions": 60,
+          "max": 25,
+          "mean": 8.916666666666666,
+          "median": 8,
+          "min": 4,
+          "p90": 13
+        },
+        {
+          "ply": 8,
+          "positions": 53,
+          "max": 21,
+          "mean": 9.018867924528301,
+          "median": 7,
+          "min": 4,
+          "p90": 15
+        },
+        {
+          "ply": 9,
+          "positions": 47,
+          "max": 20,
+          "mean": 8.936170212765957,
+          "median": 8,
+          "min": 3,
+          "p90": 14
+        },
+        {
+          "ply": 10,
+          "positions": 44,
+          "max": 19,
+          "mean": 9.840909090909092,
+          "median": 8,
+          "min": 5,
+          "p90": 15
+        },
+        {
+          "ply": 11,
+          "positions": 37,
+          "max": 23,
+          "mean": 9.027027027027026,
+          "median": 8,
+          "min": 4,
+          "p90": 14
+        },
+        {
+          "ply": 12,
+          "positions": 30,
+          "max": 15,
+          "mean": 9.7,
+          "median": 9,
+          "min": 5,
+          "p90": 15
+        },
+        {
+          "ply": 13,
+          "positions": 28,
+          "max": 18,
+          "mean": 9.928571428571429,
+          "median": 9,
+          "min": 5,
+          "p90": 14
+        },
+        {
+          "ply": 14,
+          "positions": 24,
+          "max": 21,
+          "mean": 10.708333333333334,
+          "median": 10,
+          "min": 4,
+          "p90": 15
+        },
+        {
+          "ply": 15,
+          "positions": 21,
+          "max": 22,
+          "mean": 9.095238095238095,
+          "median": 8,
+          "min": 5,
+          "p90": 13
+        },
+        {
+          "ply": 16,
+          "positions": 18,
+          "max": 20,
+          "mean": 10.833333333333334,
+          "median": 11,
+          "min": 4,
+          "p90": 15
+        },
+        {
+          "ply": 17,
+          "positions": 16,
+          "max": 20,
+          "mean": 9.4375,
+          "median": 7,
+          "min": 4,
+          "p90": 18
+        },
+        {
+          "ply": 18,
+          "positions": 14,
+          "max": 13,
+          "mean": 8.5,
+          "median": 8,
+          "min": 6,
+          "p90": 12
+        },
+        {
+          "ply": 19,
+          "positions": 12,
+          "max": 18,
+          "mean": 9.166666666666666,
+          "median": 7,
+          "min": 3,
+          "p90": 14
+        },
+        {
+          "ply": 20,
+          "positions": 10,
+          "max": 21,
+          "mean": 10,
+          "median": 8,
+          "min": 4,
+          "p90": 15
+        },
+        {
+          "ply": 21,
+          "positions": 8,
+          "max": 14,
+          "mean": 8.25,
+          "median": 7,
+          "min": 4,
+          "p90": 14
+        },
+        {
+          "ply": 22,
+          "positions": 8,
+          "max": 21,
+          "mean": 11.75,
+          "median": 11,
+          "min": 5,
+          "p90": 21
+        },
+        {
+          "ply": 23,
+          "positions": 5,
+          "max": 13,
+          "mean": 9.8,
+          "median": 12,
+          "min": 6,
+          "p90": 13
+        },
+        {
+          "ply": 24,
+          "positions": 4,
+          "max": 12,
+          "mean": 10.5,
+          "median": 10,
+          "min": 8,
+          "p90": 12
+        },
+        {
+          "ply": 25,
+          "positions": 4,
+          "max": 14,
+          "mean": 9.75,
+          "median": 6,
+          "min": 6,
+          "p90": 14
+        },
+        {
+          "ply": 26,
+          "positions": 4,
+          "max": 17,
+          "mean": 10.5,
+          "median": 7,
+          "min": 7,
+          "p90": 17
+        },
+        {
+          "ply": 27,
+          "positions": 4,
+          "max": 15,
+          "mean": 10.5,
+          "median": 8,
+          "min": 5,
+          "p90": 15
+        },
+        {
+          "ply": 28,
+          "positions": 3,
+          "max": 12,
+          "mean": 9.666666666666666,
+          "median": 12,
+          "min": 5,
+          "p90": 12
+        },
+        {
+          "ply": 29,
+          "positions": 2,
+          "max": 15,
+          "mean": 12.5,
+          "median": 10,
+          "min": 10,
+          "p90": 15
+        },
+        {
+          "ply": 30,
+          "positions": 2,
+          "max": 12,
+          "mean": 11.5,
+          "median": 11,
+          "min": 11,
+          "p90": 12
+        },
+        {
+          "ply": 31,
+          "positions": 2,
+          "max": 15,
+          "mean": 12.5,
+          "median": 10,
+          "min": 10,
+          "p90": 15
+        },
+        {
+          "ply": 32,
+          "positions": 2,
+          "max": 11,
+          "mean": 10.5,
+          "median": 10,
+          "min": 10,
+          "p90": 11
+        },
+        {
+          "ply": 33,
+          "positions": 2,
+          "max": 20,
+          "mean": 17.5,
+          "median": 15,
+          "min": 15,
+          "p90": 20
+        },
+        {
+          "ply": 34,
+          "positions": 2,
+          "max": 16,
+          "mean": 10.5,
+          "median": 5,
+          "min": 5,
+          "p90": 16
+        },
+        {
+          "ply": 35,
+          "positions": 1,
+          "max": 23,
+          "mean": 23,
+          "median": 23,
+          "min": 23,
+          "p90": 23
+        },
+        {
+          "ply": 36,
+          "positions": 1,
+          "max": 14,
+          "mean": 14,
+          "median": 14,
+          "min": 14,
+          "p90": 14
+        },
+        {
+          "ply": 37,
+          "positions": 1,
+          "max": 19,
+          "mean": 19,
+          "median": 19,
+          "min": 19,
+          "p90": 19
+        },
+        {
+          "ply": 38,
+          "positions": 1,
+          "max": 14,
+          "mean": 14,
+          "median": 14,
+          "min": 14,
+          "p90": 14
+        },
+        {
+          "ply": 39,
+          "positions": 1,
+          "max": 12,
+          "mean": 12,
+          "median": 12,
+          "min": 12,
+          "p90": 12
+        },
+        {
+          "ply": 40,
+          "positions": 1,
+          "max": 23,
+          "mean": 23,
+          "median": 23,
+          "min": 23,
+          "p90": 23
+        },
+        {
+          "ply": 41,
+          "positions": 1,
+          "max": 6,
+          "mean": 6,
+          "median": 6,
+          "min": 6,
+          "p90": 6
+        },
+        {
+          "ply": 42,
+          "positions": 1,
+          "max": 25,
+          "mean": 25,
+          "median": 25,
+          "min": 25,
+          "p90": 25
+        },
+        {
+          "ply": 43,
+          "positions": 1,
+          "max": 5,
+          "mean": 5,
+          "median": 5,
+          "min": 5,
+          "p90": 5
+        },
+        {
+          "ply": 44,
+          "positions": 1,
+          "max": 33,
+          "mean": 33,
+          "median": 33,
+          "min": 33,
+          "p90": 33
+        },
+        {
+          "ply": 45,
+          "positions": 1,
+          "max": 6,
+          "mean": 6,
+          "median": 6,
+          "min": 6,
+          "p90": 6
+        }
+      ],
+      "branchingByBucket": [
+        {
+          "startPly": 0,
+          "endPly": 4,
+          "positions": 480,
+          "max": 14,
+          "mean": 6.416666666666667,
+          "median": 5,
+          "min": 4,
+          "p90": 11
+        },
+        {
+          "startPly": 5,
+          "endPly": 9,
+          "positions": 299,
+          "max": 25,
+          "mean": 8.919732441471572,
+          "median": 8,
+          "min": 3,
+          "p90": 14
+        },
+        {
+          "startPly": 10,
+          "endPly": 14,
+          "positions": 163,
+          "max": 23,
+          "mean": 9.773006134969325,
+          "median": 9,
+          "min": 4,
+          "p90": 15
+        },
+        {
+          "startPly": 15,
+          "endPly": 19,
+          "positions": 81,
+          "max": 22,
+          "mean": 9.45679012345679,
+          "median": 8,
+          "min": 3,
+          "p90": 15
+        },
+        {
+          "startPly": 20,
+          "endPly": 24,
+          "positions": 35,
+          "max": 21,
+          "mean": 10.028571428571428,
+          "median": 10,
+          "min": 4,
+          "p90": 15
+        },
+        {
+          "startPly": 25,
+          "endPly": 29,
+          "positions": 17,
+          "max": 17,
+          "mean": 10.411764705882353,
+          "median": 11,
+          "min": 5,
+          "p90": 15
+        },
+        {
+          "startPly": 30,
+          "endPly": 34,
+          "positions": 10,
+          "max": 20,
+          "mean": 12.5,
+          "median": 11,
+          "min": 5,
+          "p90": 16
+        },
+        {
+          "startPly": 35,
+          "endPly": 39,
+          "positions": 5,
+          "max": 23,
+          "mean": 16.4,
+          "median": 14,
+          "min": 12,
+          "p90": 23
+        },
+        {
+          "startPly": 40,
+          "endPly": 44,
+          "positions": 5,
+          "max": 33,
+          "mean": 18.4,
+          "median": 23,
+          "min": 5,
+          "p90": 33
+        },
+        {
+          "startPly": 45,
+          "endPly": 49,
+          "positions": 1,
+          "max": 6,
+          "mean": 6,
+          "median": 6,
+          "min": 6,
+          "p90": 6
         }
       ]
     },

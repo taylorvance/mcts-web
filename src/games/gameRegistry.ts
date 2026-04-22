@@ -2,6 +2,7 @@ import React from 'react';
 import { MCTS } from 'multimcts';
 import type { GameState } from 'multimcts';
 import ConnectFour from './ConnectFour';
+import DobutsuShogi from './DobutsuShogi';
 import Filler from './Filler';
 import Onitama from './Onitama';
 import Othello from './Othello';
@@ -112,6 +113,7 @@ const createTypedGameEntry = <
 
 export const gameEntries: GameRegistryEntry[] = [
   createTypedGameEntry(ConnectFour),
+  createTypedGameEntry(DobutsuShogi),
   createTypedGameEntry(Filler),
   createTypedGameEntry(Onitama),
   createTypedGameEntry(Othello),

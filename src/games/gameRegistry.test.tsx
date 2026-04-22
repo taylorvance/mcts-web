@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ConnectFourState } from './ConnectFour/state';
+import { DobutsuShogiState } from './DobutsuShogi/state';
 import { FillerState } from './Filler/state';
 import { OnitamaState } from './Onitama/state';
 import { OthelloState } from './Othello/state';
@@ -59,6 +60,21 @@ describe('gameRegistry', () => {
     fireEvent.click(screen.getAllByRole('button')[0]);
 
     expect(onMove).toHaveBeenCalledWith(2);
+  });
+
+  it('adapts typed board moves for Dobutsu Shogi', () => {
+    const onMove = vi.fn();
+
+    render(<games.DobutsuShogi.Board state={new DobutsuShogiState()} onMove={onMove} />);
+
+    fireEvent.click(screen.getByTestId('dobutsu-cell-7'));
+    fireEvent.click(screen.getByTestId('dobutsu-cell-4'));
+
+    expect(onMove).toHaveBeenCalledWith({
+      type: 'move',
+      from: 7,
+      to: 4,
+    });
   });
 
   it('adapts typed board moves for Onitama', () => {

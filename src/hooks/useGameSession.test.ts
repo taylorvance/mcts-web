@@ -15,6 +15,7 @@ const TEST_SETTINGS = {
 describe('useGameSession', () => {
   beforeEach(() => {
     window.localStorage.removeItem(getGameSessionStorageKey(games.TicTacToe.id));
+    window.localStorage.removeItem(getGameSessionStorageKey(games.DobutsuShogi.id));
     window.localStorage.removeItem(getGameSessionStorageKey(games.Onitama.id));
   });
 
@@ -109,6 +110,18 @@ describe('useGameSession', () => {
         result.current.toggleAutoplay();
       });
     }
+  });
+
+  it('can request an AI move for Dobutsu Shogi from the opening state', async () => {
+    const { result } = renderHook(() => useGameSession(games.DobutsuShogi, TEST_SETTINGS));
+
+    act(() => {
+      result.current.doAIMove();
+    });
+
+    await waitFor(() => {
+      expect(result.current.historyIdx).toBe(1);
+    });
   });
 
   it('persists the current history and replay preference', async () => {

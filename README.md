@@ -4,6 +4,7 @@
 
 Current games:
 - Connect Four
+- Dobutsu Shogi
 - Tic-Tac-Toe
 - Ultimate Tic-Tac-Toe
 - Filler

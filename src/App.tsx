@@ -111,8 +111,8 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-4">
-      <div className="flex flex-wrap gap-4">
+    <div className="mx-auto w-full max-w-7xl overflow-x-hidden px-4 py-4">
+      <div className="flex w-full max-w-full flex-wrap gap-4 overflow-x-hidden">
         <GameSessionView
           key={`${selectedGame}:${sessionResetVersion}`}
           game={currentGame}

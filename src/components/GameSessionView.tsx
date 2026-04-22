@@ -73,22 +73,23 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
   };
   useAppHotkeys(hotkeys);
 
-  const hotkeyHint = (keys:string) => <span className="text-xs">({keys})</span>;
+  const hotkeyHint = (keys:string) => <span className="text-xs leading-none opacity-70">{keys}</span>;
+  const controlButtonClass = 'h-10 text-lg sm:h-11 sm:text-xl';
   const formatNumber = (value: number) => value.toLocaleString('en-US', {
     maximumFractionDigits: 0,
   });
   return (
-    <div className="flex flex-wrap gap-4 w-full">
-      <section className="flex flex-col flex-1 items-center gap-4">
+    <div className="flex w-full max-w-full flex-col gap-4 overflow-x-hidden xl:flex-row">
+      <section className="flex w-full min-w-0 max-w-full flex-col items-center gap-4 overflow-x-hidden xl:flex-1">
         {selector}
 
-        <section className="flex items-center gap-2 text-xl select-none">
-          <Button onClick={resetGame} tooltip="Reset"><HiRefresh />{hotkeyHint(hotkeys.reset.keys)}</Button>
+        <section className="flex w-full max-w-full flex-nowrap items-center justify-center gap-1 select-none sm:gap-2">
+          <Button onClick={resetGame} tooltip="Reset" className={controlButtonClass}><HiRefresh />{hotkeyHint(hotkeys.reset.keys)}</Button>
 
           <ButtonGroup tooltip={`${historyIdx}/${history.length-1}`}>
-            <Button onClick={undoMove} disabled={!canUndo}><FaUndo />{hotkeyHint(hotkeys.undo.keys)}</Button>
+            <Button onClick={undoMove} disabled={!canUndo} className={controlButtonClass}><FaUndo />{hotkeyHint(hotkeys.undo.keys)}</Button>
 
-            <Button onClick={toggleHistory} className="px-0 relative" disabled={history.length===1}>
+            <Button onClick={toggleHistory} className={`${controlButtonClass} relative px-0`} disabled={history.length===1}>
               <BsThreeDotsVertical />
               <div className="absolute top-10 left-1/2 -translate-x-1/2 select-text text-sm border rounded-lg shadow-lg p-1 flex z-10 backdrop-blur-lg" style={{display:(showHistory?'block':'none')}}>
                 {history.map((move, i) => (
@@ -105,14 +106,14 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
               </div>
             </Button>
 
-            <Button onClick={redoMove} disabled={!canRedo}><FaRedo />{hotkeyHint(hotkeys.redo.keys)}</Button>
+            <Button onClick={redoMove} disabled={!canRedo} className={controlButtonClass}><FaRedo />{hotkeyHint(hotkeys.redo.keys)}</Button>
           </ButtonGroup>
 
-          <Button onClick={doAIMove} disabled={!canPlay} tooltip="AI Move"><FaForwardStep />{hotkeyHint(hotkeys.aiMove.keys)}</Button>
+          <Button onClick={doAIMove} disabled={!canPlay} tooltip="AI Move" className={controlButtonClass}><FaForwardStep />{hotkeyHint(hotkeys.aiMove.keys)}</Button>
 
           <Button
             onClick={toggleAutoplay}
-            className={isAutoplaying ? "bg-gray-400" : ""}
+            className={`${controlButtonClass} ${isAutoplaying ? 'bg-gray-400' : ''}`}
             tooltip="Autoplay"
             disabled={isTerminal}
           >
@@ -122,7 +123,7 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
 
           <Button
             onClick={toggleAIMoveAfterPlayer}
-            className={doAIMoveAfterPlayer ? "bg-gray-400" : ""}
+            className={`${controlButtonClass} ${doAIMoveAfterPlayer ? 'bg-gray-400' : ''}`}
             tooltip="AI move after Player"
           >
             {doAIMoveAfterPlayer ? <TbRobot /> : <TbRobotOff />}
@@ -130,12 +131,14 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
           </Button>
         </section>
 
-        <div className="border-2 p-2 rounded-lg">
-          <GameBoard Board={game.Board} gameState={gameState} onMove={handlePlayerMove} />
+        <div className="w-full max-w-full overflow-x-auto overflow-y-hidden rounded-lg border-2 p-2">
+          <div className="mx-auto w-max">
+            <GameBoard Board={game.Board} gameState={gameState} onMove={handlePlayerMove} />
+          </div>
         </div>
       </section>
 
-      <section className="flex flex-col flex-1 min-w-0 gap-4">
+      <section className="flex min-w-0 flex-col gap-4 xl:flex-1">
         <h1 className="text-2xl font-bold flex-none">MCTS Settings</h1>
         <div className="flex-none">
           <MCTSSettings settings={mctsSettings} setSettings={setMctsSettings} />

@@ -5,6 +5,7 @@ interface ButtonProps {
   onClick: () => void;
   disabled?: boolean;
   tooltip?: string;
+  ariaLabel?: string;
   children: React.ReactNode;
   className?: string;
   isInGroup?: boolean;
@@ -16,6 +17,7 @@ const Button: React.FC<ButtonProps> = ({
   onClick,
   disabled = false,
   tooltip,
+  ariaLabel,
   children,
   className = '',
   isInGroup = false,
@@ -24,6 +26,7 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
   const baseClassName = 'p-2 bg-gray-200 flex items-center gap-1';
   const disabledClassName = disabled ? 'cursor-not-allowed text-white' : '';
+  const accessibleLabel = ariaLabel ?? tooltip;
   
   let roundingClass = 'rounded-lg';
   let marginClass = '';
@@ -42,7 +45,7 @@ const Button: React.FC<ButtonProps> = ({
       className={fullClassName}
       onClick={onClick}
       disabled={disabled}
-      aria-label={tooltip}
+      aria-label={accessibleLabel}
     >
       {children}
     </button>

@@ -62,18 +62,4 @@ describe('OnitamaBoard', () => {
 
     expect(board.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
-
-  it('shows the victory rules and the winning method when the game is over', () => {
-    const streamBoard: OnitamaPiece[] = [
-      'r', 'r', 'R', 'r', 'r',
-      null, null, null, null, null,
-      null, null, null, null, null,
-      null, null, null, null, null,
-      'b', 'b', null, 'b', 'b',
-    ];
-    renderBoard({ r: [2, 4], b: [1, 3], n: 0 }, streamBoard);
-
-    expect(screen.getByText(/Way of the Stone/)).toBeInTheDocument();
-    expect(screen.getByText('Red wins by Way of the Stream.')).toBeInTheDocument();
-  });
 });

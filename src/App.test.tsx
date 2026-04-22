@@ -1,11 +1,22 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import App from './App';
-import { APP_STORAGE_KEY, getGameSessionStorageKey, readJsonStorage } from './utils/persistence';
+import {
+  APP_STORAGE_KEY,
+  getGameSessionStorageKey,
+  readJsonStorage,
+} from './utils/persistence';
 
 describe('App', () => {
   beforeEach(() => {
     window.localStorage.removeItem(APP_STORAGE_KEY);
+    window.history.replaceState(null, '', '/mcts-web/');
   });
 
   it('renders the shell and allows switching to Onitama', () => {
@@ -13,7 +24,9 @@ describe('App', () => {
 
     expect(screen.getByText('MCTS Settings')).toBeInTheDocument();
     expect(screen.getByText('Search Tree')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'tvprograms.tech' })).toHaveAttribute('href', 'https://tvprograms.tech');
+    expect(
+      screen.getByRole('link', { name: 'tvprograms.tech' }),
+    ).toHaveAttribute('href', 'https://tvprograms.tech');
 
     const gameSelect = screen.getByRole('combobox');
     expect(gameSelect).toHaveValue('TicTacToe');
@@ -25,14 +38,17 @@ describe('App', () => {
   });
 
   it('restores the selected game and MCTS settings from localStorage', () => {
-    window.localStorage.setItem(APP_STORAGE_KEY, JSON.stringify({
-      selectedGame: 'Onitama',
-      mctsSettings: {
-        explorationBias: 2.5,
-        maxIterations: 250,
-        maxTime: 3,
-      },
-    }));
+    window.localStorage.setItem(
+      APP_STORAGE_KEY,
+      JSON.stringify({
+        selectedGame: 'Onitama',
+        mctsSettings: {
+          explorationBias: 2.5,
+          maxIterations: 250,
+          maxTime: 3,
+        },
+      }),
+    );
 
     render(<App />);
 
@@ -44,14 +60,17 @@ describe('App', () => {
   });
 
   it('prefers the querystring game over localStorage', () => {
-    window.localStorage.setItem(APP_STORAGE_KEY, JSON.stringify({
-      selectedGame: 'Onitama',
-      mctsSettings: {
-        explorationBias: 2.5,
-        maxIterations: 250,
-        maxTime: 3,
-      },
-    }));
+    window.localStorage.setItem(
+      APP_STORAGE_KEY,
+      JSON.stringify({
+        selectedGame: 'Onitama',
+        mctsSettings: {
+          explorationBias: 2.5,
+          maxIterations: 250,
+          maxTime: 3,
+        },
+      }),
+    );
     window.history.replaceState(null, '', '/mcts-web/?game=Othello');
 
     render(<App />);
@@ -77,21 +96,27 @@ describe('App', () => {
   });
 
   it('can clear saved data and restore default settings', () => {
-    window.localStorage.setItem(APP_STORAGE_KEY, JSON.stringify({
-      selectedGame: 'Onitama',
-      mctsSettings: {
-        explorationBias: 2.5,
-        maxIterations: 250,
-        maxTime: 3,
-      },
-    }));
-    window.localStorage.setItem(getGameSessionStorageKey('Onitama'), JSON.stringify({
-      version: 1,
-      history: ['__INITIAL_STATE__'],
-      historyIdx: 0,
-      doAIMoveAfterPlayer: true,
-      initialState: {},
-    }));
+    window.localStorage.setItem(
+      APP_STORAGE_KEY,
+      JSON.stringify({
+        selectedGame: 'Onitama',
+        mctsSettings: {
+          explorationBias: 2.5,
+          maxIterations: 250,
+          maxTime: 3,
+        },
+      }),
+    );
+    window.localStorage.setItem(
+      getGameSessionStorageKey('Onitama'),
+      JSON.stringify({
+        version: 1,
+        history: ['__INITIAL_STATE__'],
+        historyIdx: 0,
+        doAIMoveAfterPlayer: true,
+        initialState: {},
+      }),
+    );
 
     render(<App />);
 
@@ -111,5 +136,94 @@ describe('App', () => {
         maxTime: 1,
       },
     });
+  });
+
+  it('shows both app help and game-specific help in the modal', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Help' }));
+
+    const appHelpDialog = screen.getByRole('dialog', { name: 'MCTS Help' });
+    expect(appHelpDialog).toBeInTheDocument();
+    expect(
+      within(appHelpDialog).getByText(
+        /Play a variety of games, run MCTS from the current position/i,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(appHelpDialog).getByText(
+        /Exploration Bias controls how much MCTS favors proven lines/i,
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'TicTacToe' }));
+
+    const gameHelpDialog = screen.getByRole('dialog', {
+      name: 'TicTacToe Help',
+    });
+    expect(gameHelpDialog).toBeInTheDocument();
+    expect(
+      within(gameHelpDialog).getByRole('button', { name: 'TicTacToe' }),
+    ).toBeInTheDocument();
+  });
+
+  it('updates the game help page when the selected game changes', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Help' }));
+    fireEvent.click(screen.getByRole('button', { name: 'TicTacToe' }));
+    expect(
+      screen.getByRole('dialog', { name: 'TicTacToe Help' }),
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole('combobox'), {
+      target: { value: 'Onitama' },
+    });
+
+    const dialog = screen.getByRole('dialog', { name: 'Onitama Help' });
+    expect(dialog).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/shares a fifth card in the center/i),
+    ).toBeInTheDocument();
+    expect(within(dialog).getByText(/Way of the Stone/i)).toBeInTheDocument();
+  });
+
+  it('toggles help with the question mark hotkey', () => {
+    render(<App />);
+
+    fireEvent.keyDown(document, { key: '?', shiftKey: true });
+
+    const dialog = screen.getByRole('dialog', { name: 'MCTS Help' });
+    expect(dialog).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(
+        /Play a variety of games, run MCTS from the current position/i,
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: '?', shiftKey: true });
+
+    const closedDialog = screen.queryByRole('dialog', { name: 'MCTS Help' });
+    expect(closedDialog).not.toBeInTheDocument();
+  });
+
+  it('persists the selected help tab across closing and reopening', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Help' }));
+    fireEvent.click(screen.getByRole('button', { name: 'TicTacToe' }));
+    expect(
+      screen.getByRole('dialog', { name: 'TicTacToe Help' }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close help' }));
+    expect(
+      screen.queryByRole('dialog', { name: 'TicTacToe Help' }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Help' }));
+    expect(
+      screen.getByRole('dialog', { name: 'TicTacToe Help' }),
+    ).toBeInTheDocument();
   });
 });

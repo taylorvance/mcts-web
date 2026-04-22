@@ -28,55 +28,61 @@ const createTypedGameEntry = <
   game: {
     id: definition.id,
     name: definition.name,
+    help: definition.help,
     createInitialState: definition.createInitialState,
     serializeState: (state) => {
-      if(!definition.isState(state)) {
+      if (!definition.isState(state)) {
         throw new Error(`Invalid state type for ${definition.name}`);
       }
 
       return definition.serializeState(state);
     },
-    deserializeState: (serializedState) => definition.deserializeState(serializedState),
+    deserializeState: (serializedState) =>
+      definition.deserializeState(serializedState),
     serializeMove: (move, state) => {
-      if(!definition.isState(state)) {
+      if (!definition.isState(state)) {
         throw new Error(`Invalid state type for ${definition.name}`);
       }
 
       return definition.serializeMove(move as TMove, state);
     },
     deserializeMove: (serializedMove, state) => {
-      if(!definition.isState(state)) {
+      if (!definition.isState(state)) {
         throw new Error(`Invalid state type for ${definition.name}`);
       }
 
       return definition.deserializeMove(serializedMove, state);
     },
     applyMove: (state, move) => {
-      if(!definition.isState(state)) {
+      if (!definition.isState(state)) {
         throw new Error(`Invalid state type for ${definition.name}`);
       }
 
       return state.makeMove(move as TMove);
     },
-    createSearch: (explorationBias) => new MCTS<TState, TMove, TTeam>({
-      explorationBias,
-    }) as unknown as SearchTreeLike,
+    createSearch: (explorationBias) =>
+      new MCTS<TState, TMove, TTeam>({
+        explorationBias,
+      }) as unknown as SearchTreeLike,
     search: (search, state, limits) => {
-      if(!definition.isState(state)) {
+      if (!definition.isState(state)) {
         throw new Error(`Invalid state type for ${definition.name}`);
       }
 
       const { maxIterations, maxTime } = limits;
-      if(maxIterations === null && maxTime === null) {
+      if (maxIterations === null && maxTime === null) {
         throw new Error('At least one search limit is required.');
       }
 
-      const result = (search as unknown as MCTS<TState, TMove, TTeam>).search(state, {
-        ...(maxIterations !== null ? { maxIterations } : {}),
-        ...(maxTime !== null ? { maxTimeMs: maxTime * 1000 } : {}),
-      });
+      const result = (search as unknown as MCTS<TState, TMove, TTeam>).search(
+        state,
+        {
+          ...(maxIterations !== null ? { maxIterations } : {}),
+          ...(maxTime !== null ? { maxTimeMs: maxTime * 1000 } : {}),
+        },
+      );
 
-      if(result.bestMove === null) {
+      if (result.bestMove === null) {
         throw new Error('MCTS search did not produce a legal move.');
       }
 
@@ -89,17 +95,22 @@ const createTypedGameEntry = <
       };
     },
     advanceSearchTree: (search, move, nextState) => {
-      if(!definition.isState(nextState)) {
+      if (!definition.isState(nextState)) {
         throw new Error(`Invalid state type for ${definition.name}`);
       }
 
-      return Boolean((search as unknown as MCTS<TState, TMove, TTeam>).advanceToChild(move as TMove, nextState));
+      return Boolean(
+        (search as unknown as MCTS<TState, TMove, TTeam>).advanceToChild(
+          move as TMove,
+          nextState,
+        ),
+      );
     },
     resetSearchTree: (search) => {
       (search as unknown as MCTS<TState, TMove, TTeam>).reset();
     },
     Board: ({ state, onMove }: GameBoardProps) => {
-      if(!definition.isState(state)) {
+      if (!definition.isState(state)) {
         throw new Error(`Invalid state type for ${definition.name}`);
       }
 

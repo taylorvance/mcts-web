@@ -13,15 +13,15 @@ interface LegacySerializedTicTacToeState {
 }
 
 const normalizeCell = (cell: unknown): 'X' | 'O' | null => {
-  if(cell === null) {
+  if (cell === null) {
     return null;
   }
 
-  if(cell === 'X' || cell === true) {
+  if (cell === 'X' || cell === true) {
     return 'X';
   }
 
-  if(cell === 'O' || cell === false) {
+  if (cell === 'O' || cell === false) {
     return 'O';
   }
 
@@ -29,11 +29,11 @@ const normalizeCell = (cell: unknown): 'X' | 'O' | null => {
 };
 
 const normalizeTeam = (team: unknown): 'X' | 'O' => {
-  if(team === 'X' || team === true) {
+  if (team === 'X' || team === true) {
     return 'X';
   }
 
-  if(team === 'O' || team === false) {
+  if (team === 'O' || team === false) {
     return 'O';
   }
 
@@ -43,6 +43,10 @@ const normalizeTeam = (team: unknown): 'X' | 'O' => {
 const TicTacToe: TypedGameDefinition<TicTacToeState, number> = {
   id: 'TicTacToe',
   name: 'TicTacToe',
+  help: {
+    overview: "C'mon man, seriously?",
+    sections: [],
+  },
   createInitialState: () => new TicTacToeState(),
   isState: (state): state is TicTacToeState => state instanceof TicTacToeState,
   serializeState: (state) => ({
@@ -50,8 +54,10 @@ const TicTacToe: TypedGameDefinition<TicTacToeState, number> = {
     team: state.team,
   }),
   deserializeState: (serializedState) => {
-    const { board, team } = serializedState as SerializedTicTacToeState | LegacySerializedTicTacToeState;
-    if(!Array.isArray(board) || board.length !== 9) {
+    const { board, team } = serializedState as
+      | SerializedTicTacToeState
+      | LegacySerializedTicTacToeState;
+    if (!Array.isArray(board) || board.length !== 9) {
       throw new Error('Invalid TicTacToe state');
     }
 

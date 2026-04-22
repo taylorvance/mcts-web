@@ -10,6 +10,26 @@ interface SerializedFillerState {
 const Filler: TypedGameDefinition<FillerState, number> = {
   id: 'Filler',
   name: 'Filler',
+  help: {
+    overview: 'Each player controls a corner territory and expands it by choosing colors. Your region flood-fills into every connected cell of the chosen color, and the larger territory wins once only the two player colors remain.',
+    sections: [
+      {
+        title: 'How To Play',
+        items: [
+          'Choose a color button to repaint your territory and absorb adjacent connected cells of that color.',
+          'You cannot choose the color currently owned by either player.',
+          'The game ends when the board has collapsed to just the two player colors.',
+        ],
+      },
+      {
+        title: 'Strategy Notes',
+        items: [
+          'Short-term gains can hand your opponent an even larger follow-up color.',
+          'Watch both corners at once because legal colors are shared constraints.',
+        ],
+      },
+    ],
+  },
   createInitialState: () => new FillerState(),
   isState: (state): state is FillerState => state instanceof FillerState,
   serializeState: (state) => ({

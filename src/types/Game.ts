@@ -31,6 +31,16 @@ export interface SearchResult {
   move: unknown;
 }
 
+export interface HelpSection {
+  title: string;
+  items: string[];
+}
+
+export interface HelpContent {
+  overview: string;
+  sections: HelpSection[];
+}
+
 export interface GameBoardProps {
   state: AppGameState;
   onMove: (move: unknown) => void;
@@ -49,11 +59,16 @@ export interface Game {
   search: (
     search: SearchTreeLike,
     state: AppGameState,
-    limits: { maxIterations: number | null; maxTime: number | null; },
+    limits: { maxIterations: number | null; maxTime: number | null },
   ) => SearchResult;
-  advanceSearchTree: (search: SearchTreeLike, move: unknown, nextState: AppGameState) => boolean;
+  advanceSearchTree: (
+    search: SearchTreeLike,
+    move: unknown,
+    nextState: AppGameState,
+  ) => boolean;
   resetSearchTree: (search: SearchTreeLike) => void;
   Board: ComponentType<GameBoardProps>;
+  help?: HelpContent;
 }
 
 export interface TypedGameBoardProps<TState extends AppGameState, TMove> {
@@ -75,6 +90,7 @@ export interface TypedGameDefinition<
   serializeMove: (move: TMove, state: TState) => string;
   deserializeMove: (serializedMove: string, state: TState) => TMove;
   Board: ComponentType<TypedGameBoardProps<TState, TMove>>;
+  help?: HelpContent;
 }
 
 export interface GameRegistryEntry {

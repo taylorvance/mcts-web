@@ -23,7 +23,3 @@ lint: ## Run linters.
 .PHONY: test
 test: ## Run the test suite.
 	npm run test
-
-.PHONY: deploy
-deploy: ## Deploy the application to GitHub Pages.
-	npm run deploy

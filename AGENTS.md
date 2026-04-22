@@ -11,7 +11,6 @@ Use npm for dependency management because `package-lock.json` is checked in.
 - `npm run build` or `make build`: run TypeScript build checks and emit the production bundle to `dist/`.
 - `npm run lint` or `make lint`: run ESLint across `.ts` and `.tsx` files.
 - `npm run preview`: serve the production build locally.
-- `npm run deploy` or `make deploy`: publish `dist/` to GitHub Pages.
 
 ## Coding Style & Naming Conventions
 This repo uses React 18, TypeScript, Vite, Tailwind, and ESLint. Prefer functional components and strict typing; `tsconfig.app.json` enables `strict`, `noUnusedLocals`, and `noUnusedParameters`. Match the surrounding file style, but prefer two-space indentation, semicolons, and single quotes in new TS/TSX. Use PascalCase for components and game modules (`UltimateTicTacToe.tsx`), `use...` naming for hooks (`useMCTS.ts`), and keep shared UI generic rather than game-specific.

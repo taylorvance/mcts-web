@@ -45,7 +45,7 @@ const INITIAL_BOARD: Array<DobutsuPiece | null> = [
   'E', 'L', 'G',
 ];
 
-const MOVE_DELTAS: Record<DobutsuPieceKind, Array<[number, number]>> = {
+export const DOBUTSU_MOVE_DELTAS: Record<DobutsuPieceKind, Array<[number, number]>> = {
   L: [
     [-1, -1], [-1, 0], [-1, 1],
     [0, -1],           [0, 1],
@@ -391,7 +391,7 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     const row = getRow(index);
     const col = index % COLS;
 
-    for(const delta of MOVE_DELTAS[getPieceKind(piece)]) {
+    for(const delta of DOBUTSU_MOVE_DELTAS[getPieceKind(piece)]) {
       const [rowDelta, colDelta] = orientDelta(team, delta);
       const nextRow = row + rowDelta;
       const nextCol = col + colDelta;
@@ -437,7 +437,7 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
 
       const row = getRow(index);
       const col = index % COLS;
-      for(const delta of MOVE_DELTAS[getPieceKind(piece)]) {
+      for(const delta of DOBUTSU_MOVE_DELTAS[getPieceKind(piece)]) {
         const [rowDelta, colDelta] = orientDelta(attacker, delta);
         const nextRow = row + rowDelta;
         const nextCol = col + colDelta;

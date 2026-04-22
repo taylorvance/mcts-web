@@ -1,14 +1,11 @@
 import { useMemo, useState } from 'react';
-import type { IconType } from 'react-icons';
-import {
-  GiChicken,
-  GiDeerHead,
-  GiElephant,
-  GiLion,
-  GiRooster,
-} from 'react-icons/gi';
 import type { TypedGameBoardProps } from '../../types/Game';
-import { DobutsuShogiState, type DobutsuDropPieceKind, type DobutsuMove } from './state';
+import {
+  DOBUTSU_MOVE_DELTAS,
+  DobutsuShogiState,
+  type DobutsuDropPieceKind,
+  type DobutsuMove,
+} from './state';
 
 const PIECE_LABELS = {
   L: 'Lion',
@@ -17,12 +14,12 @@ const PIECE_LABELS = {
   C: 'Chick',
   H: 'Hen',
 } as const;
-const PIECE_ICONS: Record<keyof typeof PIECE_LABELS, IconType> = {
-  L: GiLion,
-  G: GiDeerHead,
-  E: GiElephant,
-  C: GiChicken,
-  H: GiRooster,
+const PIECE_EMOJI: Record<keyof typeof PIECE_LABELS, string> = {
+  L: '🦁',
+  G: '🦒',
+  E: '🐘',
+  C: '🐤',
+  H: '🐔',
 };
 
 const DROP_PIECES: DobutsuDropPieceKind[] = ['G', 'E', 'C'];
@@ -32,6 +29,36 @@ const getPieceKind = (piece: string) => piece.toUpperCase() as keyof typeof PIEC
 const teamLabel = (team: 'S' | 'N') => (team === 'S' ? 'South' : 'North');
 const handKey = (team: 'S' | 'N') => (team === 'S' ? 's' : 'n');
 
+const MOVE_MARKER_POSITIONS = {
+  '-1,-1': { position: 'left-0 top-0', rotation: 'rotate(-45deg)' },
+  '-1,0': { position: 'left-1/2 top-0 -translate-x-1/2', rotation: 'rotate(0deg)' },
+  '-1,1': { position: 'right-0 top-0', rotation: 'rotate(45deg)' },
+  '0,-1': { position: 'left-0 top-1/2 -translate-y-1/2', rotation: 'rotate(-90deg)' },
+  '0,1': { position: 'right-0 top-1/2 -translate-y-1/2', rotation: 'rotate(90deg)' },
+  '1,-1': { position: 'bottom-0 left-0', rotation: 'rotate(-135deg)' },
+  '1,0': { position: 'bottom-0 left-1/2 -translate-x-1/2', rotation: 'rotate(180deg)' },
+  '1,1': { position: 'bottom-0 right-0', rotation: 'rotate(135deg)' },
+} as const;
+
+const MoveMarker = ({
+  rowDelta,
+  colDelta,
+}: {
+  rowDelta: number;
+  colDelta: number;
+}) => {
+  const marker = MOVE_MARKER_POSITIONS[`${rowDelta},${colDelta}` as keyof typeof MOVE_MARKER_POSITIONS];
+
+  return (
+    <span className={`absolute ${marker.position} flex items-center justify-center`} aria-hidden="true">
+      <span
+        className="block h-0 w-0 border-x-[0.26rem] border-b-[0.44rem] border-x-transparent border-b-current opacity-95 drop-shadow-[0_0_1px_rgba(255,255,255,0.22)] sm:border-x-[0.3rem] sm:border-b-[0.5rem]"
+        style={{ transform: marker.rotation }}
+      />
+    </span>
+  );
+};
+
 const DobutsuPieceBadge = ({
   piece,
   owner,
@@ -39,19 +66,35 @@ const DobutsuPieceBadge = ({
   piece: keyof typeof PIECE_LABELS;
   owner: 'S' | 'N';
 }) => {
-  const Icon = PIECE_ICONS[piece];
-
   return (
     <div
-      className={`flex h-full w-full items-center justify-center rounded-xl border ${
+      className={`relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border-2 ${
         owner === 'S'
-          ? 'border-amber-600/40 bg-amber-50 text-amber-950'
-          : 'border-sky-700/40 bg-sky-50 text-sky-950'
+          ? 'border-[#b45309] bg-[#fff1c2] text-[#7c2d12] shadow-[inset_0_1px_0_rgba(255,255,255,0.62)]'
+          : 'border-[#2563eb] bg-[#dbeafe] text-[#0f2f6b] shadow-[inset_0_1px_0_rgba(255,255,255,0.38)]'
       }`}
       aria-label={PIECE_LABELS[piece]}
       title={PIECE_LABELS[piece]}
     >
-      <Icon className="text-[1.9rem] sm:text-[2.15rem]" aria-hidden="true" />
+      <div className={`relative h-full w-full ${owner === 'N' ? 'rotate-180' : ''}`}>
+        <div className="absolute inset-x-[7%] inset-y-[6%]">
+          {DOBUTSU_MOVE_DELTAS[piece].map(([rowDelta, colDelta]) => (
+            <MoveMarker
+              key={`${rowDelta},${colDelta}`}
+              rowDelta={rowDelta}
+              colDelta={colDelta}
+            />
+          ))}
+        </div>
+        <div className="flex h-full w-full items-center justify-center">
+          <span
+            className="relative text-[2.05rem] leading-none sm:text-[2.4rem]"
+            aria-hidden="true"
+          >
+            {PIECE_EMOJI[piece]}
+          </span>
+        </div>
+      </div>
     </div>
   );
 };
@@ -166,7 +209,7 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
         >
           {teamLabel(team)} hand
         </div>
-        <div className="mt-1 grid grid-cols-3 gap-1.5 sm:mt-2 sm:gap-2">
+        <div className="mt-1 flex items-end justify-center gap-2 sm:mt-2 sm:gap-2.5">
           {DROP_PIECES.map((piece) => {
             const isSelected = isCurrentTeam && activeSelectedHandPiece === piece;
             const count = hand[piece];
@@ -175,31 +218,38 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
               <button
                 key={piece}
                 type="button"
-                className={`flex h-14 w-full flex-col items-center justify-center rounded-2xl border px-1.5 py-1 text-sm transition sm:h-20 sm:px-3 sm:py-2 ${
-                  count > 0
-                    ? 'bg-white hover:border-slate-500 hover:bg-slate-50'
-                    : 'bg-slate-100 text-slate-400'
-                } ${
-                  isSelected ? 'border-emerald-600 ring-2 ring-emerald-300' : 'border-slate-300'
-                } ${
+                className={`flex w-[3.65rem] flex-col items-center justify-end gap-1 bg-transparent transition sm:w-[4.15rem] ${
                   isCurrentTeam && count > 0 ? 'cursor-pointer' : 'cursor-default'
                 }`}
                 onClick={() => isCurrentTeam && handleHandClick(piece)}
                 disabled={!isCurrentTeam || count <= 0}
                 data-testid={`dobutsu-hand-${team}-${piece}`}
               >
-                <div
-                  className="flex items-center justify-center text-[1.4rem] leading-none sm:text-[1.75rem]"
-                  aria-label={PIECE_LABELS[piece]}
-                  title={PIECE_LABELS[piece]}
+                <div className={`relative aspect-[4/5] w-full transition ${
+                  count > 0 ? '' : 'opacity-30 grayscale'
+                } ${
+                  isSelected ? 'scale-105' : ''
+                }`}
                 >
-                  {(() => {
-                    const Icon = PIECE_ICONS[piece];
-                    return <Icon aria-hidden="true" />;
-                  })()}
+                  {count > 1 && (
+                    <div className="absolute inset-0 translate-x-[0.22rem] translate-y-[-0.18rem] opacity-35">
+                      <DobutsuPieceBadge piece={piece} owner={team} />
+                    </div>
+                  )}
+                  <div className={`absolute inset-0 ${
+                    isSelected ? 'ring-4 ring-emerald-300/90 rounded-xl' : ''
+                  }`}
+                  >
+                    <DobutsuPieceBadge piece={piece} owner={team} />
+                  </div>
                 </div>
-                <div className="mt-1 rounded-full bg-slate-900 px-2 py-0.5 text-xs text-white">
-                  {count}
+                <div
+                  className={`min-h-4 text-[0.7rem] font-semibold leading-none ${
+                    team === 'S' ? 'text-amber-900' : 'text-sky-900'
+                  } ${count > 0 ? 'opacity-90' : 'opacity-35'}`}
+                  aria-hidden="true"
+                >
+                  {count > 1 ? `x${count}` : ''}
                 </div>
               </button>
             );

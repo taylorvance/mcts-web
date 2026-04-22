@@ -4,6 +4,7 @@ import type { GameState } from 'multimcts';
 import ConnectFour from './ConnectFour';
 import DobutsuShogi from './DobutsuShogi';
 import Filler from './Filler';
+import GoroGoroDobutsuShogi from './GoroGoroDobutsuShogi';
 import Onitama from './Onitama';
 import Othello from './Othello';
 import TicTacToe from './TicTacToe';
@@ -164,7 +165,16 @@ export const buildGameFamilies = (
 
 export const gameEntries: GameRegistryEntry[] = [
   createTypedGameEntry(ConnectFour),
-  createTypedGameEntry(DobutsuShogi),
+  createTypedGameEntry(DobutsuShogi, {
+    familyId: 'Shogi',
+    familyName: 'Shogi',
+    variantName: 'Dobutsu',
+  }),
+  createTypedGameEntry(GoroGoroDobutsuShogi, {
+    familyId: 'Shogi',
+    familyName: 'Shogi',
+    variantName: 'Goro-Goro Dobutsu',
+  }),
   createTypedGameEntry(Filler),
   createTypedGameEntry(Onitama),
   createTypedGameEntry(Othello),
@@ -189,7 +199,9 @@ export const gameIdToFamilyId: Record<string, string> = Object.fromEntries(
 );
 
 export const gameFamilyOptions: Record<string, string> = Object.fromEntries(
-  Object.values(gameFamilies).map((family) => [family.id, family.name]),
+  Object.values(gameFamilies)
+    .sort((left, right) => left.name.localeCompare(right.name))
+    .map((family) => [family.id, family.name]),
 );
 
 export const gameOptions: Record<string, string> = Object.fromEntries(

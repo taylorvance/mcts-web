@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ConnectFourState } from './ConnectFour/state';
 import { DobutsuShogiState } from './DobutsuShogi/state';
 import { FillerState } from './Filler/state';
+import { GoroGoroDobutsuShogiState } from './GoroGoroDobutsuShogi/state';
 import { OnitamaState } from './Onitama/state';
 import { OthelloState } from './Othello/state';
 import { buildGameFamilies, gameFamilies, gameIdToFamilyId, games } from './gameRegistry';
@@ -77,6 +78,27 @@ describe('gameRegistry', () => {
     });
   });
 
+  it('adapts typed board moves for Goro-Goro Dobutsu Shogi', () => {
+    const onMove = vi.fn();
+
+    render(
+      <games.GoroGoroDobutsuShogi.Board
+        state={new GoroGoroDobutsuShogiState()}
+        onMove={onMove}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId('gorogoro-cell-21'));
+    fireEvent.click(screen.getByTestId('gorogoro-cell-16'));
+
+    expect(onMove).toHaveBeenCalledWith({
+      type: 'move',
+      from: 21,
+      to: 16,
+      promote: false,
+    });
+  });
+
   it('adapts typed board moves for Onitama', () => {
     const onMove = vi.fn();
     const state = new OnitamaState(
@@ -111,12 +133,22 @@ describe('gameRegistry', () => {
   });
 
   it('creates singleton families for existing games', () => {
-    expect(gameIdToFamilyId.DobutsuShogi).toBe('DobutsuShogi');
-    expect(gameFamilies.DobutsuShogi).toMatchObject({
-      id: 'DobutsuShogi',
-      name: 'Dobutsu Shogi',
+    expect(gameIdToFamilyId.Onitama).toBe('Onitama');
+    expect(gameFamilies.Onitama).toMatchObject({
+      id: 'Onitama',
+      name: 'Onitama',
+      defaultGameId: 'Onitama',
+      gameIds: ['Onitama'],
+    });
+  });
+
+  it('maps Dobutsu Shogi into the Shogi family', () => {
+    expect(gameIdToFamilyId.DobutsuShogi).toBe('Shogi');
+    expect(gameFamilies.Shogi).toMatchObject({
+      id: 'Shogi',
+      name: 'Shogi',
       defaultGameId: 'DobutsuShogi',
-      gameIds: ['DobutsuShogi'],
+      gameIds: ['DobutsuShogi', 'GoroGoroDobutsuShogi'],
     });
   });
 

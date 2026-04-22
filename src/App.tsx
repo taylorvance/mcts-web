@@ -278,8 +278,9 @@ const App: React.FC = () => {
           key={`${selectedGameId}:${sessionResetVersion}`}
           game={currentGame}
           selector={
-            <div className="grid w-full max-w-3xl grid-cols-[minmax(0,1fr)_auto] items-center justify-center gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-              <div className="min-w-0">
+            <div className="flex w-full flex-col items-center gap-2">
+              <div className="grid w-full max-w-[23rem] grid-cols-[2rem_minmax(0,1fr)_2rem] items-center gap-2">
+                <div aria-hidden="true" className="h-8 w-8" />
                 <Select
                   ariaLabel="Game"
                   value={selectedFamilyId}
@@ -288,38 +289,28 @@ const App: React.FC = () => {
                   className="w-full px-4 py-2 text-xl"
                   centerText={true}
                 />
+                <div className="flex h-8 w-8 items-center justify-center">
+                  <Tooltip content="Help" placement="bottom">
+                    <button
+                      type="button"
+                      onClick={openHelpModal}
+                      aria-label="Help"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full p-1 text-gray-700 transition hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+                    >
+                      <FiHelpCircle className="text-lg" />
+                    </button>
+                  </Tooltip>
+                </div>
               </div>
-              <div className="hidden min-w-0 sm:block">
-                {hasVariantPicker ? (
-                  <Select
-                    ariaLabel="Variant"
-                    value={selectedGameId}
-                    onChange={changeVariant}
-                    options={currentFamilyVariantOptions}
-                    className="w-full px-4 py-2 text-base"
-                  />
-                ) : (
-                  <div aria-hidden="true" className="h-12" />
-                )}
-              </div>
-              <Tooltip content="Help" placement="bottom">
-                <button
-                  type="button"
-                  onClick={openHelpModal}
-                  aria-label="Help"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full p-1 text-gray-700 transition hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
-                >
-                  <FiHelpCircle className="text-lg" />
-                </button>
-              </Tooltip>
               {hasVariantPicker && (
-                <div className="min-w-0 sm:hidden">
+                <div className="w-full max-w-[18rem]">
                   <Select
                     ariaLabel="Variant"
                     value={selectedGameId}
                     onChange={changeVariant}
                     options={currentFamilyVariantOptions}
                     className="w-full px-4 py-2 text-base"
+                    centerText={true}
                   />
                 </div>
               )}

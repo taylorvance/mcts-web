@@ -63,6 +63,56 @@ describe('App', () => {
     expect(screen.getByLabelText('Max Time (s)')).toHaveValue(3);
   });
 
+  it('shows the Shogi family when a Dobutsu leaf game is selected', () => {
+    window.localStorage.setItem(
+      APP_STORAGE_KEY,
+      JSON.stringify({
+        selectedGameId: 'DobutsuShogi',
+        mctsSettings: {
+          explorationBias: 1.414,
+          maxIterations: 1000,
+          maxTime: 1,
+        },
+        lastSelectedGameIdByFamily: {
+          Shogi: 'DobutsuShogi',
+        },
+      }),
+    );
+
+    render(<App />);
+
+    expect(screen.getByLabelText('Game')).toHaveValue('Shogi');
+    expect(screen.getAllByLabelText('Variant')[0]).toHaveValue('DobutsuShogi');
+    expect(screen.getByTestId('dobutsu-board')).toBeInTheDocument();
+  });
+
+  it('switches between Shogi variants with the variant selector', () => {
+    window.localStorage.setItem(
+      APP_STORAGE_KEY,
+      JSON.stringify({
+        selectedGameId: 'DobutsuShogi',
+        mctsSettings: {
+          explorationBias: 1.414,
+          maxIterations: 1000,
+          maxTime: 1,
+        },
+        lastSelectedGameIdByFamily: {
+          Shogi: 'DobutsuShogi',
+        },
+      }),
+    );
+
+    render(<App />);
+
+    fireEvent.change(screen.getAllByLabelText('Variant')[0], {
+      target: { value: 'GoroGoroDobutsuShogi' },
+    });
+
+    expect(screen.getByLabelText('Game')).toHaveValue('Shogi');
+    expect(screen.getAllByLabelText('Variant')[0]).toHaveValue('GoroGoroDobutsuShogi');
+    expect(screen.getByTestId('gorogoro-board')).toBeInTheDocument();
+  });
+
   it('prefers the querystring game over localStorage', () => {
     window.localStorage.setItem(
       APP_STORAGE_KEY,
@@ -253,6 +303,38 @@ describe('App', () => {
         lastSelectedGameIdByFamily: {
           TicTacToe: 'TicTacToe',
           Onitama: 'Onitama',
+        },
+      });
+    });
+  });
+
+  it('persists the last selected variant within the Shogi family', async () => {
+    window.localStorage.setItem(
+      APP_STORAGE_KEY,
+      JSON.stringify({
+        selectedGameId: 'DobutsuShogi',
+        mctsSettings: {
+          explorationBias: 1.414,
+          maxIterations: 1000,
+          maxTime: 1,
+        },
+        lastSelectedGameIdByFamily: {
+          Shogi: 'DobutsuShogi',
+        },
+      }),
+    );
+
+    render(<App />);
+
+    fireEvent.change(screen.getAllByLabelText('Variant')[0], {
+      target: { value: 'GoroGoroDobutsuShogi' },
+    });
+
+    await waitFor(() => {
+      expect(readJsonStorage(APP_STORAGE_KEY)).toMatchObject({
+        selectedGameId: 'GoroGoroDobutsuShogi',
+        lastSelectedGameIdByFamily: {
+          Shogi: 'GoroGoroDobutsuShogi',
         },
       });
     });

@@ -8,35 +8,49 @@ import {
   teamLabel,
 } from '../Shogi/shared/animalShogiPieces';
 import {
-  DOBUTSU_MOVE_DELTAS,
-  DobutsuShogiState,
-  type DobutsuDropPieceKind,
-  type DobutsuMove,
+  COLS,
+  GOROGORO_MOVE_DELTAS,
+  type GoroGoroBoardMove,
+  type GoroGoroDropPieceKind,
+  type GoroGoroMove,
+  GoroGoroDobutsuShogiState,
 } from './state';
 
-const DOBUTSU_PIECE_SET = {
+const GOROGORO_PIECE_SET = {
   labels: {
     L: 'Lion',
-    G: 'Giraffe',
-    E: 'Elephant',
+    D: 'Dog',
+    T: 'Cat',
     C: 'Chick',
     H: 'Hen',
+    M: 'Super Cat',
   },
   emoji: {
     L: '🦁',
-    G: '🦒',
-    E: '🐘',
+    D: '🐶',
+    T: '🐱',
     C: '🐤',
     H: '🐔',
+    M: '😺',
   },
-  moveDeltas: DOBUTSU_MOVE_DELTAS,
+  moveDeltas: GOROGORO_MOVE_DELTAS,
 } as const;
 
-const DROP_PIECES: DobutsuDropPieceKind[] = ['G', 'E', 'C'];
+const DROP_PIECES: GoroGoroDropPieceKind[] = ['D', 'T', 'C'];
 
-const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, DobutsuMove>) => {
+interface PendingPromotionChoice {
+  from: number;
+  to: number;
+  moves: GoroGoroBoardMove[];
+}
+
+const GoroGoroDobutsuBoard = ({
+  state,
+  onMove,
+}: TypedGameBoardProps<GoroGoroDobutsuShogiState, GoroGoroMove>) => {
   const [selectedBoardIndex, setSelectedBoardIndex] = useState<number | null>(null);
-  const [selectedHandPiece, setSelectedHandPiece] = useState<DobutsuDropPieceKind | null>(null);
+  const [selectedHandPiece, setSelectedHandPiece] = useState<GoroGoroDropPieceKind | null>(null);
+  const [pendingPromotionChoice, setPendingPromotionChoice] = useState<PendingPromotionChoice | null>(null);
   const legalMoves = state.getLegalMoves();
   const currentTeam = state.getCurrentTeam();
   const winner = state.getWinner();
@@ -44,11 +58,11 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
   const isTerminal = state.isTerminal();
 
   const legalBoardMoves = useMemo(
-    () => legalMoves.filter((move): move is Extract<DobutsuMove, { type: 'move' }> => move.type === 'move'),
+    () => legalMoves.filter((move): move is GoroGoroBoardMove => move.type === 'move'),
     [legalMoves],
   );
   const legalDropMoves = useMemo(
-    () => legalMoves.filter((move): move is Extract<DobutsuMove, { type: 'drop' }> => move.type === 'drop'),
+    () => legalMoves.filter((move): move is Extract<GoroGoroMove, { type: 'drop' }> => move.type === 'drop'),
     [legalMoves],
   );
 
@@ -70,62 +84,84 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
       .map((move) => move.to),
   );
 
+  const clearSelections = () => {
+    setSelectedBoardIndex(null);
+    setSelectedHandPiece(null);
+    setPendingPromotionChoice(null);
+  };
+
   const handleCellClick = (index: number) => {
-    if(isTerminal) {
+    if (isTerminal) {
       return;
     }
 
     const piece = state.board[index];
-    if(piece && getPieceOwner(piece) === currentTeam && selectableBoardIndexes.has(index)) {
+    if (piece && getPieceOwner(piece) === currentTeam && selectableBoardIndexes.has(index)) {
       setSelectedHandPiece(null);
+      setPendingPromotionChoice(null);
       setSelectedBoardIndex((currentIndex) => (currentIndex === index ? null : index));
       return;
     }
 
-    if(activeSelectedBoardIndex !== null) {
-      const boardMove = legalBoardMoves.find((move) => move.from === activeSelectedBoardIndex && move.to === index);
-      if(boardMove) {
-        onMove(boardMove);
+    if (activeSelectedBoardIndex !== null) {
+      const matchingMoves = legalBoardMoves.filter((move) => (
+        move.from === activeSelectedBoardIndex && move.to === index
+      ));
+
+      if (matchingMoves.length === 1) {
+        onMove(matchingMoves[0]);
+        return;
+      }
+
+      if (matchingMoves.length > 1) {
+        setPendingPromotionChoice({
+          from: activeSelectedBoardIndex,
+          to: index,
+          moves: matchingMoves,
+        });
         return;
       }
     }
 
-    if(activeSelectedHandPiece !== null) {
-      const dropMove = legalDropMoves.find((move) => move.piece === activeSelectedHandPiece && move.to === index);
-      if(dropMove) {
+    if (activeSelectedHandPiece !== null) {
+      const dropMove = legalDropMoves.find((move) => (
+        move.piece === activeSelectedHandPiece && move.to === index
+      ));
+      if (dropMove) {
         onMove(dropMove);
       }
     }
   };
 
-  const handleHandClick = (piece: DobutsuDropPieceKind) => {
-    if(isTerminal) {
+  const handleHandClick = (piece: GoroGoroDropPieceKind) => {
+    if (isTerminal) {
       return;
     }
 
     const hand = state.hands[handKey(currentTeam)];
-    if(hand[piece] <= 0) {
+    if (hand[piece] <= 0) {
       return;
     }
 
     setSelectedBoardIndex(null);
+    setPendingPromotionChoice(null);
     setSelectedHandPiece((currentPiece) => (currentPiece === piece ? null : piece));
   };
 
   const statusMessage = (() => {
-    if(outcomeReason === 'repetition') {
+    if (outcomeReason === 'repetition') {
       return 'Draw by repetition.';
     }
 
-    if(winner && outcomeReason === 'capture') {
+    if (winner && outcomeReason === 'capture') {
       return `${teamLabel(winner)} wins by catching the lion.`;
     }
 
-    if(winner && outcomeReason === 'try') {
-      return `${teamLabel(winner)} wins by reaching the far rank with a safe lion.`;
+    if (winner && outcomeReason === 'checkmate') {
+      return `${teamLabel(winner)} wins by checkmate.`;
     }
 
-    if(winner && outcomeReason === 'stalemate') {
+    if (winner && outcomeReason === 'stalemate') {
       return `${teamLabel(winner)} wins by stalemate.`;
     }
 
@@ -147,12 +183,12 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
               <button
                 key={piece}
                 type="button"
-                className={`flex w-[3.65rem] flex-col items-center justify-end gap-1 bg-transparent transition sm:w-[4.15rem] ${
+                className={`flex w-[3.65rem] flex-col items-center justify-end gap-1 bg-transparent transition sm:w-[4rem] ${
                   isCurrentTeam && count > 0 ? 'cursor-pointer' : 'cursor-default'
                 }`}
                 onClick={() => isCurrentTeam && handleHandClick(piece)}
                 disabled={!isCurrentTeam || count <= 0}
-                data-testid={`dobutsu-hand-${team}-${piece}`}
+                data-testid={`gorogoro-hand-${team}-${piece}`}
               >
                 <div className={`relative aspect-[4/5] w-full transition ${
                   count > 0 ? '' : 'opacity-30 grayscale'
@@ -162,14 +198,14 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
                 >
                   {count > 1 && (
                     <div className="absolute inset-0 translate-x-[0.22rem] translate-y-[-0.18rem] opacity-35">
-                      <AnimalShogiPieceBadge piece={piece} owner={team} pieceSet={DOBUTSU_PIECE_SET} />
+                      <AnimalShogiPieceBadge piece={piece} owner={team} pieceSet={GOROGORO_PIECE_SET} />
                     </div>
                   )}
                   <div className={`absolute inset-0 ${
                     isSelected ? 'ring-4 ring-emerald-300/90 rounded-xl' : ''
                   }`}
                   >
-                    <AnimalShogiPieceBadge piece={piece} owner={team} pieceSet={DOBUTSU_PIECE_SET} />
+                    <AnimalShogiPieceBadge piece={piece} owner={team} pieceSet={GOROGORO_PIECE_SET} />
                   </div>
                 </div>
                 <div
@@ -189,11 +225,18 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
   };
 
   return (
-    <div className="flex w-[17rem] max-w-full flex-col items-center gap-3 sm:w-[18rem] sm:gap-4" data-testid="dobutsu-board">
+    <div
+      className="flex max-w-full flex-col items-center gap-3 sm:gap-4"
+      style={{ width: '22rem' }}
+      data-testid="gorogoro-board"
+    >
       {renderHand('N')}
 
       <div className="w-full rounded-[1.5rem] border border-emerald-900 bg-emerald-950 p-2.5 shadow-xl sm:rounded-[1.75rem] sm:p-3">
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+        <div
+          className="grid gap-1.5 sm:gap-2"
+          style={{ gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))` }}
+        >
           {state.board.map((piece, index) => {
             const isSelectedBoardPiece = activeSelectedBoardIndex === index;
             const isHighlightedDestination = selectedBoardDestinations.has(index) || selectedDropDestinations.has(index);
@@ -204,6 +247,8 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
             const sourceHighlight = isSelectableBoardPiece && !isSelectedBoardPiece
               ? 'ring-2 ring-sky-200/70'
               : '';
+            const row = Math.floor(index / COLS);
+            const isCampSquare = row <= 1 || row >= 4;
 
             return (
               <button
@@ -212,7 +257,9 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
                 className={`relative flex aspect-[4/5] w-full items-stretch justify-stretch rounded-2xl border-2 transition ${
                   isHighlightedDestination
                     ? 'border-emerald-200 bg-emerald-500/90 ring-4 ring-amber-300/80'
-                    : 'border-emerald-800 bg-emerald-100'
+                    : isCampSquare
+                      ? 'border-emerald-800 bg-emerald-200'
+                      : 'border-emerald-800 bg-emerald-100'
                 } ${
                   isSelectedBoardPiece ? 'ring-4 ring-sky-300/80' : ''
                 } ${
@@ -221,13 +268,13 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
                   isSelectableBoardPiece || isHighlightedDestination ? 'cursor-pointer' : 'cursor-default'
                 }`}
                 onClick={() => handleCellClick(index)}
-                data-testid={`dobutsu-cell-${index}`}
+                data-testid={`gorogoro-cell-${index}`}
               >
                 {piece ? (
                   <AnimalShogiPieceBadge
                     piece={getPieceKind(piece)}
                     owner={getPieceOwner(piece)}
-                    pieceSet={DOBUTSU_PIECE_SET}
+                    pieceSet={GOROGORO_PIECE_SET}
                   />
                 ) : (
                   <div className={`m-auto h-3 w-3 rounded-full ${
@@ -241,6 +288,32 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
         </div>
       </div>
 
+      {pendingPromotionChoice && (
+        <div className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          <span>Promote this move?</span>
+          {pendingPromotionChoice.moves.map((move) => (
+            <button
+              key={`${move.from}-${move.to}-${move.promote ? 'p' : 'n'}`}
+              type="button"
+              className="rounded-lg border border-amber-300 bg-white px-3 py-1 font-medium text-amber-950 transition hover:bg-amber-100"
+              onClick={() => {
+                onMove(move);
+                clearSelections();
+              }}
+            >
+              {move.promote ? 'Promote' : 'Keep'}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="rounded-lg px-2 py-1 text-amber-700 transition hover:bg-amber-100"
+            onClick={() => setPendingPromotionChoice(null)}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
       {renderHand('S')}
 
       {statusMessage && (
@@ -252,4 +325,4 @@ const DobutsuBoard = ({ state, onMove }: TypedGameBoardProps<DobutsuShogiState, 
   );
 };
 
-export default DobutsuBoard;
+export default GoroGoroDobutsuBoard;

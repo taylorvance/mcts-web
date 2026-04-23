@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { SearchMetrics } from 'multimcts';
-import type {
-  AppGameState,
-  Game,
-  SearchTreeLike,
-  SearchTreeNodeView,
-} from '../types/Game';
+import type { AppGameState, Game, SearchTreeLike } from '../types/Game';
 
 export interface SearchStats extends SearchMetrics {
   retainedNodeCount: number;
@@ -27,39 +22,6 @@ const yieldToBrowser = async () => new Promise<void>((resolve) => {
 
 const normalizeSearchLimit = (value: number | null) => (
   value !== null && value > 0 ? value : null
-);
-
-const countRetainedNodes = (root: SearchTreeLike['root']) => {
-  if (!root) {
-    return 0;
-  }
-
-  let retainedNodeCount = 0;
-  const stack = [root];
-  while (stack.length > 0) {
-    const node = stack.pop();
-    if (!node) {
-      continue;
-    }
-
-    retainedNodeCount += 1;
-    for (const child of node.children.values()) {
-      stack.push(child);
-    }
-  }
-
-  return retainedNodeCount;
-};
-
-type SearchTreeStateLike = SearchTreeNodeView['state'];
-
-const resolveStateKey = (state: AppGameState | SearchTreeStateLike) => (
-  typeof state === 'object'
-  && state !== null
-  && 'getStateKey' in state
-  && typeof state.getStateKey === 'function'
-    ? state.getStateKey()
-    : state.toString()
 );
 
 export const useMCTS = (
@@ -114,56 +76,39 @@ export const useMCTS = (
     activeSearchRef.current = searchToken;
     try {
       const startTime = getNow();
-      const currentRetainedNodeCount = countRetainedNodes(nextMCTS.root);
-      const isMatchingRoot = nextMCTS.root !== null
-        && resolveStateKey(nextMCTS.root.state) === resolveStateKey(state);
       let iterations = 0;
-      let retainedNodeCount = currentRetainedNodeCount;
+      let retainedNodeCount = 0;
+      let bestMove: unknown | null = null;
 
-      if (
-        normalizedMaxRetainedNodes === null
-        || !isMatchingRoot
-        || currentRetainedNodeCount < normalizedMaxRetainedNodes
-      ) {
-        game.search(nextMCTS, state, {
-          maxIterations: 1,
-          maxTime: null,
-        });
-        mctsRef.current = nextMCTS;
-        iterations = 1;
-        retainedNodeCount = countRetainedNodes(nextMCTS.root);
-      } else {
-        mctsRef.current = nextMCTS;
-      }
-
-      if (activeSearchRef.current !== searchToken) {
-        return null;
-      }
-
-      const iterationLimit = normalizedMaxIterations ?? Number.POSITIVE_INFINITY;
       const deadline = normalizedMaxTime === null
         ? Number.POSITIVE_INFINITY
         : startTime + (normalizedMaxTime * 1000);
+      const iterationLimit = normalizedMaxIterations ?? Number.POSITIVE_INFINITY;
 
-      while (
-        iterations < iterationLimit
-        && getNow() < deadline
-        && (
-          normalizedMaxRetainedNodes === null
-          || retainedNodeCount < normalizedMaxRetainedNodes
-        )
-      ) {
+      while (iterations < iterationLimit && getNow() < deadline) {
+        if (activeSearchRef.current !== searchToken) {
+          return null;
+        }
+
+        const remainingIterations = iterationLimit - iterations;
         const batchDeadline = Math.min(deadline, getNow() + SEARCH_BATCH_BUDGET_MS);
-        do {
-          if (activeSearchRef.current !== searchToken) {
-            return null;
-          }
+        const batchRemainingMs = Math.max(0, batchDeadline - getNow());
+        const searchResult = game.search(nextMCTS, state, {
+          maxIterations: Number.isFinite(remainingIterations)
+            ? Math.max(1, remainingIterations)
+            : null,
+          maxRetainedNodes: normalizedMaxRetainedNodes,
+          maxTime: batchRemainingMs > 0 ? batchRemainingMs / 1000 : null,
+        });
 
-          nextMCTS.executeRound(nextMCTS.root);
-          iterations += 1;
-        } while (iterations < iterationLimit && getNow() < batchDeadline);
+        mctsRef.current = nextMCTS;
+        iterations += searchResult.metrics.iterations;
+        retainedNodeCount = searchResult.metrics.retainedNodeCount;
+        bestMove = searchResult.move;
 
-        retainedNodeCount = countRetainedNodes(nextMCTS.root);
+        if (searchResult.metrics.iterations === 0) {
+          break;
+        }
 
         if (
           iterations < iterationLimit
@@ -181,7 +126,7 @@ export const useMCTS = (
         return null;
       }
 
-      const move = nextMCTS.getBestMove(nextMCTS.root);
+      const move = bestMove ?? nextMCTS.getBestMove(nextMCTS.root);
       if (move === null) {
         throw new Error('MCTS search did not produce a legal move.');
       }

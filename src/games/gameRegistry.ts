@@ -81,15 +81,20 @@ const createTypedGameEntry = <
         throw new Error(`Invalid state type for ${definition.name}`);
       }
 
-      const { maxIterations, maxTime } = limits;
-      if (maxIterations === null && maxTime === null) {
+      const { maxIterations, maxRetainedNodes, maxTime } = limits;
+      if (
+        maxIterations === null
+        && maxRetainedNodes === null
+        && maxTime === null
+      ) {
         throw new Error('At least one search limit is required.');
       }
 
-      const result = (search as unknown as MCTS<TState, TMove, TTeam>).search(
+      const result = (search as unknown as MCTS<TState, TMove, TTeam>).searchWithDiagnostics(
         state,
         {
           ...(maxIterations !== null ? { maxIterations } : {}),
+          ...(maxRetainedNodes !== null ? { maxRetainedNodes } : {}),
           ...(maxTime !== null ? { maxTimeMs: maxTime * 1000 } : {}),
         },
       );
@@ -102,6 +107,7 @@ const createTypedGameEntry = <
         metrics: {
           elapsedMs: result.elapsedMs,
           iterations: result.iterations,
+          retainedNodeCount: result.diagnostics?.retainedNodeCount ?? 0,
         },
         move: result.bestMove,
       };

@@ -4,7 +4,7 @@ import { ConnectFourState } from './ConnectFour/state';
 import { DobutsuShogiState } from './DobutsuShogi/state';
 import { FillerState } from './Filler/state';
 import { GoroGoroDobutsuShogiState } from './GoroGoroDobutsuShogi/state';
-import { OnitamaState } from './Onitama/state';
+import { createOnitamaPlayMove, OnitamaState } from './Onitama/state';
 import { OthelloState } from './Othello/state';
 import { buildGameFamilies, gameFamilies, gameIdToFamilyId, games } from './gameRegistry';
 
@@ -114,12 +114,7 @@ describe('gameRegistry', () => {
     fireEvent.click(screen.getByTestId('onitama-cell-22'));
     fireEvent.click(screen.getByTestId('onitama-cell-17'));
 
-    expect(onMove).toHaveBeenCalledWith({
-      type: 'play',
-      cardIdx: 2,
-      srcIdx: 22,
-      dstIdx: 17,
-    });
+    expect(onMove).toHaveBeenCalledWith(createOnitamaPlayMove(2, 22, 17));
   });
 
   it('adapts typed board moves for Othello', () => {

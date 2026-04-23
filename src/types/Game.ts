@@ -29,7 +29,9 @@ export interface SearchTreeLike {
 }
 
 export interface SearchResult {
-  metrics: SearchMetrics;
+  metrics: SearchMetrics & {
+    retainedNodeCount: number;
+  };
   move: unknown;
 }
 
@@ -61,7 +63,11 @@ export interface Game {
   search: (
     search: SearchTreeLike,
     state: AppGameState,
-    limits: { maxIterations: number | null; maxTime: number | null },
+    limits: {
+      maxIterations: number | null;
+      maxRetainedNodes: number | null;
+      maxTime: number | null;
+    },
   ) => SearchResult;
   advanceSearchTree: (
     search: SearchTreeLike,

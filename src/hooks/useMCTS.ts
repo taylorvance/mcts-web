@@ -3,6 +3,7 @@ import type { SearchMetrics } from 'multimcts';
 import type { AppGameState, Game, SearchTreeLike } from '../types/Game';
 
 export interface SearchStats extends SearchMetrics {
+  retainedNodeCount: number;
   roundsPerSecond: number;
 }
 
@@ -22,6 +23,28 @@ const yieldToBrowser = async () => new Promise<void>((resolve) => {
 const normalizeSearchLimit = (value: number | null) => (
   value !== null && value > 0 ? value : null
 );
+
+const countRetainedNodes = (root: SearchTreeLike['root']) => {
+  if (!root) {
+    return 0;
+  }
+
+  let retainedNodeCount = 0;
+  const stack = [root];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (!node) {
+      continue;
+    }
+
+    retainedNodeCount += 1;
+    for (const child of node.children.values()) {
+      stack.push(child);
+    }
+  }
+
+  return retainedNodeCount;
+};
 
 export const useMCTS = (
   game: Game,
@@ -105,6 +128,7 @@ export const useMCTS = (
       const nextSearchStats = {
         elapsedMs,
         iterations,
+        retainedNodeCount: countRetainedNodes(nextMCTS.root),
         roundsPerSecond: elapsedMs > 0
           ? (iterations / elapsedMs) * 1000
           : 0,

@@ -28,6 +28,7 @@ describe('useMCTS', () => {
 
     expect(result.current.searchStats?.iterations).toBe(1);
     expect(result.current.searchStats?.elapsedMs).toBeGreaterThanOrEqual(0);
+    expect(result.current.searchStats?.retainedNodeCount).toBeGreaterThan(0);
     expect(result.current.mcts?.root).toBe(initialRoot);
     expect(result.current.mcts?.root?.visits).toBeGreaterThan(initialVisits);
   });

@@ -219,7 +219,8 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
           <div className="flex-none text-sm text-gray-700">
             Last search: {formatNumber(searchStats.iterations)} rounds &bull;{' '}
             {searchStats.elapsedMs.toFixed(1)} ms &bull;{' '}
-            {formatNumber(searchStats.roundsPerSecond)} rounds/s
+            {formatNumber(searchStats.roundsPerSecond)} rounds/s &bull;{' '}
+            {formatNumber(searchStats.retainedNodeCount)} retained nodes
           </div>
         )}
         <div className="flex-shrink-0 overflow-x-auto whitespace-nowrap">

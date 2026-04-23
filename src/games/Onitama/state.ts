@@ -25,9 +25,61 @@ export interface OnitamaPassMove {
   cardIdx: number;
 }
 
-export type OnitamaMove = OnitamaPlayMove | OnitamaPassMove;
+export type OnitamaMove = number;
 export type OnitamaPiece = 'R' | 'r' | 'B' | 'b' | null;
 export type WinningMethod = 'stream' | 'stone';
+
+const ONITAMA_MOVE_MASK = 0b1_1111;
+const ONITAMA_MOVE_SHIFT_SRC = 5;
+const ONITAMA_MOVE_SHIFT_CARD = 10;
+const ONITAMA_MOVE_FLAG_PASS = 1 << 15;
+
+export const createOnitamaPlayMove = (
+  cardIdx: number,
+  srcIdx: number,
+  dstIdx: number,
+): OnitamaMove => (
+  ((cardIdx & ONITAMA_MOVE_MASK) << ONITAMA_MOVE_SHIFT_CARD)
+  | ((srcIdx & ONITAMA_MOVE_MASK) << ONITAMA_MOVE_SHIFT_SRC)
+  | (dstIdx & ONITAMA_MOVE_MASK)
+);
+
+export const createOnitamaPassMove = (cardIdx: number): OnitamaMove => (
+  ONITAMA_MOVE_FLAG_PASS
+  | ((cardIdx & ONITAMA_MOVE_MASK) << ONITAMA_MOVE_SHIFT_CARD)
+);
+
+export const isOnitamaPassMove = (move: OnitamaMove) => (
+  (move & ONITAMA_MOVE_FLAG_PASS) !== 0
+);
+
+export const getOnitamaMoveCardIdx = (move: OnitamaMove) => (
+  (move >> ONITAMA_MOVE_SHIFT_CARD) & ONITAMA_MOVE_MASK
+);
+
+export const getOnitamaMoveSrcIdx = (move: OnitamaMove) => (
+  (move >> ONITAMA_MOVE_SHIFT_SRC) & ONITAMA_MOVE_MASK
+);
+
+export const getOnitamaMoveDstIdx = (move: OnitamaMove) => (
+  move & ONITAMA_MOVE_MASK
+);
+
+export const decodeOnitamaMoveObject = (
+  move: OnitamaMove,
+): OnitamaPlayMove | OnitamaPassMove => (
+  isOnitamaPassMove(move)
+    ? {
+      type: 'pass',
+      cardIdx: getOnitamaMoveCardIdx(move),
+    }
+    : {
+      type: 'play',
+      cardIdx: getOnitamaMoveCardIdx(move),
+      srcIdx: getOnitamaMoveSrcIdx(move),
+      dstIdx: getOnitamaMoveDstIdx(move),
+    }
+);
 
 export const ONITAMA_DECK: OnitamaCard[] = [
   { name: 'Dragon', color: '', first: 'R', moves: [[-1, -2], [-1, 2], [1, -1], [1, 1]] },
@@ -65,31 +117,31 @@ export const ONITAMA_DECK: OnitamaCard[] = [
 ];
 
 export const encodeOnitamaMove = (move: OnitamaMove) => {
-  if(move.type === 'pass') {
-    return `pass ${move.cardIdx}`;
+  if(isOnitamaPassMove(move)) {
+    return `pass ${getOnitamaMoveCardIdx(move)}`;
   }
 
-  return `${move.cardIdx},${move.srcIdx},${move.dstIdx}`;
+  return [
+    getOnitamaMoveCardIdx(move),
+    getOnitamaMoveSrcIdx(move),
+    getOnitamaMoveDstIdx(move),
+  ].join(',');
 };
 
 export const decodeOnitamaMove = (encodedMove: string): OnitamaMove => {
+  if(/^\d+$/.test(encodedMove)) {
+    return Number.parseInt(encodedMove, 10);
+  }
+
   if(encodedMove.startsWith('pass ')) {
-    return {
-      type: 'pass',
-      cardIdx: Number.parseInt(encodedMove.split(' ')[1], 10),
-    };
+    return createOnitamaPassMove(Number.parseInt(encodedMove.split(' ')[1], 10));
   }
 
   const [cardIdx, srcIdx, dstIdx] = encodedMove
     .split(',')
     .map((value) => Number.parseInt(value, 10));
 
-  return {
-    type: 'play',
-    cardIdx,
-    srcIdx,
-    dstIdx,
-  };
+  return createOnitamaPlayMove(cardIdx, srcIdx, dstIdx);
 };
 
 const cloneCards = (cards: OnitamaCards): OnitamaCards => ({
@@ -163,12 +215,7 @@ export class OnitamaState extends GameState<OnitamaMove, 'R' | 'B', OnitamaState
     for(const cardIdx of this.getCurrentTeamCards()) {
       for(let srcIdx = 0; srcIdx < 25; srcIdx += 1) {
         for(const dstIdx of this.getDestinations(cardIdx, srcIdx)) {
-          actions.push({
-            type: 'play',
-            cardIdx,
-            srcIdx,
-            dstIdx,
-          });
+          actions.push(createOnitamaPlayMove(cardIdx, srcIdx, dstIdx));
         }
       }
     }
@@ -177,10 +224,7 @@ export class OnitamaState extends GameState<OnitamaMove, 'R' | 'B', OnitamaState
       return actions;
     }
 
-    return this.getCurrentTeamCards().map((cardIdx) => ({
-      type: 'pass',
-      cardIdx,
-    }));
+    return this.getCurrentTeamCards().map((cardIdx) => createOnitamaPassMove(cardIdx));
   }
 
   getLegalMoves(): OnitamaMove[] {
@@ -190,21 +234,24 @@ export class OnitamaState extends GameState<OnitamaMove, 'R' | 'B', OnitamaState
   makeTypedMove(move: OnitamaMove): OnitamaState {
     const teamKey = this.team ? 'r' : 'b';
     const nextCards = cloneCards(this.cards);
-    nextCards.n = move.cardIdx;
+    const cardIdx = getOnitamaMoveCardIdx(move);
+    nextCards.n = cardIdx;
 
-    const playedCardIndex = nextCards[teamKey].indexOf(move.cardIdx);
+    const playedCardIndex = nextCards[teamKey].indexOf(cardIdx);
     if(playedCardIndex === -1) {
-      throw new Error(`Illegal Onitama card: ${move.cardIdx}`);
+      throw new Error(`Illegal Onitama card: ${cardIdx}`);
     }
     nextCards[teamKey][playedCardIndex] = this.cards.n;
 
-    if(move.type === 'pass') {
+    if(isOnitamaPassMove(move)) {
       return new OnitamaState(this.board, !this.team, nextCards, this.nmoves + 1);
     }
 
     const nextBoard = [...this.board];
-    nextBoard[move.dstIdx] = nextBoard[move.srcIdx];
-    nextBoard[move.srcIdx] = null;
+    const srcIdx = getOnitamaMoveSrcIdx(move);
+    const dstIdx = getOnitamaMoveDstIdx(move);
+    nextBoard[dstIdx] = nextBoard[srcIdx];
+    nextBoard[srcIdx] = null;
 
     return new OnitamaState(nextBoard, !this.team, nextCards, this.nmoves + 1);
   }

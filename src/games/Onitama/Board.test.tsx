@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { games } from '../gameRegistry';
-import { OnitamaState } from './state';
+import { createOnitamaPassMove, createOnitamaPlayMove, OnitamaState } from './state';
 import type { OnitamaCards, OnitamaPiece } from './state';
 
 const renderBoard = (cards: OnitamaCards, board = OnitamaState.initializeBoard()) => {
@@ -20,12 +20,7 @@ describe('OnitamaBoard', () => {
     fireEvent.click(screen.getByTestId('onitama-cell-22'));
     fireEvent.click(screen.getByTestId('onitama-cell-17'));
 
-    expect(onMove).toHaveBeenCalledWith({
-      type: 'play',
-      cardIdx: 2,
-      srcIdx: 22,
-      dstIdx: 17,
-    });
+    expect(onMove).toHaveBeenCalledWith(createOnitamaPlayMove(2, 22, 17));
   });
 
   it('prompts for a card when multiple cards allow the same destination', () => {
@@ -39,12 +34,7 @@ describe('OnitamaBoard', () => {
 
     fireEvent.click(screen.getByTestId('onitama-card-6'));
 
-    expect(onMove).toHaveBeenCalledWith({
-      type: 'play',
-      cardIdx: 6,
-      srcIdx: 22,
-      dstIdx: 17,
-    });
+    expect(onMove).toHaveBeenCalledWith(createOnitamaPlayMove(6, 22, 17));
   });
 
   it('renders the pass hint below the board', () => {
@@ -61,5 +51,20 @@ describe('OnitamaBoard', () => {
     const hint = screen.getByText('No legal moves. Click a card to pass.');
 
     expect(board.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('passes immediately when a blocked card is clicked', () => {
+    const blockedBoard: OnitamaPiece[] = [
+      'R', 'r', 'r', 'r', 'r',
+      null, null, null, null, null,
+      null, null, null, null, null,
+      null, null, null, null, null,
+      null, null, null, null, 'B',
+    ];
+    const { onMove } = renderBoard({ r: [2, 1], b: [3, 4], n: 0 }, blockedBoard);
+
+    fireEvent.click(screen.getByTestId('onitama-card-2'));
+
+    expect(onMove).toHaveBeenCalledWith(createOnitamaPassMove(2));
   });
 });

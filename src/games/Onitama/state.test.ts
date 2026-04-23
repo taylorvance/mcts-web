@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import Onitama from '.';
 import { expectEncodedReplayToMatchTypedReplay } from '../../test/gameReplay';
-import { OnitamaState } from './state';
+import {
+  createOnitamaPassMove,
+  createOnitamaPlayMove,
+  decodeOnitamaMove,
+  decodeOnitamaMoveObject,
+  encodeOnitamaMove,
+  OnitamaState,
+} from './state';
 import type { OnitamaCards, OnitamaMove, OnitamaPiece } from './state';
 
 const OPENING_CARDS: OnitamaCards = {
@@ -15,18 +22,23 @@ describe('OnitamaState', () => {
     const state = new OnitamaState(OnitamaState.initializeBoard(), true, OPENING_CARDS, 0);
 
     expect(state.getDestinations(2, 22)).toEqual([17]);
-    expect(state.getLegalActions()).toContainEqual({
-      type: 'play',
-      cardIdx: 2,
-      srcIdx: 22,
-      dstIdx: 17,
-    });
+    expect(state.getLegalActions()).toContainEqual(createOnitamaPlayMove(
+      2,
+      22,
+      17,
+    ));
 
-    const next = state.makeTypedMove({
+    const next = state.makeTypedMove(createOnitamaPlayMove(
+      2,
+      22,
+      17,
+    ));
+
+    expect(decodeOnitamaMoveObject(state.getLegalActions()[0])).toMatchObject({
       type: 'play',
-      cardIdx: 2,
-      srcIdx: 22,
-      dstIdx: 17,
+      cardIdx: expect.any(Number),
+      srcIdx: expect.any(Number),
+      dstIdx: expect.any(Number),
     });
 
     expect(next.board[17]).toBe('R');
@@ -52,11 +64,11 @@ describe('OnitamaState', () => {
     const state = new OnitamaState(blockedBoard, true, passCards, 0);
 
     expect(state.getLegalActions()).toEqual([
-      { type: 'pass', cardIdx: 2 },
-      { type: 'pass', cardIdx: 1 },
+      createOnitamaPassMove(2),
+      createOnitamaPassMove(1),
     ]);
 
-    const next = state.makeTypedMove({ type: 'pass', cardIdx: 2 });
+    const next = state.makeTypedMove(createOnitamaPassMove(2));
 
     expect(next.getCurrentTeam()).toBe('B');
     expect(next.cards.r).toEqual([0, 1]);
@@ -64,12 +76,7 @@ describe('OnitamaState', () => {
   });
 
   it('rebuilds the same state from encoded typed history', () => {
-    const move: OnitamaMove = {
-      type: 'play',
-      cardIdx: 2,
-      srcIdx: 22,
-      dstIdx: 17,
-    };
+    const move: OnitamaMove = createOnitamaPlayMove(2, 22, 17);
     const { encodedReplayState, typedReplayState } = expectEncodedReplayToMatchTypedReplay({
       initialState: new OnitamaState(OnitamaState.initializeBoard(), true, OPENING_CARDS, 0),
       moves: [move],
@@ -78,6 +85,14 @@ describe('OnitamaState', () => {
     });
 
     expect(encodedReplayState.cards).toEqual(typedReplayState.cards);
+  });
+
+  it('supports both packed and legacy move encodings', () => {
+    const move = createOnitamaPlayMove(2, 22, 17);
+
+    expect(decodeOnitamaMove(encodeOnitamaMove(move))).toBe(move);
+    expect(decodeOnitamaMove('2,22,17')).toBe(move);
+    expect(decodeOnitamaMove('pass 2')).toBe(createOnitamaPassMove(2));
   });
 
   it('identifies way of the stream and way of the stone wins', () => {

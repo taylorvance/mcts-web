@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { games } from '../games/gameRegistry';
-import { OnitamaState } from '../games/Onitama/state';
+import { createOnitamaPlayMove, OnitamaState } from '../games/Onitama/state';
 import { formatGameStateDebugLabel } from '../utils/gameStateDebug';
 import { getGameSessionStorageKey, readJsonStorage } from '../utils/persistence';
 import { useGameSession } from './useGameSession';
@@ -149,7 +149,7 @@ describe('useGameSession', () => {
       { r: [2, 4], b: [1, 3], n: 0 },
       0,
     );
-    const restoredState = initialState.makeMove({ type: 'play', cardIdx: 2, srcIdx: 22, dstIdx: 17 });
+    const restoredState = initialState.makeMove(createOnitamaPlayMove(2, 22, 17));
 
     window.localStorage.setItem(getGameSessionStorageKey(games.Onitama.id), JSON.stringify({
       version: 1,

@@ -1,8 +1,17 @@
 import { useEffect, useState } from 'react';
 import { FaChessKing, FaChessPawn } from 'react-icons/fa6';
 import type { TypedGameBoardProps } from '../../types/Game';
-import { OnitamaState, ONITAMA_DECK } from './state';
-import type { OnitamaMove, OnitamaPlayMove } from './state';
+import {
+  createOnitamaPassMove,
+  createOnitamaPlayMove,
+  getOnitamaMoveCardIdx,
+  getOnitamaMoveDstIdx,
+  getOnitamaMoveSrcIdx,
+  isOnitamaPassMove,
+  OnitamaState,
+  ONITAMA_DECK,
+} from './state';
+import type { OnitamaMove } from './state';
 
 interface PendingMoveSelection {
   srcIdx: number;
@@ -23,13 +32,11 @@ const OnitamaBoard = ({
     null,
   );
   const legalActions = state.getLegalActions();
-  const playMoves = legalActions.filter(
-    (move): move is OnitamaPlayMove => move.type === 'play',
-  );
+  const playMoves = legalActions.filter((move) => !isOnitamaPassMove(move));
   const passCardIndexes = new Set(
-    legalActions.flatMap((move) =>
-      move.type === 'pass' ? [move.cardIdx] : [],
-    ),
+    legalActions.flatMap((move) => (
+      isOnitamaPassMove(move) ? [getOnitamaMoveCardIdx(move)] : []
+    )),
   );
   const pendingCardIndexes = new Set(pendingMove?.cardIndexes ?? []);
 
@@ -44,11 +51,11 @@ const OnitamaBoard = ({
   }, [state]);
 
   const filteredPlayMoves = playMoves.filter((move) => {
-    if (selectedPiece !== null && move.srcIdx !== selectedPiece) {
+    if (selectedPiece !== null && getOnitamaMoveSrcIdx(move) !== selectedPiece) {
       return false;
     }
 
-    if (selectedCard !== null && move.cardIdx !== selectedCard) {
+    if (selectedCard !== null && getOnitamaMoveCardIdx(move) !== selectedCard) {
       return false;
     }
 
@@ -62,27 +69,22 @@ const OnitamaBoard = ({
       : selectedCard !== null
         ? uniqueIndexes(
             playMoves
-              .filter((move) => move.cardIdx === selectedCard)
-              .map((move) => move.srcIdx),
+              .filter((move) => getOnitamaMoveCardIdx(move) === selectedCard)
+              .map((move) => getOnitamaMoveSrcIdx(move)),
           )
         : [];
   const highlightedDestinationIndexes = pendingMove
     ? [pendingMove.dstIdx]
-    : uniqueIndexes(filteredPlayMoves.map((move) => move.dstIdx));
+    : uniqueIndexes(filteredPlayMoves.map((move) => getOnitamaMoveDstIdx(move)));
 
   const handleCardClick = (cardIdx: number) => {
     if (passCardIndexes.has(cardIdx)) {
-      onMove({ type: 'pass', cardIdx });
+      onMove(createOnitamaPassMove(cardIdx));
       return;
     }
 
     if (pendingMove && pendingCardIndexes.has(cardIdx)) {
-      onMove({
-        type: 'play',
-        cardIdx,
-        srcIdx: pendingMove.srcIdx,
-        dstIdx: pendingMove.dstIdx,
-      });
+      onMove(createOnitamaPlayMove(cardIdx, pendingMove.srcIdx, pendingMove.dstIdx));
       return;
     }
 
@@ -107,11 +109,14 @@ const OnitamaBoard = ({
     }
 
     const matchingMoves = playMoves.filter((move) => {
-      if (move.srcIdx !== selectedPiece || move.dstIdx !== index) {
+      if (
+        getOnitamaMoveSrcIdx(move) !== selectedPiece
+        || getOnitamaMoveDstIdx(move) !== index
+      ) {
         return false;
       }
 
-      return selectedCard === null || move.cardIdx === selectedCard;
+      return selectedCard === null || getOnitamaMoveCardIdx(move) === selectedCard;
     });
 
     if (matchingMoves.length === 1) {
@@ -123,7 +128,7 @@ const OnitamaBoard = ({
       setPendingMove({
         srcIdx: selectedPiece,
         dstIdx: index,
-        cardIndexes: matchingMoves.map((move) => move.cardIdx),
+        cardIndexes: matchingMoves.map((move) => getOnitamaMoveCardIdx(move)),
       });
     }
   };

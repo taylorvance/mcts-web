@@ -338,7 +338,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     }
 
     void performMove();
-  }, [isTerminal, performMove, state.isAutoplaying, state.isMoveInProgress]);
+  }, [isTerminal, performMove, state.historyIdx, state.isAutoplaying, state.isMoveInProgress]);
 
   return {
     gameState: state.gameState,

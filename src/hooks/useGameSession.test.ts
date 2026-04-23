@@ -95,7 +95,7 @@ describe('useGameSession', () => {
     });
   });
 
-  it('can autoplay forward from the current state', async () => {
+  it('continues autoplay until the game reaches a terminal state', async () => {
     const { result } = renderHook(() => useGameSession(games.TicTacToe, TEST_SETTINGS));
 
     act(() => {
@@ -103,14 +103,10 @@ describe('useGameSession', () => {
     });
 
     await waitFor(() => {
-      expect(result.current.historyIdx).toBeGreaterThan(0);
+      expect(result.current.isTerminal).toBe(true);
     });
-
-    if(result.current.isAutoplaying) {
-      act(() => {
-        result.current.toggleAutoplay();
-      });
-    }
+    expect(result.current.historyIdx).toBeGreaterThan(1);
+    expect(result.current.isAutoplaying).toBe(false);
   });
 
   it('can request an AI move for Dobutsu Shogi from the opening state', async () => {

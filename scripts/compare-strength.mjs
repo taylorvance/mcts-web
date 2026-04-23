@@ -42,6 +42,7 @@ const parseArgs = (rawArgs) => {
 		explorationBias: 1.414,
 		iterations: 1000,
 		maxTurns: 200,
+		pairs: 1,
 		scenarios: [],
 	};
 
@@ -67,6 +68,9 @@ const parseArgs = (rawArgs) => {
 			case '--max-turns':
 				options.maxTurns = Number.parseInt(nextValue, 10);
 				break;
+			case '--pairs':
+				options.pairs = Number.parseInt(nextValue, 10);
+				break;
 			case '--scenario':
 				options.scenarios.push(nextValue);
 				break;
@@ -87,6 +91,10 @@ const parseArgs = (rawArgs) => {
 
 	if(!Number.isInteger(options.maxTurns) || options.maxTurns <= 0) {
 		throw new Error('--max-turns must be a positive integer.');
+	}
+
+	if(!Number.isInteger(options.pairs) || options.pairs <= 0) {
+		throw new Error('--pairs must be a positive integer.');
 	}
 
 	return {
@@ -352,29 +360,31 @@ const main = async () => {
 		);
 
 		for(const scenarioId of options.scenarios) {
-			const firstMatch = await playMatch(
-				scenarioId,
-				{ ref: baselineRef, worker: baselineWorker },
-				{ ref: candidateRef, worker: candidateWorker },
-				options,
-			);
-			const secondMatch = await playMatch(
-				scenarioId,
-				{ ref: candidateRef, worker: candidateWorker },
-				{ ref: baselineRef, worker: baselineWorker },
-				options,
-			);
+			for(let pairIndex = 0; pairIndex < options.pairs; pairIndex += 1) {
+				const firstMatch = await playMatch(
+					scenarioId,
+					{ ref: baselineRef, worker: baselineWorker },
+					{ ref: candidateRef, worker: candidateWorker },
+					options,
+				);
+				const secondMatch = await playMatch(
+					scenarioId,
+					{ ref: candidateRef, worker: candidateWorker },
+					{ ref: baselineRef, worker: baselineWorker },
+					options,
+				);
 
-			for(const match of [firstMatch, secondMatch]) {
-				const record = scenarioResults[scenarioId];
-				record.totalMoves += match.moves;
+				for(const match of [firstMatch, secondMatch]) {
+					const record = scenarioResults[scenarioId];
+					record.totalMoves += match.moves;
 
-				if(match.winner === baselineRef) {
-					record.baselineWins += 1;
-				} else if(match.winner === candidateRef) {
-					record.candidateWins += 1;
-				} else {
-					record.draws += 1;
+					if(match.winner === baselineRef) {
+						record.baselineWins += 1;
+					} else if(match.winner === candidateRef) {
+						record.candidateWins += 1;
+					} else {
+						record.draws += 1;
+					}
 				}
 			}
 		}

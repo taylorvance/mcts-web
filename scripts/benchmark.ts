@@ -190,6 +190,8 @@ const withSeededRandom = <T>(seed: number, factory: () => T) => {
 const gameModuleLoaders = import.meta.glob([
 	'../src/games/ConnectFour/index.ts',
 	'../src/games/ConnectFour.tsx',
+	'../src/games/DobutsuShogi/index.ts',
+	'../src/games/DobutsuShogi.tsx',
 	'../src/games/Filler/index.ts',
 	'../src/games/Filler.tsx',
 	'../src/games/Onitama/index.ts',
@@ -227,7 +229,7 @@ const extractGame = (module: unknown, label: string): BenchmarkGame => {
 	return module.default as BenchmarkGame;
 };
 
-const loadGame = async (name: 'ConnectFour' | 'Filler' | 'Onitama' | 'UltimateTicTacToe') => {
+const loadGame = async (name: 'ConnectFour' | 'DobutsuShogi' | 'Filler' | 'Onitama' | 'UltimateTicTacToe') => {
 	const module = await loadFirstAvailableModule([
 		`../src/games/${name}/index.ts`,
 		`../src/games/${name}.tsx`,
@@ -328,8 +330,9 @@ const runSearch = (
 };
 
 const loadScenarios = async (): Promise<BenchmarkScenario[]> => {
-	const [connectFour, filler, onitama, ultimateTicTacToe] = await Promise.all([
+	const [connectFour, dobutsuShogi, filler, onitama, ultimateTicTacToe] = await Promise.all([
 		loadGame('ConnectFour'),
+		loadGame('DobutsuShogi'),
 		loadGame('Filler'),
 		loadGame('Onitama'),
 		loadGame('UltimateTicTacToe'),
@@ -350,6 +353,30 @@ const loadScenarios = async (): Promise<BenchmarkScenario[]> => {
 				connectFour,
 				connectFour.createInitialState(),
 				['3', '2', '3', '2', '4', '1', '4', '1', '5'],
+			)),
+		},
+		{
+			id: 'dobutsu-opening',
+			game: 'DobutsuShogi',
+			description: 'Initial Dobutsu Shogi position',
+			gameDefinition: dobutsuShogi,
+			createState: () => dobutsuShogi.createInitialState(),
+			startingTeam: getCurrentTeam(dobutsuShogi.createInitialState()),
+		},
+		{
+			id: 'dobutsu-midgame',
+			game: 'DobutsuShogi',
+			description: 'Dobutsu midgame after three tactical opening moves',
+			gameDefinition: dobutsuShogi,
+			createState: () => playMoves(
+				dobutsuShogi,
+				dobutsuShogi.createInitialState(),
+				['m:7-4', 'm:1-5', 'd:C@6'],
+			),
+			startingTeam: getCurrentTeam(playMoves(
+				dobutsuShogi,
+				dobutsuShogi.createInitialState(),
+				['m:7-4', 'm:1-5', 'd:C@6'],
 			)),
 		},
 		{

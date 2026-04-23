@@ -37,7 +37,18 @@ export interface DobutsuDropMove {
 export type DobutsuMove = DobutsuBoardMove | DobutsuDropMove;
 export type DobutsuOutcomeReason = 'capture' | 'try' | 'stalemate' | 'repetition' | null;
 
+interface DobutsuPosition {
+  board: Array<DobutsuPiece | null>;
+  hands: DobutsuHands;
+}
+
 const DROP_PIECES: DobutsuDropPieceKind[] = ['G', 'E', 'C'];
+const ROLLOUT_CAPTURE_SCORES: Record<Exclude<DobutsuPieceKind, 'L'>, number> = {
+  C: 20,
+  E: 30,
+  G: 30,
+  H: 25,
+};
 const INITIAL_BOARD: Array<DobutsuPiece | null> = [
   'g', 'l', 'e',
   null, 'c', null,
@@ -234,6 +245,55 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     return this.team ? 'S' : 'N';
   }
 
+  override suggestRollout(random: () => number) {
+    const currentTeam = this.getCurrentTeam();
+    const opponentTeam = getOpponentTeam(currentTeam);
+    const currentLion = this.findLionOnBoard(this.board, currentTeam);
+    const currentLionUnderAttack = currentLion !== null
+      && this.isSquareAttacked(this.board, currentLion, opponentTeam);
+    const opponentLionIndex = this.findLionOnBoard(this.board, opponentTeam);
+    const bestCandidates: Array<{ move: DobutsuMove; position: DobutsuPosition }> = [];
+    let bestScore = Number.NEGATIVE_INFINITY;
+    let hasCandidate = false;
+
+    this.forEachLegalMoveOnPosition(this.board, this.hands, currentTeam, (move) => {
+      hasCandidate = true;
+      const position = this.applyMoveToPosition(move, this.board, this.hands, currentTeam);
+      const score = this.scoreRolloutMove(
+        move,
+        position,
+        currentTeam,
+        currentLionUnderAttack,
+        opponentLionIndex,
+      );
+
+      if(score > bestScore) {
+        bestScore = score;
+        bestCandidates.length = 0;
+        bestCandidates.push({ move, position });
+        return;
+      }
+
+      if(score === bestScore) {
+        bestCandidates.push({ move, position });
+      }
+    });
+
+    if(!hasCandidate) {
+      throw new Error('Non-terminal Dobutsu Shogi state has no legal moves.');
+    }
+
+    const choice = bestCandidates[Math.floor(random() * bestCandidates.length)];
+    if(!choice) {
+      throw new Error('Failed to select a Dobutsu Shogi rollout move.');
+    }
+
+    return {
+      move: choice.move,
+      nextState: this.createStateFromPosition(choice.position.board, choice.position.hands, !this.team),
+    };
+  }
+
   getPositionKey(): string {
     return createPositionKey(this.board, this.team, this.hands);
   }
@@ -342,23 +402,100 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     return [...INITIAL_BOARD];
   }
 
+  private scoreRolloutMove(
+    move: DobutsuMove,
+    nextPosition: DobutsuPosition,
+    currentTeam: DobutsuTeam,
+    currentLionUnderAttack: boolean,
+    opponentLionIndex: number | null,
+  ): number {
+    const opponentTeam = getOpponentTeam(currentTeam);
+    const { board, hands } = nextPosition;
+
+    if(this.isImmediateWinningMove(board, currentTeam, move)) {
+      return 10000;
+    }
+
+    let score = 0;
+    const nextOpponentLion = this.findLionOnBoard(board, opponentTeam);
+    if(nextOpponentLion !== null && this.isSquareAttacked(board, nextOpponentLion, currentTeam)) {
+      score += 120;
+    }
+
+    if(this.hasImmediateWinningMoveOnPosition(board, hands, opponentTeam)) {
+      score -= 9000;
+    }
+
+    if(currentLionUnderAttack) {
+      const nextLion = this.findLionOnBoard(board, currentTeam);
+      const nextLionSafe = nextLion !== null
+        && !this.isSquareAttacked(board, nextLion, opponentTeam);
+      score += nextLionSafe ? 250 : -250;
+    }
+
+    if(move.type === 'move') {
+      const piece = this.board[move.from];
+      if(!piece) {
+        throw new Error(`Illegal Dobutsu Shogi rollout move: ${encodeDobutsuMove(move)}`);
+      }
+
+      const captured = this.board[move.to];
+      if(captured) {
+        const capturedKind = getPieceKind(captured);
+        if(capturedKind !== 'L') {
+          score += ROLLOUT_CAPTURE_SCORES[capturedKind];
+        }
+      }
+
+      if(getPieceKind(piece) === 'C' && isFinalRank(currentTeam, move.to)) {
+        score += 35;
+      }
+    }
+
+    if(move.type === 'drop') {
+      if(opponentLionIndex !== null) {
+        const distance = this.getSquareDistance(move.to, opponentLionIndex);
+        if(distance === 1) {
+          score += 25;
+        } else if(distance === 2) {
+          score += 10;
+        }
+      }
+    }
+
+    return score;
+  }
+
   private listPseudoLegalMoves(): DobutsuMove[] {
     const moves: DobutsuMove[] = [];
-    const currentTeam = this.getCurrentTeam();
+    this.forEachLegalMoveOnPosition(this.board, this.hands, this.getCurrentTeam(), (move) => {
+      moves.push(move);
+    });
+
+    return moves;
+  }
+
+  private forEachLegalMoveOnPosition(
+    board: Array<DobutsuPiece | null>,
+    hands: DobutsuHands,
+    team: DobutsuTeam,
+    visit: (move: DobutsuMove) => void,
+  ) {
+    const hand = hands[getTeamKey(team)];
 
     for(let index = 0; index < TOTAL_CELLS; index += 1) {
-      const piece = this.board[index];
-      if(!piece || getPieceOwner(piece) !== currentTeam) {
+      const piece = board[index];
+      if(!piece || getPieceOwner(piece) !== team) {
         continue;
       }
 
       const pieceKind = getPieceKind(piece);
-      for(const to of this.getBoardDestinations(index, piece)) {
-        if(pieceKind === 'L' && isFinalRank(currentTeam, to) && this.isAttackedAfterLionMove(index, to, currentTeam)) {
+      for(const to of this.getBoardDestinationsOnBoard(board, index, piece)) {
+        if(pieceKind === 'L' && isFinalRank(team, to) && this.isAttackedAfterLionMoveOnBoard(board, index, to, team)) {
           continue;
         }
 
-        moves.push({
+        visit({
           type: 'move',
           from: index,
           to,
@@ -367,13 +504,13 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     }
 
     for(const piece of DROP_PIECES) {
-      if(this.getCurrentHand()[piece] <= 0) {
+      if(hand[piece] <= 0) {
         continue;
       }
 
       for(let index = 0; index < TOTAL_CELLS; index += 1) {
-        if(this.board[index] === null) {
-          moves.push({
+        if(board[index] === null) {
+          visit({
             type: 'drop',
             piece,
             to: index,
@@ -381,11 +518,17 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
         }
       }
     }
-
-    return moves;
   }
 
   private getBoardDestinations(index: number, piece: DobutsuPiece): number[] {
+    return this.getBoardDestinationsOnBoard(this.board, index, piece);
+  }
+
+  private getBoardDestinationsOnBoard(
+    board: Array<DobutsuPiece | null>,
+    index: number,
+    piece: DobutsuPiece,
+  ): number[] {
     const destinations: number[] = [];
     const team = getPieceOwner(piece);
     const row = getRow(index);
@@ -400,7 +543,7 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
       }
 
       const nextIndex = getIndex(nextRow, nextCol);
-      const occupant = this.board[nextIndex];
+      const occupant = board[nextIndex];
       if(occupant && getPieceOwner(occupant) === team) {
         continue;
       }
@@ -412,7 +555,16 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
   }
 
   private isAttackedAfterLionMove(from: number, to: number, team: DobutsuTeam): boolean {
-    const nextBoard = [...this.board];
+    return this.isAttackedAfterLionMoveOnBoard(this.board, from, to, team);
+  }
+
+  private isAttackedAfterLionMoveOnBoard(
+    board: Array<DobutsuPiece | null>,
+    from: number,
+    to: number,
+    team: DobutsuTeam,
+  ): boolean {
+    const nextBoard = [...board];
     const lion = nextBoard[from];
     if(!lion || getPieceKind(lion) !== 'L') {
       throw new Error('Expected a lion when evaluating a try move.');
@@ -455,8 +607,8 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
   }
 
   private getCapturedLionWinner(): DobutsuTeam | null {
-    const southLion = this.findLion('S');
-    const northLion = this.findLion('N');
+    const southLion = this.findLionOnBoard(this.board, 'S');
+    const northLion = this.findLionOnBoard(this.board, 'N');
 
     if(southLion === null && northLion !== null) {
       return 'N';
@@ -470,7 +622,7 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
   }
 
   private getTryWinner(): DobutsuTeam | null {
-    const southLion = this.findLion('S');
+    const southLion = this.findLionOnBoard(this.board, 'S');
     if(
       southLion !== null
       && isFinalRank('S', southLion)
@@ -479,7 +631,7 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
       return 'S';
     }
 
-    const northLion = this.findLion('N');
+    const northLion = this.findLionOnBoard(this.board, 'N');
     if(
       northLion !== null
       && isFinalRank('N', northLion)
@@ -496,8 +648,15 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
   }
 
   private findLion(team: DobutsuTeam): number | null {
+    return this.findLionOnBoard(this.board, team);
+  }
+
+  private findLionOnBoard(
+    board: Array<DobutsuPiece | null>,
+    team: DobutsuTeam,
+  ): number | null {
     for(let index = 0; index < TOTAL_CELLS; index += 1) {
-      const piece = this.board[index];
+      const piece = board[index];
       if(piece && getPieceOwner(piece) === team && getPieceKind(piece) === 'L') {
         return index;
       }
@@ -506,10 +665,60 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     return null;
   }
 
-  private applyMoveUnchecked(move: DobutsuMove): DobutsuShogiState {
-    const currentTeam = this.getCurrentTeam();
-    const nextBoard = [...this.board];
-    const nextHands = cloneHands(this.hands);
+  private hasImmediateWinningMoveForCurrentTeam(): boolean {
+    return this.hasImmediateWinningMoveOnPosition(this.board, this.hands, this.getCurrentTeam());
+  }
+
+  private hasImmediateWinningMoveOnPosition(
+    board: Array<DobutsuPiece | null>,
+    hands: DobutsuHands,
+    team: DobutsuTeam,
+  ): boolean {
+    let hasWinningMove = false;
+
+    this.forEachLegalMoveOnPosition(board, hands, team, (move) => {
+      if(hasWinningMove) {
+        return;
+      }
+
+      const position = this.applyMoveToPosition(move, board, hands, team);
+      if(this.isImmediateWinningMove(position.board, team, move)) {
+        hasWinningMove = true;
+      }
+    });
+
+    return hasWinningMove;
+  }
+
+  private isImmediateWinningMove(
+    board: Array<DobutsuPiece | null>,
+    team: DobutsuTeam,
+    move: DobutsuMove,
+  ): boolean {
+    if(this.findLionOnBoard(board, getOpponentTeam(team)) === null) {
+      return true;
+    }
+
+    if(move.type !== 'move') {
+      return false;
+    }
+
+    const movedPiece = board[move.to];
+    return movedPiece !== null
+      && getPieceOwner(movedPiece) === team
+      && getPieceKind(movedPiece) === 'L'
+      && isFinalRank(team, move.to)
+      && !this.isSquareAttacked(board, move.to, getOpponentTeam(team));
+  }
+
+  private applyMoveToPosition(
+    move: DobutsuMove,
+    board: Array<DobutsuPiece | null>,
+    hands: DobutsuHands,
+    currentTeam: DobutsuTeam,
+  ): DobutsuPosition {
+    const nextBoard = [...board];
+    const nextHands = cloneHands(hands);
 
     if(move.type === 'move') {
       const piece = nextBoard[move.from];
@@ -541,12 +750,28 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
       nextBoard[move.to] = createPiece(currentTeam, move.piece);
     }
 
-    const nextTeam = !this.team;
+    return {
+      board: nextBoard,
+      hands: nextHands,
+    };
+  }
+
+  private createStateFromPosition(
+    board: Array<DobutsuPiece | null>,
+    hands: DobutsuHands,
+    nextTeam: boolean,
+  ): DobutsuShogiState {
     const nextRepetitionCounts = new Map(this.repetitionCounts);
-    const nextPositionKey = createPositionKey(nextBoard, nextTeam, nextHands);
+    const nextPositionKey = createPositionKey(board, nextTeam, hands);
     nextRepetitionCounts.set(nextPositionKey, (nextRepetitionCounts.get(nextPositionKey) ?? 0) + 1);
 
-    return new DobutsuShogiState(nextBoard, nextTeam, nextHands, nextRepetitionCounts);
+    return new DobutsuShogiState(board, nextTeam, hands, nextRepetitionCounts);
+  }
+
+  private applyMoveUnchecked(move: DobutsuMove): DobutsuShogiState {
+    const currentTeam = this.getCurrentTeam();
+    const position = this.applyMoveToPosition(move, this.board, this.hands, currentTeam);
+    return this.createStateFromPosition(position.board, position.hands, !this.team);
   }
 }
 

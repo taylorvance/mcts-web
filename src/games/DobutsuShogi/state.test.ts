@@ -213,7 +213,6 @@ describe('DobutsuShogiState', () => {
 
     const suggestion = state.suggestRollout(() => 0);
 
-    expect(encodeDobutsuMove(suggestion.move)).toBe('m:10-7');
     expect(
       suggestion.nextState.getLegalMoves().some(
         (reply) => suggestion.nextState.makeTypedMove(reply).getWinner() === 'N',

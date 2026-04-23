@@ -17,6 +17,7 @@ import { TbRobot, TbRobotOff } from 'react-icons/tb';
 interface MCTSSettings {
   explorationBias: number;
   maxIterations: number;
+  maxRetainedNodes: number;
   maxTime: number;
 }
 

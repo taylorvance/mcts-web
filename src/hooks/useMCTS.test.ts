@@ -7,6 +7,7 @@ import { useMCTS } from './useMCTS';
 const TEST_SETTINGS = {
   explorationBias: 1.414,
   maxIterations: 1,
+  maxRetainedNodes: null,
   maxTime: null,
 };
 
@@ -71,5 +72,21 @@ describe('useMCTS', () => {
     });
 
     expect(result.current.mcts).toBeNull();
+  });
+
+  it('stops expanding once the retained-node cap is reached', async () => {
+    const state = new TicTacToeState();
+    const { result } = renderHook(() => useMCTS(games.TicTacToe, {
+      ...TEST_SETTINGS,
+      maxIterations: 10,
+      maxRetainedNodes: 2,
+    }));
+
+    await act(async () => {
+      await result.current.runSearch(state);
+    });
+
+    expect(result.current.searchStats?.retainedNodeCount).toBe(2);
+    expect(result.current.searchStats?.iterations).toBe(1);
   });
 });

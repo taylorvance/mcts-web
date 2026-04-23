@@ -9,6 +9,7 @@ const SESSION_STORAGE_VERSION = 1;
 interface MCTSSettings {
   explorationBias: number;
   maxIterations: number | null;
+  maxRetainedNodes: number | null;
   maxTime: number | null;
 }
 

@@ -9,6 +9,7 @@ import { useGameSession } from './useGameSession';
 const TEST_SETTINGS = {
   explorationBias: 1.414,
   maxIterations: 1,
+  maxRetainedNodes: null,
   maxTime: 0.01,
 };
 

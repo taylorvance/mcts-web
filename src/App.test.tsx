@@ -46,6 +46,7 @@ describe('App', () => {
         mctsSettings: {
           explorationBias: 2.5,
           maxIterations: 250,
+          maxRetainedNodes: 5000,
           maxTime: 3,
         },
         lastSelectedGameIdByFamily: {
@@ -60,6 +61,7 @@ describe('App', () => {
     expect(screen.getByTestId('onitama-board')).toBeInTheDocument();
     expect(screen.getByLabelText('Exploration Bias')).toHaveValue(2.5);
     expect(screen.getByLabelText('Max Iterations')).toHaveValue(250);
+    expect(screen.getByLabelText('Max Retained Nodes')).toHaveValue(5000);
     expect(screen.getByLabelText('Max Time (s)')).toHaveValue(3);
   });
 
@@ -71,6 +73,7 @@ describe('App', () => {
         mctsSettings: {
           explorationBias: 1.414,
           maxIterations: 1000,
+          maxRetainedNodes: 0,
           maxTime: 1,
         },
         lastSelectedGameIdByFamily: {
@@ -94,6 +97,7 @@ describe('App', () => {
         mctsSettings: {
           explorationBias: 1.414,
           maxIterations: 1000,
+          maxRetainedNodes: 0,
           maxTime: 1,
         },
         lastSelectedGameIdByFamily: {
@@ -121,6 +125,7 @@ describe('App', () => {
         mctsSettings: {
           explorationBias: 2.5,
           maxIterations: 250,
+          maxRetainedNodes: 5000,
           maxTime: 3,
         },
         lastSelectedGameIdByFamily: {
@@ -160,6 +165,7 @@ describe('App', () => {
         mctsSettings: {
           explorationBias: 2.5,
           maxIterations: 250,
+          maxRetainedNodes: 5000,
           maxTime: 3,
         },
         lastSelectedGameIdByFamily: {
@@ -186,6 +192,7 @@ describe('App', () => {
     expect(window.location.search).toBe('');
     expect(screen.getByLabelText('Exploration Bias')).toHaveValue(1.414);
     expect(screen.getByLabelText('Max Iterations')).toHaveValue(1000);
+    expect(screen.getByLabelText('Max Retained Nodes')).toHaveValue(0);
     expect(screen.getByLabelText('Max Time (s)')).toHaveValue(1);
     expect(readJsonStorage(getGameSessionStorageKey('Onitama'))).toBeNull();
     expect(readJsonStorage(APP_STORAGE_KEY)).toMatchObject({
@@ -193,6 +200,7 @@ describe('App', () => {
       mctsSettings: {
         explorationBias: 1.414,
         maxIterations: 1000,
+        maxRetainedNodes: 0,
         maxTime: 1,
       },
       lastSelectedGameIdByFamily: {
@@ -316,6 +324,7 @@ describe('App', () => {
         mctsSettings: {
           explorationBias: 1.414,
           maxIterations: 1000,
+          maxRetainedNodes: 0,
           maxTime: 1,
         },
         lastSelectedGameIdByFamily: {

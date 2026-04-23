@@ -28,6 +28,7 @@ const defaultGameId = 'TicTacToe';
 const defaultMctsSettings = {
   explorationBias: 1.414,
   maxIterations: 1000,
+  maxRetainedNodes: 0,
   maxTime: 1,
 };
 const gameQueryParam = 'game';
@@ -48,6 +49,7 @@ const appHelpContent: HelpContent = {
       items: [
         'Exploration Bias controls how much MCTS favors proven lines versus less-visited branches.',
         'Max Iterations and Max Time cap how long each search runs.',
+        'Max Retained Nodes caps the preserved tree size across repeated searches; set it to 0 for no cap.',
         'The Search Tree shows visits, average value, and explored continuations after each search.',
       ],
     },
@@ -98,6 +100,10 @@ const loadPersistedAppState = (): PersistedAppState | null => {
     !isValidGameId(persistedState.selectedGameId) ||
     typeof persistedState.mctsSettings?.explorationBias !== 'number' ||
     typeof persistedState.mctsSettings?.maxIterations !== 'number' ||
+    (
+      persistedState.mctsSettings?.maxRetainedNodes !== undefined
+      && typeof persistedState.mctsSettings.maxRetainedNodes !== 'number'
+    ) ||
     typeof persistedState.mctsSettings?.maxTime !== 'number'
   ) {
     return null;
@@ -105,7 +111,10 @@ const loadPersistedAppState = (): PersistedAppState | null => {
 
   return {
     selectedGameId: persistedState.selectedGameId,
-    mctsSettings: persistedState.mctsSettings,
+    mctsSettings: {
+      ...defaultMctsSettings,
+      ...persistedState.mctsSettings,
+    },
     lastSelectedGameIdByFamily: sanitizeLastSelectedGameIdByFamily(
       persistedState.lastSelectedGameIdByFamily,
     ),

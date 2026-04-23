@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { SearchMetrics } from 'multimcts';
-import type { AppGameState, Game, SearchTreeLike } from '../types/Game';
+import type {
+  AppGameState,
+  Game,
+  SearchTreeLike,
+  SearchTreeNodeView,
+} from '../types/Game';
 
 export interface SearchStats extends SearchMetrics {
   retainedNodeCount: number;
@@ -46,11 +51,32 @@ const countRetainedNodes = (root: SearchTreeLike['root']) => {
   return retainedNodeCount;
 };
 
+type SearchTreeStateLike = SearchTreeNodeView['state'];
+
+const resolveStateKey = (state: AppGameState | SearchTreeStateLike) => (
+  typeof state === 'object'
+  && state !== null
+  && 'getStateKey' in state
+  && typeof state.getStateKey === 'function'
+    ? state.getStateKey()
+    : state.toString()
+);
+
 export const useMCTS = (
   game: Game,
-  settings: { explorationBias: number; maxIterations: number | null; maxTime: number | null },
+  settings: {
+    explorationBias: number;
+    maxIterations: number | null;
+    maxRetainedNodes: number | null;
+    maxTime: number | null;
+  },
 ) => {
-  const { explorationBias, maxIterations, maxTime } = settings;
+  const {
+    explorationBias,
+    maxIterations,
+    maxRetainedNodes,
+    maxTime,
+  } = settings;
   const mctsRef = useRef<SearchTreeLike | null>(null);
   const activeSearchRef = useRef<object | null>(null);
   const [mcts, setMcts] = useState<SearchTreeLike | null>(null);
@@ -62,7 +88,7 @@ export const useMCTS = (
 
   useEffect(() => {
     cancelSearch();
-  }, [cancelSearch, explorationBias, game, maxIterations, maxTime]);
+  }, [cancelSearch, explorationBias, game, maxIterations, maxRetainedNodes, maxTime]);
 
   useEffect(() => () => {
     cancelSearch();
@@ -70,8 +96,13 @@ export const useMCTS = (
 
   const runSearch = useCallback(async (state: AppGameState) => {
     const normalizedMaxIterations = normalizeSearchLimit(maxIterations);
+    const normalizedMaxRetainedNodes = normalizeSearchLimit(maxRetainedNodes);
     const normalizedMaxTime = normalizeSearchLimit(maxTime);
-    if (normalizedMaxIterations === null && normalizedMaxTime === null) {
+    if (
+      normalizedMaxIterations === null
+      && normalizedMaxRetainedNodes === null
+      && normalizedMaxTime === null
+    ) {
       throw new Error('At least one positive search limit is required.');
     }
 
@@ -83,23 +114,45 @@ export const useMCTS = (
     activeSearchRef.current = searchToken;
     try {
       const startTime = getNow();
-      game.search(nextMCTS, state, {
-        maxIterations: 1,
-        maxTime: null,
-      });
-      mctsRef.current = nextMCTS;
+      const currentRetainedNodeCount = countRetainedNodes(nextMCTS.root);
+      const isMatchingRoot = nextMCTS.root !== null
+        && resolveStateKey(nextMCTS.root.state) === resolveStateKey(state);
+      let iterations = 0;
+      let retainedNodeCount = currentRetainedNodeCount;
+
+      if (
+        normalizedMaxRetainedNodes === null
+        || !isMatchingRoot
+        || currentRetainedNodeCount < normalizedMaxRetainedNodes
+      ) {
+        game.search(nextMCTS, state, {
+          maxIterations: 1,
+          maxTime: null,
+        });
+        mctsRef.current = nextMCTS;
+        iterations = 1;
+        retainedNodeCount = countRetainedNodes(nextMCTS.root);
+      } else {
+        mctsRef.current = nextMCTS;
+      }
 
       if (activeSearchRef.current !== searchToken) {
         return null;
       }
 
-      let iterations = 1;
       const iterationLimit = normalizedMaxIterations ?? Number.POSITIVE_INFINITY;
       const deadline = normalizedMaxTime === null
         ? Number.POSITIVE_INFINITY
         : startTime + (normalizedMaxTime * 1000);
 
-      while (iterations < iterationLimit && getNow() < deadline) {
+      while (
+        iterations < iterationLimit
+        && getNow() < deadline
+        && (
+          normalizedMaxRetainedNodes === null
+          || retainedNodeCount < normalizedMaxRetainedNodes
+        )
+      ) {
         const batchDeadline = Math.min(deadline, getNow() + SEARCH_BATCH_BUDGET_MS);
         do {
           if (activeSearchRef.current !== searchToken) {
@@ -110,7 +163,16 @@ export const useMCTS = (
           iterations += 1;
         } while (iterations < iterationLimit && getNow() < batchDeadline);
 
-        if (iterations < iterationLimit && getNow() < deadline) {
+        retainedNodeCount = countRetainedNodes(nextMCTS.root);
+
+        if (
+          iterations < iterationLimit
+          && getNow() < deadline
+          && (
+            normalizedMaxRetainedNodes === null
+            || retainedNodeCount < normalizedMaxRetainedNodes
+          )
+        ) {
           await yieldToBrowser();
         }
       }
@@ -128,7 +190,7 @@ export const useMCTS = (
       const nextSearchStats = {
         elapsedMs,
         iterations,
-        retainedNodeCount: countRetainedNodes(nextMCTS.root),
+        retainedNodeCount,
         roundsPerSecond: elapsedMs > 0
           ? (iterations / elapsedMs) * 1000
           : 0,
@@ -141,7 +203,7 @@ export const useMCTS = (
         activeSearchRef.current = null;
       }
     }
-  }, [explorationBias, game, maxIterations, maxTime]);
+  }, [explorationBias, game, maxIterations, maxRetainedNodes, maxTime]);
 
   const advanceSearchTree = useCallback((move: unknown, nextState: AppGameState) => {
     cancelSearch();

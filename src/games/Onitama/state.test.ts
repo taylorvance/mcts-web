@@ -87,7 +87,7 @@ describe('OnitamaState', () => {
     expect(encodedReplayState.cards).toEqual(typedReplayState.cards);
   });
 
-  it('supports both packed and legacy move encodings', () => {
+  it('round-trips packed move encodings', () => {
     const move = createOnitamaPlayMove(2, 22, 17);
 
     expect(decodeOnitamaMove(encodeOnitamaMove(move))).toBe(move);

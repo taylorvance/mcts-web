@@ -129,10 +129,6 @@ export const encodeOnitamaMove = (move: OnitamaMove) => {
 };
 
 export const decodeOnitamaMove = (encodedMove: string): OnitamaMove => {
-  if(/^\d+$/.test(encodedMove)) {
-    return Number.parseInt(encodedMove, 10);
-  }
-
   if(encodedMove.startsWith('pass ')) {
     return createOnitamaPassMove(Number.parseInt(encodedMove.split(' ')[1], 10));
   }

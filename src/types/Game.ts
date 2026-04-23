@@ -23,6 +23,8 @@ export interface SearchTreeNodeView {
 
 export interface SearchTreeLike {
   explorationBias: number;
+  executeRound: (root?: SearchTreeNodeView | null) => void;
+  getBestMove: (node?: SearchTreeNodeView | null) => unknown | null;
   root: SearchTreeNodeView | null;
 }
 

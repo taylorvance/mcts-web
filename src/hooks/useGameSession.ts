@@ -146,16 +146,36 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     game,
     (currentGame) => restoreSessionState(currentGame),
   );
-  const { mcts, searchStats, runSearch, advanceSearchTree, resetMCTS } = useMCTS(game, settings);
+  const {
+    mcts,
+    searchStats,
+    runSearch,
+    advanceSearchTree,
+    resetMCTS,
+    cancelSearch,
+  } = useMCTS(game, settings);
   const previousGameRef = useRef(game);
+  const stateRef = useRef(state);
+  const moveInProgressRef = useRef(false);
+  const moveEpochRef = useRef(0);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  const invalidatePendingMove = useCallback(() => {
+    moveEpochRef.current += 1;
+    cancelSearch();
+  }, [cancelSearch]);
 
   useEffect(() => {
     if(previousGameRef.current === game) return;
 
     previousGameRef.current = game;
+    invalidatePendingMove();
     dispatch({ type: 'initialize', sessionState: restoreSessionState(game) });
     resetMCTS();
-  }, [game, resetMCTS]);
+  }, [game, invalidatePendingMove, resetMCTS]);
 
   useEffect(() => {
     writeJsonStorage(getGameSessionStorageKey(game.id), {
@@ -172,69 +192,118 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
   const canUndo = state.historyIdx > 0;
   const canRedo = state.historyIdx < state.history.length-1;
 
-  const performMove = useCallback((move: unknown | null = null) => {
-    if(state.isMoveInProgress) return null;
+  const performMove = useCallback(async (move: unknown | null = null) => {
+    if(moveInProgressRef.current) return null;
 
+    const sessionSnapshot = stateRef.current;
+    if(sessionSnapshot.gameState.isTerminal()) return null;
+
+    moveInProgressRef.current = true;
     dispatch({ type: 'move_started' });
 
     try {
-      if(state.gameState.isTerminal()) return null;
+      const moveEpoch = moveEpochRef.current;
+      const nextMove = move ?? await runSearch(sessionSnapshot.gameState);
+      if(nextMove === null) return null;
 
-      const nextMove = move ?? runSearch(state.gameState);
-      const serializedMove = game.serializeMove(nextMove, state.gameState);
-      const nextState = game.applyMove(state.gameState, nextMove);
+      if(
+        moveEpochRef.current !== moveEpoch
+        || stateRef.current.gameState !== sessionSnapshot.gameState
+      ) {
+        return null;
+      }
+
+      const serializedMove = game.serializeMove(nextMove, sessionSnapshot.gameState);
+      const nextState = game.applyMove(sessionSnapshot.gameState, nextMove);
       advanceSearchTree(nextMove, nextState);
       dispatch({ type: 'move_applied', gameState: nextState, move: serializedMove });
       return nextMove;
     } finally {
+      moveInProgressRef.current = false;
       dispatch({ type: 'move_completed' });
     }
-  }, [advanceSearchTree, game, runSearch, state.gameState, state.isMoveInProgress]);
+  }, [advanceSearchTree, game, runSearch]);
 
   const doAIMove = useCallback(() => {
-    if(canPlay) performMove();
-  }, [canPlay, performMove]);
+    const currentState = stateRef.current;
+    if(
+      currentState.isAutoplaying
+      || moveInProgressRef.current
+      || currentState.gameState.isTerminal()
+    ) {
+      return;
+    }
+
+    void performMove();
+  }, [performMove]);
 
   const gotoHistoryIdx = useCallback((idx: number) => {
-    if(idx < 0 || idx >= state.history.length) return;
+    const currentState = stateRef.current;
+    if(idx < 0 || idx >= currentState.history.length) return;
 
-    let replayState = state.initialState;
+    invalidatePendingMove();
+
+    let replayState = currentState.initialState;
     for(let i=1; i<=idx; i++) {
       replayState = game.applyMove(
         replayState,
-        game.deserializeMove(state.history[i], replayState),
+        game.deserializeMove(currentState.history[i], replayState),
       );
     }
 
     dispatch({ type: 'goto_history', gameState: replayState, idx });
     resetMCTS();
-  }, [game, resetMCTS, state.history, state.initialState]);
+  }, [game, invalidatePendingMove, resetMCTS]);
 
   const resetGame = useCallback(() => {
-    if(state.historyIdx > 0) {
+    const currentState = stateRef.current;
+
+    if(currentState.historyIdx > 0) {
       gotoHistoryIdx(0);
       return;
     }
 
-    dispatch({ type: 'initialize', sessionState: createSessionState(game.createInitialState(), state.doAIMoveAfterPlayer) });
+    invalidatePendingMove();
+    dispatch({
+      type: 'initialize',
+      sessionState: createSessionState(
+        game.createInitialState(),
+        currentState.doAIMoveAfterPlayer,
+      ),
+    });
     resetMCTS();
-  }, [game, gotoHistoryIdx, resetMCTS, state.doAIMoveAfterPlayer, state.historyIdx]);
+  }, [game, gotoHistoryIdx, invalidatePendingMove, resetMCTS]);
 
   const handlePlayerMove = useCallback((move: unknown) => {
-    if(!canPlay) return;
+    const currentState = stateRef.current;
+    if(
+      currentState.isAutoplaying
+      || moveInProgressRef.current
+      || currentState.gameState.isTerminal()
+    ) {
+      return;
+    }
 
-    performMove(move);
-    if(state.doAIMoveAfterPlayer) {
+    void performMove(move);
+    if(currentState.doAIMoveAfterPlayer) {
       dispatch({ type: 'set_pending_ai', value: true });
     }
-  }, [canPlay, performMove, state.doAIMoveAfterPlayer]);
+  }, [performMove]);
 
   const toggleAutoplay = useCallback(() => {
-    dispatch({
-      type: 'set_autoplay',
-      value: !(state.isAutoplaying || isTerminal),
-    });
-  }, [isTerminal, state.isAutoplaying]);
+    const currentState = stateRef.current;
+    if(currentState.isAutoplaying) {
+      invalidatePendingMove();
+      dispatch({ type: 'set_autoplay', value: false });
+      return;
+    }
+
+    if(currentState.gameState.isTerminal()) {
+      return;
+    }
+
+    dispatch({ type: 'set_autoplay', value: true });
+  }, [invalidatePendingMove]);
 
   const toggleAIMoveAfterPlayer = useCallback(() => {
     dispatch({ type: 'toggle_ai_after_player' });
@@ -261,13 +330,14 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
 
   useEffect(() => {
     if(!state.isAutoplaying) return;
+    if(state.isMoveInProgress) return;
     if(isTerminal) {
       dispatch({ type: 'set_autoplay', value: false });
       return;
     }
 
-    performMove();
-  }, [isTerminal, performMove, state.isAutoplaying]);
+    void performMove();
+  }, [isTerminal, performMove, state.isAutoplaying, state.isMoveInProgress]);
 
   return {
     gameState: state.gameState,

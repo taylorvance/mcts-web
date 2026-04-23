@@ -11,19 +11,19 @@ const TEST_SETTINGS = {
 };
 
 describe('useMCTS', () => {
-  it('reuses the same root node for repeated searches from the same state', () => {
+  it('reuses the same root node for repeated searches from the same state', async () => {
     const state = new TicTacToeState();
     const { result } = renderHook(() => useMCTS(games.TicTacToe, TEST_SETTINGS));
 
-    act(() => {
-      result.current.runSearch(state);
+    await act(async () => {
+      await result.current.runSearch(state);
     });
 
     const initialRoot = result.current.mcts?.root;
     const initialVisits = initialRoot?.visits ?? 0;
 
-    act(() => {
-      result.current.runSearch(state);
+    await act(async () => {
+      await result.current.runSearch(state);
     });
 
     expect(result.current.searchStats?.iterations).toBe(1);
@@ -32,13 +32,13 @@ describe('useMCTS', () => {
     expect(result.current.mcts?.root?.visits).toBeGreaterThan(initialVisits);
   });
 
-  it('promotes an explored child node after applying its move', () => {
+  it('promotes an explored child node after applying its move', async () => {
     const state = new TicTacToeState();
     const { result } = renderHook(() => useMCTS(games.TicTacToe, TEST_SETTINGS));
     let move = -1;
 
-    act(() => {
-      move = result.current.runSearch(state) as number;
+    await act(async () => {
+      move = await result.current.runSearch(state) as number;
     });
 
     const childNode = result.current.mcts?.root?.children.get(move);
@@ -53,13 +53,13 @@ describe('useMCTS', () => {
     expect(result.current.mcts?.root?.state.toString()).toBe(nextState.toString());
   });
 
-  it('clears the tree when the applied move was not explored', () => {
+  it('clears the tree when the applied move was not explored', async () => {
     const state = new TicTacToeState();
     const { result } = renderHook(() => useMCTS(games.TicTacToe, TEST_SETTINGS));
     let exploredMove = -1;
 
-    act(() => {
-      exploredMove = result.current.runSearch(state) as number;
+    await act(async () => {
+      exploredMove = await result.current.runSearch(state) as number;
     });
 
     const unexploredMove = state.getLegalMoves().find((move) => move !== exploredMove)!;

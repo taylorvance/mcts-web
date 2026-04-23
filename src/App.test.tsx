@@ -47,7 +47,7 @@ describe('App', () => {
           explorationBias: 2.5,
           maxIterations: 250,
           maxRetainedNodes: 5000,
-          maxTime: 3,
+          maxTime: 300,
         },
         lastSelectedGameIdByFamily: {
           Onitama: 'Onitama',
@@ -62,7 +62,12 @@ describe('App', () => {
     expect(screen.getByLabelText('Exploration Bias')).toHaveValue(2.5);
     expect(screen.getByLabelText('Max Iterations')).toHaveValue(250);
     expect(screen.getByLabelText('Max Retained Nodes')).toHaveValue(5000);
-    expect(screen.getByLabelText('Max Time (s)')).toHaveValue(3);
+    expect(screen.getByLabelText('Max Time (ms)')).toHaveValue(300);
+    expect(
+      screen.getByText(
+        /Leave Max Iterations, Max Time, or Max Retained Nodes blank to unset them\. Search requires Max Iterations or Max Time\./i,
+      ),
+    ).toBeInTheDocument();
   });
 
   it('shows the Shogi family when a Dobutsu leaf game is selected', () => {
@@ -73,8 +78,8 @@ describe('App', () => {
         mctsSettings: {
           explorationBias: 1.414,
           maxIterations: 1000,
-          maxRetainedNodes: 0,
-          maxTime: 1,
+          maxRetainedNodes: null,
+          maxTime: 1000,
         },
         lastSelectedGameIdByFamily: {
           Shogi: 'DobutsuShogi',
@@ -97,8 +102,8 @@ describe('App', () => {
         mctsSettings: {
           explorationBias: 1.414,
           maxIterations: 1000,
-          maxRetainedNodes: 0,
-          maxTime: 1,
+          maxRetainedNodes: null,
+          maxTime: 1000,
         },
         lastSelectedGameIdByFamily: {
           Shogi: 'DobutsuShogi',
@@ -126,7 +131,7 @@ describe('App', () => {
           explorationBias: 2.5,
           maxIterations: 250,
           maxRetainedNodes: 5000,
-          maxTime: 3,
+          maxTime: 300,
         },
         lastSelectedGameIdByFamily: {
           Onitama: 'Onitama',
@@ -166,7 +171,7 @@ describe('App', () => {
           explorationBias: 2.5,
           maxIterations: 250,
           maxRetainedNodes: 5000,
-          maxTime: 3,
+          maxTime: 300,
         },
         lastSelectedGameIdByFamily: {
           Onitama: 'Onitama',
@@ -192,16 +197,16 @@ describe('App', () => {
     expect(window.location.search).toBe('');
     expect(screen.getByLabelText('Exploration Bias')).toHaveValue(1.414);
     expect(screen.getByLabelText('Max Iterations')).toHaveValue(1000);
-    expect(screen.getByLabelText('Max Retained Nodes')).toHaveValue(0);
-    expect(screen.getByLabelText('Max Time (s)')).toHaveValue(1);
+    expect(screen.getByLabelText('Max Retained Nodes')).toHaveDisplayValue('');
+    expect(screen.getByLabelText('Max Time (ms)')).toHaveValue(1000);
     expect(readJsonStorage(getGameSessionStorageKey('Onitama'))).toBeNull();
     expect(readJsonStorage(APP_STORAGE_KEY)).toMatchObject({
       selectedGameId: 'TicTacToe',
       mctsSettings: {
         explorationBias: 1.414,
         maxIterations: 1000,
-        maxRetainedNodes: 0,
-        maxTime: 1,
+        maxRetainedNodes: null,
+        maxTime: 1000,
       },
       lastSelectedGameIdByFamily: {
         TicTacToe: 'TicTacToe',
@@ -324,8 +329,8 @@ describe('App', () => {
         mctsSettings: {
           explorationBias: 1.414,
           maxIterations: 1000,
-          maxRetainedNodes: 0,
-          maxTime: 1,
+          maxRetainedNodes: null,
+          maxTime: 1000,
         },
         lastSelectedGameIdByFamily: {
           Shogi: 'DobutsuShogi',
@@ -348,4 +353,5 @@ describe('App', () => {
       });
     });
   });
+
 });

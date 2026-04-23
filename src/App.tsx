@@ -25,11 +25,18 @@ import {
 } from './utils/persistence';
 
 const defaultGameId = 'TicTacToe';
-const defaultMctsSettings = {
+interface MCTSSettings {
+  explorationBias: number;
+  maxIterations: number | null;
+  maxRetainedNodes: number | null;
+  maxTime: number | null;
+}
+
+const defaultMctsSettings: MCTSSettings = {
   explorationBias: 1.414,
   maxIterations: 1000,
-  maxRetainedNodes: 0,
-  maxTime: 1,
+  maxRetainedNodes: null,
+  maxTime: 1000,
 };
 const gameQueryParam = 'game';
 const appHelpContent: HelpContent = {
@@ -48,8 +55,8 @@ const appHelpContent: HelpContent = {
       title: 'Search',
       items: [
         'Exploration Bias controls how much MCTS favors proven lines versus less-visited branches.',
-        'Max Iterations and Max Time cap how long each search runs.',
-        'Max Retained Nodes caps the preserved tree size across repeated searches; set it to 0 for no cap.',
+        'Set either Max Iterations or Max Time (ms) to a positive value for each search.',
+        'Leave Max Retained Nodes blank for no cap, or set a positive value to cap the preserved tree size across repeated searches.',
         'The Search Tree shows visits, average value, and explored continuations after each search.',
       ],
     },
@@ -66,9 +73,13 @@ const appHelpContent: HelpContent = {
 
 interface PersistedAppState {
   selectedGameId: string;
-  mctsSettings: typeof defaultMctsSettings;
+  mctsSettings: MCTSSettings;
   lastSelectedGameIdByFamily: Record<string, string>;
 }
+
+const isNullableNumber = (value: unknown): value is number | null => (
+  value === null || typeof value === 'number'
+);
 
 const isValidGameId = (gameId: unknown): gameId is string => (
   typeof gameId === 'string' && gameId in games
@@ -99,12 +110,12 @@ const loadPersistedAppState = (): PersistedAppState | null => {
   if (
     !isValidGameId(persistedState.selectedGameId) ||
     typeof persistedState.mctsSettings?.explorationBias !== 'number' ||
-    typeof persistedState.mctsSettings?.maxIterations !== 'number' ||
+    !isNullableNumber(persistedState.mctsSettings?.maxIterations) ||
     (
       persistedState.mctsSettings?.maxRetainedNodes !== undefined
-      && typeof persistedState.mctsSettings.maxRetainedNodes !== 'number'
+      && !isNullableNumber(persistedState.mctsSettings.maxRetainedNodes)
     ) ||
-    typeof persistedState.mctsSettings?.maxTime !== 'number'
+    !isNullableNumber(persistedState.mctsSettings?.maxTime)
   ) {
     return null;
   }

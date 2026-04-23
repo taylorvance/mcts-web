@@ -62,10 +62,11 @@ export const useMCTS = (
     const normalizedMaxTime = normalizeSearchLimit(maxTime);
     if (
       normalizedMaxIterations === null
-      && normalizedMaxRetainedNodes === null
       && normalizedMaxTime === null
     ) {
-      throw new Error('At least one positive search limit is required.');
+      throw new Error(
+        'Search requires either a positive maxIterations or maxTime.',
+      );
     }
 
     const currentMCTS = mctsRef.current;
@@ -82,7 +83,7 @@ export const useMCTS = (
 
       const deadline = normalizedMaxTime === null
         ? Number.POSITIVE_INFINITY
-        : startTime + (normalizedMaxTime * 1000);
+        : startTime + normalizedMaxTime;
       const iterationLimit = normalizedMaxIterations ?? Number.POSITIVE_INFINITY;
 
       while (iterations < iterationLimit && getNow() < deadline) {
@@ -98,7 +99,7 @@ export const useMCTS = (
             ? Math.max(1, remainingIterations)
             : null,
           maxRetainedNodes: normalizedMaxRetainedNodes,
-          maxTime: batchRemainingMs > 0 ? batchRemainingMs / 1000 : null,
+          maxTime: batchRemainingMs > 0 ? batchRemainingMs : null,
         });
 
         mctsRef.current = nextMCTS;

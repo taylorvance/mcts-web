@@ -84,10 +84,9 @@ const createTypedGameEntry = <
       const { maxIterations, maxRetainedNodes, maxTime } = limits;
       if (
         maxIterations === null
-        && maxRetainedNodes === null
         && maxTime === null
       ) {
-        throw new Error('At least one search limit is required.');
+        throw new Error('Search requires either maxIterations or maxTime.');
       }
 
       const result = (search as unknown as MCTS<TState, TMove, TTeam>).searchWithDiagnostics(
@@ -95,7 +94,7 @@ const createTypedGameEntry = <
         {
           ...(maxIterations !== null ? { maxIterations } : {}),
           ...(maxRetainedNodes !== null ? { maxRetainedNodes } : {}),
-          ...(maxTime !== null ? { maxTimeMs: maxTime * 1000 } : {}),
+          ...(maxTime !== null ? { maxTimeMs: maxTime } : {}),
         },
       );
 

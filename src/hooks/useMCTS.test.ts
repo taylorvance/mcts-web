@@ -89,4 +89,18 @@ describe('useMCTS', () => {
     expect(result.current.searchStats?.retainedNodeCount).toBe(2);
     expect(result.current.searchStats?.iterations).toBe(1);
   });
+
+  it('rejects searches that only set max retained nodes', async () => {
+    const state = new TicTacToeState();
+    const { result } = renderHook(() => useMCTS(games.TicTacToe, {
+      ...TEST_SETTINGS,
+      maxIterations: null,
+      maxRetainedNodes: 100,
+      maxTime: null,
+    }));
+
+    await expect(result.current.runSearch(state)).rejects.toThrow(
+      'Search requires either a positive maxIterations or maxTime.',
+    );
+  });
 });

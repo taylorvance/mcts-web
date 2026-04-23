@@ -22,13 +22,16 @@ const attachErrorCollectors = (page: Page) => {
   };
 };
 
+const getGameSelect = (page: Page) =>
+  page.getByRole('combobox', { name: 'Game' });
+
 test('loads the built app under the GitHub Pages base path', async ({ page }) => {
   const { expectNoErrors } = attachErrorCollectors(page);
 
   await page.goto('/mcts-web/');
 
   await expect(page.getByRole('heading', { name: 'MCTS Settings' })).toBeVisible();
-  await expect(page.getByLabel('Game')).toHaveValue('TicTacToe');
+  await expect(getGameSelect(page)).toHaveValue('TicTacToe');
 
   const cells = page.locator('.game-board button');
   await expect(cells).toHaveCount(9);
@@ -44,7 +47,7 @@ test('supports querystring game selection and reset on the built site', async ({
 
   await page.goto('/mcts-web/?game=Onitama');
 
-  const gameSelect = page.getByLabel('Game');
+  const gameSelect = getGameSelect(page);
   await expect(gameSelect).toHaveValue('Onitama');
 
   await gameSelect.selectOption('Filler');
@@ -63,7 +66,7 @@ test('persists Ultimate Tic-Tac-Toe state across reloads', async ({ page }) => {
 
   await page.goto('/mcts-web/');
 
-  const gameSelect = page.getByLabel('Game');
+  const gameSelect = getGameSelect(page);
   await gameSelect.selectOption('UltimateTicTacToe');
   await expect(gameSelect).toHaveValue('UltimateTicTacToe');
 

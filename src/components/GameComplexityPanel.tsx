@@ -21,15 +21,29 @@ interface GameComplexityProfile {
   averageBranching: number;
   averageGameLength: number;
   sampling: {
+    samples: number;
     truncatedSamples: number;
+    truncationRate: number;
   };
   complexity: {
     averageCumulativeLogBranching: number;
   };
   runtime: {
-    averageGetLegalMovesMs: number;
-    averageMakeMoveMs: number;
-    averageRandomPlayoutMs: number;
+    getLegalMovesMs: {
+      mean: number;
+      median: number;
+      p90: number;
+    };
+    makeMoveMs: {
+      mean: number;
+      median: number;
+      p90: number;
+    };
+    randomPlayoutMs: {
+      mean: number;
+      median: number;
+      p90: number;
+    };
     averageRandomPlayoutLength: number;
     playoutPliesPerSecond: number;
   };
@@ -53,6 +67,8 @@ const formatInteger = (value: number) => value.toLocaleString('en-US', {
 const formatMilliseconds = (value: number) => (
   value >= 1 ? `${value.toFixed(2)} ms` : `${value.toFixed(3)} ms`
 );
+const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
+const formatCostSummary = (median: number) => `${formatMilliseconds(median)} med`;
 const LabelWithTooltip = ({ label, content }: { label: string; content: string }) => (
   <Tooltip content={content}>
     <span className="cursor-help decoration-dotted underline-offset-2 group-hover:no-underline">
@@ -86,6 +102,8 @@ const BranchingChart = ({ points }: { points: ComplexityPoint[] }) => {
   const startPly = points[0].startPly;
   const endPly = points[points.length - 1].endPly;
   const midPly = Math.round((startPly + endPly) / 2);
+  const maxPositions = Math.max(...points.map((point) => point.positions ?? 0), 1);
+  const lowSampleThreshold = Math.max(25, Math.ceil(maxPositions * 0.1));
   const midX = yAxisWidth + paddingX + (chartWidth / 2);
   const toY = (value: number) => {
     const normalized = (value - minValue) / range;
@@ -97,6 +115,7 @@ const BranchingChart = ({ points }: { points: ComplexityPoint[] }) => {
 
     return {
       point,
+      positions: point.positions ?? 0,
       x,
       y: {
         median: toY(getMedian(point)),
@@ -108,20 +127,31 @@ const BranchingChart = ({ points }: { points: ComplexityPoint[] }) => {
     };
   });
 
-  const linePath = coordinates
+  const createLinePath = (lineCoordinates: typeof coordinates) => lineCoordinates
     .map(({ x, y }, index) => `${index === 0 ? 'M' : 'L'} ${x} ${y.median}`)
     .join(' ');
   const createBandPath = (
+    lineCoordinates: typeof coordinates,
     upperKey: 'p75' | 'p90',
     lowerKey: 'p10' | 'p25',
   ) => [
-    `M ${coordinates[0].x} ${coordinates[0].y[upperKey]}`,
-    ...coordinates.slice(1).map(({ x, y }) => `L ${x} ${y[upperKey]}`),
-    ...[...coordinates].reverse().map(({ x, y }) => `L ${x} ${y[lowerKey]}`),
+    `M ${lineCoordinates[0].x} ${lineCoordinates[0].y[upperKey]}`,
+    ...lineCoordinates.slice(1).map(({ x, y }) => `L ${x} ${y[upperKey]}`),
+    ...[...lineCoordinates].reverse().map(({ x, y }) => `L ${x} ${y[lowerKey]}`),
     'Z',
   ].join(' ');
-  const outerBandPath = createBandPath('p90', 'p10');
-  const innerBandPath = createBandPath('p75', 'p25');
+  const firstLowConfidenceIndex = coordinates.findIndex((coordinate) => coordinate.positions < lowSampleThreshold);
+  const confidentCoordinates = firstLowConfidenceIndex <= 1
+    ? coordinates
+    : firstLowConfidenceIndex === -1
+      ? coordinates
+      : coordinates.slice(0, firstLowConfidenceIndex);
+  const fullLinePath = createLinePath(coordinates);
+  const confidentLinePath = confidentCoordinates.length >= 2 ? createLinePath(confidentCoordinates) : '';
+  const fullOuterBandPath = createBandPath(coordinates, 'p90', 'p10');
+  const fullInnerBandPath = createBandPath(coordinates, 'p75', 'p25');
+  const confidentOuterBandPath = confidentCoordinates.length >= 2 ? createBandPath(confidentCoordinates, 'p90', 'p10') : '';
+  const confidentInnerBandPath = confidentCoordinates.length >= 2 ? createBandPath(confidentCoordinates, 'p75', 'p25') : '';
   const gridLines = [
     { value: maxValue, y: paddingY },
     { value: midValue, y: paddingY + (chartHeight / 2) },
@@ -174,20 +204,33 @@ const BranchingChart = ({ points }: { points: ComplexityPoint[] }) => {
             stroke="#94a3b8"
             strokeWidth="1"
           />
-          <path d={outerBandPath} fill="#cbd5e1" opacity="0.5" />
-          <path d={innerBandPath} fill="#94a3b8" opacity="0.65" />
-          <path d={linePath} fill="none" stroke="#0f172a" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-          {coordinates.map(({ x, y, point }) => (
+          <path d={fullOuterBandPath} fill="#cbd5e1" opacity="0.2" />
+          <path d={fullInnerBandPath} fill="#94a3b8" opacity="0.3" />
+          {confidentOuterBandPath && <path d={confidentOuterBandPath} fill="#cbd5e1" opacity="0.5" />}
+          {confidentInnerBandPath && <path d={confidentInnerBandPath} fill="#94a3b8" opacity="0.65" />}
+          <path d={fullLinePath} fill="none" stroke="#0f172a" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" opacity="0.3" />
+          {confidentLinePath && (
+            <path
+              d={confidentLinePath}
+              fill="none"
+              stroke="#0f172a"
+              strokeWidth="2.5"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          )}
+          {coordinates.map(({ x, y, point, positions }) => (
             <circle
               key={`${point.startPly}-${point.endPly}`}
               cx={x}
               cy={y.median}
               r="2.5"
               fill="#0f172a"
+              opacity={positions < lowSampleThreshold ? 0.4 : 1}
             >
               <title>
                 {`Ply ${point.startPly}-${point.endPly}: `
-                  + `${point.positions ?? 0} samples, `
+                  + `${positions} samples${positions < lowSampleThreshold ? ' (low-sample bucket)' : ''}, `
                   + `p10 ${formatOneDecimal(getP10(point))}, `
                   + `p25 ${formatOneDecimal(getP25(point))}, `
                   + `median ${formatOneDecimal(getMedian(point))}, `
@@ -202,6 +245,9 @@ const BranchingChart = ({ points }: { points: ComplexityPoint[] }) => {
         <span>Ply {startPly}</span>
         <span className="text-center">Ply {midPly}</span>
         <span className="text-right">Ply {endPly}</span>
+      </div>
+      <div className="mt-1 text-[10px] text-gray-500">
+        Buckets fade below {lowSampleThreshold} samples.
       </div>
     </div>
   );
@@ -218,7 +264,7 @@ const GameComplexityPanel: React.FC<GameComplexityPanelProps> = ({ gameId }) => 
     const load = async () => {
       try {
         setError(null);
-        const response = await fetch(`${import.meta.env.BASE_URL}generated/complexity.json`);
+        const response = await fetch(`${import.meta.env.BASE_URL}generated/profile.json`);
         if(!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
@@ -297,16 +343,31 @@ const GameComplexityPanel: React.FC<GameComplexityPanelProps> = ({ gameId }) => 
                 <div className="text-lg font-semibold text-gray-900">{formatOneDecimal(profile.averageGameLength)} plies</div>
               </div>
               <div className="rounded-lg bg-white p-2.5">
-                <div className="text-xs uppercase tracking-wide text-gray-500">`getLegalMoves` cost</div>
-                <div className="text-lg font-semibold text-gray-900">{formatMilliseconds(profile.runtime.averageGetLegalMovesMs)}</div>
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  <LabelWithTooltip
+                    label="Truncation"
+                    content={`Share of sampled random playouts that hit the ${profile.sampling.samples}-sample run's ply cap before reaching a terminal state.`}
+                  />
+                </div>
+                <div className="text-lg font-semibold text-gray-900">{formatPercent(profile.sampling.truncationRate)}</div>
+                <div className="text-xs text-gray-500">{profile.sampling.truncatedSamples} of {profile.sampling.samples} samples</div>
               </div>
               <div className="rounded-lg bg-white p-2.5">
-                <div className="text-xs uppercase tracking-wide text-gray-500">Random playout</div>
-                <div className="text-lg font-semibold text-gray-900">{formatMilliseconds(profile.runtime.averageRandomPlayoutMs)}</div>
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  <LabelWithTooltip
+                    label="Random playout"
+                    content={`Median and p90 wall-clock time for a full sampled random playout. Mean ${formatMilliseconds(profile.runtime.randomPlayoutMs.mean)}.`}
+                  />
+                </div>
+                <div className="text-lg font-semibold text-gray-900">
+                  {formatCostSummary(profile.runtime.randomPlayoutMs.median)}
+                </div>
+                <div className="text-xs text-gray-500">p90 {formatMilliseconds(profile.runtime.randomPlayoutMs.p90)}</div>
               </div>
               <div className="rounded-lg bg-white p-2.5">
                 <div className="text-xs uppercase tracking-wide text-gray-500">Playout plies / sec</div>
                 <div className="text-lg font-semibold text-gray-900">{formatInteger(profile.runtime.playoutPliesPerSecond)}</div>
+                <div className="text-xs text-gray-500">{formatOneDecimal(profile.runtime.averageRandomPlayoutLength)} avg plies</div>
               </div>
             </div>
 
@@ -314,7 +375,7 @@ const GameComplexityPanel: React.FC<GameComplexityPanelProps> = ({ gameId }) => 
               <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                 <div className="font-semibold uppercase tracking-wide">Branching By Ply Bucket</div>
                 <div>
-                  <Tooltip content="Median line with a darker p25-p75 band and lighter p10-p90 band. Hover points for sample counts.">
+                  <Tooltip content="Median line with a darker p25-p75 band and lighter p10-p90 band. Late low-sample buckets are faded. Hover points for sample counts.">
                     <span className="cursor-help underline decoration-dotted underline-offset-2">Median line, dark IQR, light p10-p90.</span>
                   </Tooltip>
                 </div>
@@ -333,7 +394,7 @@ const GameComplexityPanel: React.FC<GameComplexityPanelProps> = ({ gameId }) => 
               .
               {profile.sampling.truncatedSamples > 0 && ` ${profile.sampling.truncatedSamples} sampled games hit the playout cap.`}
               {' '}
-              Later buckets often have fewer samples because shorter games terminate before reaching them.
+              Later buckets often have fewer samples because shorter games terminate before reaching them, so sparse tails are faded.
             </div>
           </>
         )}

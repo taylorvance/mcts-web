@@ -1,6 +1,6 @@
 # Profile Metrics Proposal
 
-Status: proposed
+Status: in progress
 
 This is a design note for evolving the current `Game Complexity` panel into a broader profile surface that separates game shape, implementation cost, search behavior, and budget scaling.
 
@@ -264,7 +264,7 @@ This split matters because offline metrics are more stable, while live metrics a
 
 ## Data Model Changes
 
-Recommended additions to `complexity.json` or a renamed profile artifact:
+Recommended additions to the generated profile artifact:
 
 - `branchingByBucket[].p10`
 - `branchingByBucket[].p25`
@@ -290,16 +290,25 @@ Developer comparison outputs should stay transient and should not be shipped in 
 
 ### Phase 1: Rename And Clarify
 
-- rename the panel to `Profile`
-- relabel current complexity score as a tree-width proxy
-- surface truncation rate more clearly
-- add methodology/help text for what is and is not being measured
+Status: mostly complete
+
+- done: rename the panel to `Profile`
+- done: relabel the cumulative score as a tree-width proxy
+- done: add glossary/help text for key profile terms
+- done: surface truncation as a first-class card and rate
+- partial: methodology/help text exists in the panel copy, but could be expanded further
 
 ### Phase 2: Improve Distributions
 
-- extend branching buckets with `p10`, `p25`, `median`, `p75`, and `p90`
-- update chart to median line + dark IQR band + light `p10-p90` band
-- change implementation-cost cards from single mean to median + p90
+Status: in progress
+
+- done: extend branching buckets with `p10`, `p25`, `median`, `p75`, and `p90`
+- done: update chart to median line + dark IQR band + light `p10-p90` band
+- done: fade sparse late buckets so low-sample tails read as lower-confidence
+- done: increase random-playout sampling to `1000`
+- partial: switch visible timing presentation away from raw means
+  The panel now emphasizes random playout median/p90, while low-level `getLegalMoves` and `makeMove` timings remain in the JSON but are removed from the default UI.
+- done: rename the shipped artifact from `complexity.json` to `profile.json`
 
 ### Phase 3: Add Live Search Behavior
 

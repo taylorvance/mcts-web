@@ -35,7 +35,7 @@ Open the local Vite URL and choose a game from the selector. The app starts on `
 ```bash
 npm run dev            # start the local dev server
 npm run benchmark      # benchmark deterministic MCTS search scenarios
-npm run benchmark:complexity -- --samples 100 --max-plies 160  # generate complexity data
+npm run benchmark:complexity -- --samples 100 --max-plies 160  # generate profile data
 npm run benchmark:compare -- origin/main HEAD  # compare two refs
 npm run benchmark:strength -- origin/main HEAD  # play head-to-head matches between two refs
 npm run lint           # run ESLint
@@ -59,7 +59,7 @@ The session view exposes the same controls for every game:
 
 The right panel shows the current search tree and the active MCTS settings. Search trees are reused across repeated searches and advanced when the chosen move already exists in the explored tree.
 
-Below the search tree, the `Game Complexity` panel shows pre-generated per-game profiling data. Its expanded/collapsed state is persisted locally.
+Below the search tree, the `Profile` panel shows pre-generated per-game profiling data. Its expanded/collapsed state is persisted locally.
 
 ## Benchmarking
 
@@ -75,7 +75,7 @@ npm run benchmark:strength -- origin/main HEAD --iterations 3000
 
 The throughput compare command creates temporary worktrees for both refs, injects the benchmark harness, and prints a rounds-per-second delta. The strength compare command uses the same deterministic scenarios to play equal-budget head-to-head games while swapping who moves first.
 
-The complexity profiler samples full games with deterministic random playouts and writes chart-ready JSON to `public/generated/complexity.json`. It reports branching by ply and ply bucket, game-length distributions, truncation counts, cumulative complexity summaries, and runtime costs such as average `getLegalMoves`, `makeMove`, and random playout timing.
+The complexity profiler samples full games with deterministic random playouts and writes chart-ready JSON to `public/generated/profile.json`. It reports branching by ply and ply bucket, game-length distributions, truncation counts, cumulative tree-width summaries, and runtime cost distributions such as median and p90 `getLegalMoves`, `makeMove`, and random playout timing.
 
 These commands measure search speed and move quality, not React render performance; use the browser profiler separately if the slowdown feels UI-specific.
 

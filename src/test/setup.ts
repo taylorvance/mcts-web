@@ -30,9 +30,9 @@ Object.defineProperty(window, 'localStorage', {
 const fetchMock = vi.fn((input: RequestInfo | URL) => {
   const url = String(input);
 
-  if(url.endsWith('/generated/complexity.json')) {
+  if(url.endsWith('/generated/profile.json')) {
     return new Promise<Response>(() => {
-      // App tests do not assert on complexity data, so keep the background
+      // App tests do not assert on profile data, so keep the background
       // fetch pending to avoid un-awaited state updates from this panel.
     });
   }

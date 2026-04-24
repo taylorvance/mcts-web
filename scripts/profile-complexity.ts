@@ -37,6 +37,7 @@ interface GameProfile {
     maxPlies: number;
     bucketSize: number;
     truncatedSamples: number;
+    truncationRate: number;
   };
   openingBranching: number;
   averageBranching: number;
@@ -57,9 +58,9 @@ interface GameProfile {
     averageCumulativeLogBranching: number;
   };
   runtime: {
-    averageGetLegalMovesMs: number;
-    averageMakeMoveMs: number;
-    averageRandomPlayoutMs: number;
+    getLegalMovesMs: DistributionSummary;
+    makeMoveMs: DistributionSummary;
+    randomPlayoutMs: DistributionSummary;
     averageRandomPlayoutLength: number;
     playoutPliesPerSecond: number;
   };
@@ -105,7 +106,7 @@ const DEFAULT_OPTIONS: Options = {
   bucketSize: 5,
   game: null,
   maxPlies: 200,
-  out: 'public/generated/complexity.json',
+  out: 'public/generated/profile.json',
   samples: 1000,
 };
 
@@ -222,11 +223,10 @@ const profileGame = (
   const gameLengths: number[] = [];
   const complexityTotals: number[] = [];
   const playoutLengths: number[] = [];
-  let totalGetLegalMovesMs = 0;
-  let totalMakeMoveMs = 0;
+  const getLegalMovesMsSamples: number[] = [];
+  const makeMoveMsSamples: number[] = [];
+  const randomPlayoutMsSamples: number[] = [];
   let totalRandomPlayoutMs = 0;
-  let totalGetLegalMovesCalls = 0;
-  let totalMakeMoveCalls = 0;
   let totalBranching = 0;
   let totalPositions = 0;
   let openingBranching = 0;
@@ -242,8 +242,7 @@ const profileGame = (
       while(!state.isTerminal() && ply < options.maxPlies) {
         const legalMovesStartMs = nowMs();
         const legalMoves = state.getLegalMoves();
-        totalGetLegalMovesMs += nowMs() - legalMovesStartMs;
-        totalGetLegalMovesCalls += 1;
+        getLegalMovesMsSamples.push(nowMs() - legalMovesStartMs);
         const branching = legalMoves.length;
 
         if(ply === 0) {
@@ -266,8 +265,7 @@ const profileGame = (
         const move = legalMoves[Math.floor(Math.random() * legalMoves.length)];
         const makeMoveStartMs = nowMs();
         state = state.makeMove(move);
-        totalMakeMoveMs += nowMs() - makeMoveStartMs;
-        totalMakeMoveCalls += 1;
+        makeMoveMsSamples.push(nowMs() - makeMoveStartMs);
         ply += 1;
       }
 
@@ -275,7 +273,9 @@ const profileGame = (
         truncatedSamples += 1;
       }
 
-      totalRandomPlayoutMs += nowMs() - playoutStartMs;
+      const randomPlayoutMs = nowMs() - playoutStartMs;
+      totalRandomPlayoutMs += randomPlayoutMs;
+      randomPlayoutMsSamples.push(randomPlayoutMs);
       gameLengths.push(ply);
       playoutLengths.push(ply);
       complexityTotals.push(cumulativeComplexity);
@@ -296,6 +296,7 @@ const profileGame = (
       maxPlies: options.maxPlies,
       bucketSize: options.bucketSize,
       truncatedSamples,
+      truncationRate: truncatedSamples / options.samples,
     },
     openingBranching: openingBranching / options.samples,
     averageBranching: totalBranching / totalPositions,
@@ -311,9 +312,9 @@ const profileGame = (
       averageCumulativeLogBranching: mean(complexityTotals),
     },
     runtime: {
-      averageGetLegalMovesMs: totalGetLegalMovesMs / totalGetLegalMovesCalls,
-      averageMakeMoveMs: totalMakeMoveMs / totalMakeMoveCalls,
-      averageRandomPlayoutMs: totalRandomPlayoutMs / options.samples,
+      getLegalMovesMs: summarize(getLegalMovesMsSamples),
+      makeMoveMs: summarize(makeMoveMsSamples),
+      randomPlayoutMs: summarize(randomPlayoutMsSamples),
       averageRandomPlayoutLength: mean(playoutLengths),
       playoutPliesPerSecond: (playoutLengths.reduce((sum, value) => sum + value, 0) / totalRandomPlayoutMs) * 1000,
     },
@@ -371,9 +372,9 @@ const main = async () => {
     console.log(`  avg branching: ${game.averageBranching.toFixed(1)}`);
     console.log(`  avg length: ${game.averageGameLength.toFixed(1)} plies`);
     console.log(`  avg cumulative complexity: ${game.complexity.averageCumulativeLogBranching.toFixed(1)}`);
-    console.log(`  getLegalMoves: ${game.runtime.averageGetLegalMovesMs.toFixed(4)} ms`);
-    console.log(`  makeMove: ${game.runtime.averageMakeMoveMs.toFixed(4)} ms`);
-    console.log(`  random playout: ${game.runtime.averageRandomPlayoutMs.toFixed(2)} ms for ${game.runtime.averageRandomPlayoutLength.toFixed(1)} plies`);
+    console.log(`  getLegalMoves: median ${game.runtime.getLegalMovesMs.median.toFixed(4)} ms, p90 ${game.runtime.getLegalMovesMs.p90.toFixed(4)} ms`);
+    console.log(`  makeMove: median ${game.runtime.makeMoveMs.median.toFixed(4)} ms, p90 ${game.runtime.makeMoveMs.p90.toFixed(4)} ms`);
+    console.log(`  random playout: median ${game.runtime.randomPlayoutMs.median.toFixed(2)} ms, p90 ${game.runtime.randomPlayoutMs.p90.toFixed(2)} ms for ${game.runtime.averageRandomPlayoutLength.toFixed(1)} plies`);
     console.log(`  playout plies/s: ${game.runtime.playoutPliesPerSecond.toFixed(1)}`);
   }
   console.log(`Wrote ${outputPath}`);

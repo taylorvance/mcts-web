@@ -187,7 +187,7 @@ describe('gameRegistry', () => {
 
   it('has a complexity profile for every registered game', () => {
     const dataset = JSON.parse(
-      readFileSync(resolve(__dirname, '../../public/generated/complexity.json'), 'utf8'),
+      readFileSync(resolve(__dirname, '../../public/generated/profile.json'), 'utf8'),
     ) as ComplexityDataset;
     const expectedGameIds = gameEntries.map((entry) => entry.id).sort();
     const actualGameIds = dataset.games.map((entry) => entry.gameId).sort();

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-24T14:49:16.788Z",
+  "generatedAt": "2026-04-24T15:35:20.092Z",
   "methodology": {
     "costPolicy": "measured with performance.now() across sampled random playout positions in the same run",
     "movePolicy": "uniform-random legal move playouts with deterministic seeded randomness",
@@ -9,7 +9,7 @@
     "bucketSize": 5,
     "game": null,
     "maxPlies": 200,
-    "out": "public/generated/complexity.json",
+    "out": "public/generated/profile.json",
     "samples": 1000
   },
   "games": [
@@ -20,7 +20,8 @@
         "samples": 1000,
         "maxPlies": 200,
         "bucketSize": 5,
-        "truncatedSamples": 0
+        "truncatedSamples": 0,
+        "truncationRate": 0
       },
       "openingBranching": 7,
       "averageBranching": 6.75188041061545,
@@ -186,11 +187,38 @@
         "averageCumulativeLogBranching": 58.036751999672084
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.0001541361937646109,
-        "averageMakeMoveMs": 0.0006419850986328369,
-        "averageRandomPlayoutMs": 0.0246280260000035,
+        "getLegalMovesMs": {
+          "max": 0.7530830000000606,
+          "mean": 0.00019476952552048026,
+          "median": 0.00008400000001529406,
+          "min": 0.00004099999978279811,
+          "p10": 0.00008299999990413198,
+          "p25": 0.00008299999990413198,
+          "p75": 0.00012500000002546585,
+          "p90": 0.0002500000000509317
+        },
+        "makeMoveMs": {
+          "max": 1.6965000000000146,
+          "mean": 0.0008115417947872295,
+          "median": 0.0002919999999448919,
+          "min": 0.00008300000013150566,
+          "p10": 0.00016700000014679972,
+          "p25": 0.00020900000004075991,
+          "p75": 0.00041699999997035775,
+          "p90": 0.0008330000000569271
+        },
+        "randomPlayoutMs": {
+          "max": 1.7433750000000146,
+          "mean": 0.03376286899999991,
+          "median": 0.014417000000094049,
+          "min": 0.003249999999979991,
+          "p10": 0.006582999999864114,
+          "p25": 0.009833999999955267,
+          "p75": 0.021917000000030384,
+          "p90": 0.0494579999999587
+        },
         "averageRandomPlayoutLength": 21.139,
-        "playoutPliesPerSecond": 858331.0737124038
+        "playoutPliesPerSecond": 626102.0057270625
       },
       "branchingByPly": [
         {
@@ -825,7 +853,8 @@
         "samples": 1000,
         "maxPlies": 200,
         "bucketSize": 5,
-        "truncatedSamples": 0
+        "truncatedSamples": 0,
+        "truncationRate": 0
       },
       "openingBranching": 4,
       "averageBranching": 7.882493806771263,
@@ -1055,11 +1084,38 @@
         "averageCumulativeLogBranching": 34.23300748403034
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.004708098018166264,
-        "averageMakeMoveMs": 0.003719015689513983,
-        "averageRandomPlayoutMs": 0.16948157200000288,
+        "getLegalMovesMs": {
+          "max": 0.9613749999998618,
+          "mean": 0.004738297853013911,
+          "median": 0.0026669999999739957,
+          "min": 0.0015000000000782165,
+          "p10": 0.002207999999882304,
+          "p25": 0.002375000000029104,
+          "p75": 0.0038749999998799467,
+          "p90": 0.006542000000081316
+        },
+        "makeMoveMs": {
+          "max": 4.513750000000073,
+          "mean": 0.004267379108174939,
+          "median": 0.00204200000007404,
+          "min": 0.0008329999998295534,
+          "p10": 0.0011669999998957792,
+          "p25": 0.0014999999998508429,
+          "p75": 0.003333999999995285,
+          "p90": 0.005667000000130429
+        },
+        "randomPlayoutMs": {
+          "max": 4.641458999999941,
+          "mean": 0.179451249000002,
+          "median": 0.09479200000009769,
+          "min": 0.01887499999997999,
+          "p10": 0.031207999999878666,
+          "p25": 0.05187500000010914,
+          "p75": 0.1895830000000842,
+          "p90": 0.4080420000000231
+        },
         "averageRandomPlayoutLength": 12.11,
-        "playoutPliesPerSecond": 71453.1961032306
+        "playoutPliesPerSecond": 67483.5091284311
       },
       "branchingByPly": [
         {
@@ -2022,7 +2078,8 @@
         "samples": 1000,
         "maxPlies": 200,
         "bucketSize": 5,
-        "truncatedSamples": 307
+        "truncatedSamples": 307,
+        "truncationRate": 0.307
       },
       "openingBranching": 7,
       "averageBranching": 20.465048717261105,
@@ -2748,11 +2805,38 @@
         "averageCumulativeLogBranching": 540.3762723816773
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.04117996187539119,
-        "averageMakeMoveMs": 0.009887185900301538,
-        "averageRandomPlayoutMs": 7.312742374999997,
+        "getLegalMovesMs": {
+          "max": 18.535249999999905,
+          "mean": 0.041384640229730284,
+          "median": 0.014666000000033819,
+          "min": 0.0024160000002666493,
+          "p10": 0.007666999999855761,
+          "p25": 0.009999999999308784,
+          "p75": 0.041291999999884865,
+          "p90": 0.11645799999996598
+        },
+        "makeMoveMs": {
+          "max": 3.7124579999999696,
+          "mean": 0.009979437025119029,
+          "median": 0.008708000000297034,
+          "min": 0.0009999999983847374,
+          "p10": 0.002457999999933236,
+          "p25": 0.004667000000154076,
+          "p75": 0.0128340000001117,
+          "p90": 0.01795899999979156
+        },
+        "randomPlayoutMs": {
+          "max": 38.58529199999998,
+          "mean": 7.368041197999993,
+          "median": 6.752375000000029,
+          "min": 0.22837499999968713,
+          "p10": 1.5722089999999298,
+          "p25": 3.2248329999999896,
+          "p75": 10.567040999999335,
+          "p90": 13.33508299999994
+        },
         "averageRandomPlayoutLength": 134.244,
-        "playoutPliesPerSecond": 18357.54537982067
+        "playoutPliesPerSecond": 18219.767831433895
       },
       "branchingByPly": [
         {
@@ -5686,7 +5770,8 @@
         "samples": 1000,
         "maxPlies": 200,
         "bucketSize": 5,
-        "truncatedSamples": 0
+        "truncatedSamples": 0,
+        "truncationRate": 0
       },
       "openingBranching": 4,
       "averageBranching": 3.5939871485476695,
@@ -5876,11 +5961,38 @@
         "averageCumulativeLogBranching": 61.175525152592925
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.00018394402930593792,
-        "averageMakeMoveMs": 0.00037356427180807426,
-        "averageRandomPlayoutMs": 0.07643490900000506,
+        "getLegalMovesMs": {
+          "max": 0.041084000000410015,
+          "mean": 0.0001862847963266143,
+          "median": 0.00016700000014679972,
+          "min": 0.00008299999899463728,
+          "p10": 0.0001250000004802132,
+          "p25": 0.00016599999980826396,
+          "p75": 0.00020799999947485048,
+          "p90": 0.00020899999981338624
+        },
+        "makeMoveMs": {
+          "max": 2.62066699999923,
+          "mean": 0.00046945230134137886,
+          "median": 0.00033399999847461004,
+          "min": 0.0001250000004802132,
+          "p10": 0.000249999999141437,
+          "p25": 0.0002919999988080235,
+          "p75": 0.0004169999992882367,
+          "p90": 0.0005000000001018634
+        },
+        "randomPlayoutMs": {
+          "max": 2.7006249999994907,
+          "mean": 0.0811435890000139,
+          "median": 0.07370799999989686,
+          "min": 0.03862499999922875,
+          "p10": 0.0555000000003929,
+          "p25": 0.06358400000135589,
+          "p75": 0.08575000000018917,
+          "p90": 0.0992500000011205
+        },
         "averageRandomPlayoutLength": 34.393,
-        "playoutPliesPerSecond": 449964.5574249028
+        "playoutPliesPerSecond": 423853.57147554954
       },
       "branchingByPly": [
         {
@@ -7014,7 +7126,8 @@
         "samples": 1000,
         "maxPlies": 200,
         "bucketSize": 5,
-        "truncatedSamples": 1
+        "truncatedSamples": 1,
+        "truncationRate": 0.001
       },
       "openingBranching": 11.197,
       "averageBranching": 14.03046269379845,
@@ -7480,11 +7593,38 @@
         "averageCumulativeLogBranching": 123.53003438223155
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.0017405100532942954,
-        "averageMakeMoveMs": 0.00018536234253876594,
-        "averageRandomPlayoutMs": 0.07418345299999418,
+        "getLegalMovesMs": {
+          "max": 0.5281669999985752,
+          "mean": 0.001690863614333366,
+          "median": 0.0016250000007858034,
+          "min": 0.0005829999990965007,
+          "p10": 0.0012079999996785773,
+          "p25": 0.0014169999994919635,
+          "p75": 0.0017919999991136137,
+          "p90": 0.001959000001079403
+        },
+        "makeMoveMs": {
+          "max": 0.08429099999921164,
+          "mean": 0.0001815218628850577,
+          "median": 0.00016700000014679972,
+          "min": 0.00008299999899463728,
+          "p10": 0.0001250000004802132,
+          "p25": 0.00016599999980826396,
+          "p75": 0.00016700000014679972,
+          "p90": 0.00020799999947485048
+        },
+        "randomPlayoutMs": {
+          "max": 0.710666000000856,
+          "mean": 0.07292244999999457,
+          "median": 0.06187499999941792,
+          "min": 0.008082999998805462,
+          "p10": 0.023375000000669388,
+          "p25": 0.037583000001177425,
+          "p75": 0.09120900000016263,
+          "p90": 0.13337499999943248
+        },
         "averageRandomPlayoutLength": 33.024,
-        "playoutPliesPerSecond": 445166.66000978125
+        "playoutPliesPerSecond": 452864.6527921437
       },
       "branchingByPly": [
         {
@@ -10418,7 +10558,8 @@
         "samples": 1000,
         "maxPlies": 200,
         "bucketSize": 5,
-        "truncatedSamples": 0
+        "truncatedSamples": 0,
+        "truncationRate": 0
       },
       "openingBranching": 4,
       "averageBranching": 8.488283640091945,
@@ -10464,11 +10605,38 @@
         "averageCumulativeLogBranching": 173.22490573628605
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.002158016173041574,
-        "averageMakeMoveMs": 0.0003455812538251494,
-        "averageRandomPlayoutMs": 0.18332251199999336,
+        "getLegalMovesMs": {
+          "max": 0.558167000001049,
+          "mean": 0.002125876618546581,
+          "median": 0.002207999999882304,
+          "min": 0.0003749999996216502,
+          "p10": 0.0007910000003903406,
+          "p25": 0.0013330000001587905,
+          "p75": 0.0028750000001309672,
+          "p90": 0.0031250000010913936
+        },
+        "makeMoveMs": {
+          "max": 0.4332909999993717,
+          "mean": 0.00033580673380743546,
+          "median": 0.0002919999988080235,
+          "min": 0.0001249999986612238,
+          "p10": 0.00020899999981338624,
+          "p25": 0.0002500000009604264,
+          "p75": 0.0003329999999550637,
+          "p90": 0.00041600000076869037
+        },
+        "randomPlayoutMs": {
+          "max": 1.9775000000008731,
+          "mean": 0.1807757900000215,
+          "median": 0.17450000000098953,
+          "min": 0.15458399999988615,
+          "p10": 0.16454200000043784,
+          "p25": 0.16887499999938882,
+          "p75": 0.18062499999905413,
+          "p90": 0.18766600000162725
+        },
         "averageRandomPlayoutLength": 60.471,
-        "playoutPliesPerSecond": 329861.2883943145
+        "playoutPliesPerSecond": 334508.287863064
       },
       "branchingByPly": [
         {
@@ -11419,7 +11587,8 @@
         "samples": 1000,
         "maxPlies": 200,
         "bucketSize": 5,
-        "truncatedSamples": 0
+        "truncatedSamples": 0,
+        "truncationRate": 0
       },
       "openingBranching": 9,
       "averageBranching": 5.5632754342431765,
@@ -11461,11 +11630,38 @@
         "averageCumulativeLogBranching": 17.568104432206056
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.0001163360323845727,
-        "averageMakeMoveMs": 0.0001304027687035526,
-        "averageRandomPlayoutMs": 0.0073902060000000346,
+        "getLegalMovesMs": {
+          "max": 0.01729200000045239,
+          "mean": 0.00008689499803163647,
+          "median": 0.00008300000081362668,
+          "min": 0.00004099999932805076,
+          "p10": 0.00004199999966658652,
+          "p25": 0.00004200000148557592,
+          "p75": 0.00008399999933317304,
+          "p90": 0.00008400000115216244
+        },
+        "makeMoveMs": {
+          "max": 0.02329199999985576,
+          "mean": 0.00009050372209225338,
+          "median": 0.00008300000081362668,
+          "min": 0.00004099999932805076,
+          "p10": 0.00004199999966658652,
+          "p25": 0.00004200000148557592,
+          "p75": 0.00008399999933317304,
+          "p90": 0.00008400000115216244
+        },
+        "randomPlayoutMs": {
+          "max": 0.4671669999988808,
+          "mean": 0.0055927300000130345,
+          "median": 0.004374999998617568,
+          "min": 0.002291999999215477,
+          "p10": 0.0031249999992724042,
+          "p25": 0.0037080000001878943,
+          "p75": 0.005000000001018634,
+          "p90": 0.005708000000595348
+        },
         "averageRandomPlayoutLength": 7.657,
-        "playoutPliesPerSecond": 1036101.023435607
+        "playoutPliesPerSecond": 1369098.8122048005
       },
       "branchingByPly": [
         {
@@ -11613,7 +11809,8 @@
         "samples": 1000,
         "maxPlies": 200,
         "bucketSize": 5,
-        "truncatedSamples": 0
+        "truncatedSamples": 0,
+        "truncationRate": 0
       },
       "openingBranching": 81,
       "averageBranching": 9.159159006652786,
@@ -11795,11 +11992,38 @@
         "averageCumulativeLogBranching": 163.72936090437065
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.00013554229512924233,
-        "averageMakeMoveMs": 0.0003351545206826053,
-        "averageRandomPlayoutMs": 0.04500603600000977,
+        "getLegalMovesMs": {
+          "max": 0.04395899999872199,
+          "mean": 0.00011191843989695549,
+          "median": 0.00008300000081362668,
+          "min": 0,
+          "p10": 0.00004199999966658652,
+          "p25": 0.00008299999899463728,
+          "p75": 0.0001249999986612238,
+          "p90": 0.00016700000014679972
+        },
+        "makeMoveMs": {
+          "max": 0.400166999999783,
+          "mean": 0.00024598928444543867,
+          "median": 0.00020799999947485048,
+          "min": 0.00004199999966658652,
+          "p10": 0.0001250000004802132,
+          "p25": 0.0001250000004802132,
+          "p75": 0.000249999999141437,
+          "p90": 0.0004169999992882367
+        },
+        "randomPlayoutMs": {
+          "max": 0.4798750000009022,
+          "mean": 0.03518858999999247,
+          "median": 0.029625000001033186,
+          "min": 0.0169579999983398,
+          "p10": 0.02379099999961909,
+          "p25": 0.02658300000075542,
+          "p75": 0.03404200000113633,
+          "p90": 0.04900000000088767
+        },
         "averageRandomPlayoutLength": 59.073,
-        "playoutPliesPerSecond": 1312557.2756504745
+        "playoutPliesPerSecond": 1678754.391693803
       },
       "branchingByPly": [
         {

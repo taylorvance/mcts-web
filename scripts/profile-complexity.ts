@@ -18,6 +18,17 @@ interface PlyAggregate {
   values: number[];
 }
 
+interface DistributionSummary {
+  max: number;
+  mean: number;
+  median: number;
+  min: number;
+  p10: number;
+  p25: number;
+  p75: number;
+  p90: number;
+}
+
 interface GameProfile {
   gameId: string;
   gameName: string;
@@ -35,6 +46,9 @@ interface GameProfile {
     max: number;
     mean: number;
     median: number;
+    p10: number;
+    p25: number;
+    p75: number;
     p90: number;
     histogram: Array<{ plies: number; count: number }>;
   };
@@ -54,6 +68,9 @@ interface GameProfile {
     positions: number;
     mean: number;
     median: number;
+    p10: number;
+    p25: number;
+    p75: number;
     p90: number;
     min: number;
     max: number;
@@ -64,6 +81,9 @@ interface GameProfile {
     positions: number;
     mean: number;
     median: number;
+    p10: number;
+    p25: number;
+    p75: number;
     p90: number;
     min: number;
     max: number;
@@ -86,7 +106,7 @@ const DEFAULT_OPTIONS: Options = {
   game: null,
   maxPlies: 200,
   out: 'public/generated/complexity.json',
-  samples: 200,
+  samples: 1000,
 };
 
 const parsePositiveInt = (value: string, flagName: string) => {
@@ -172,7 +192,7 @@ const percentile = (sortedValues: number[], p: number) => {
   return sortedValues[index];
 };
 
-const summarize = (values: number[]) => {
+const summarize = (values: number[]): DistributionSummary => {
   const sorted = [...values].sort((a, b) => a - b);
 
   return {
@@ -180,6 +200,9 @@ const summarize = (values: number[]) => {
     mean: mean(sorted),
     median: percentile(sorted, 50),
     min: sorted[0],
+    p10: percentile(sorted, 10),
+    p25: percentile(sorted, 25),
+    p75: percentile(sorted, 75),
     p90: percentile(sorted, 90),
   };
 };

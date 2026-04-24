@@ -25,6 +25,7 @@ import {
 } from './utils/persistence';
 
 const defaultGameId = 'TicTacToe';
+const APP_STORAGE_VERSION = 1;
 interface MCTSSettings {
   explorationBias: number;
   maxIterations: number | null;
@@ -72,6 +73,7 @@ const appHelpContent: HelpContent = {
 };
 
 interface PersistedAppState {
+  version: number;
   selectedGameId: string;
   mctsSettings: MCTSSettings;
   lastSelectedGameIdByFamily: Record<string, string>;
@@ -108,6 +110,7 @@ const loadPersistedAppState = (): PersistedAppState | null => {
   }
 
   if (
+    persistedState.version !== APP_STORAGE_VERSION ||
     !isValidGameId(persistedState.selectedGameId) ||
     typeof persistedState.mctsSettings?.explorationBias !== 'number' ||
     !isNullableNumber(persistedState.mctsSettings?.maxIterations) ||
@@ -121,6 +124,7 @@ const loadPersistedAppState = (): PersistedAppState | null => {
   }
 
   return {
+    version: persistedState.version,
     selectedGameId: persistedState.selectedGameId,
     mctsSettings: {
       ...defaultMctsSettings,
@@ -267,6 +271,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     writeJsonStorage(APP_STORAGE_KEY, {
+      version: APP_STORAGE_VERSION,
       selectedGameId,
       mctsSettings,
       lastSelectedGameIdByFamily,

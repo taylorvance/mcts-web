@@ -42,6 +42,7 @@ describe('App', () => {
     window.localStorage.setItem(
       APP_STORAGE_KEY,
       JSON.stringify({
+        version: 1,
         selectedGameId: 'Onitama',
         mctsSettings: {
           explorationBias: 2.5,
@@ -74,6 +75,7 @@ describe('App', () => {
     window.localStorage.setItem(
       APP_STORAGE_KEY,
       JSON.stringify({
+        version: 1,
         selectedGameId: 'DobutsuShogi',
         mctsSettings: {
           explorationBias: 1.414,
@@ -98,6 +100,7 @@ describe('App', () => {
     window.localStorage.setItem(
       APP_STORAGE_KEY,
       JSON.stringify({
+        version: 1,
         selectedGameId: 'DobutsuShogi',
         mctsSettings: {
           explorationBias: 1.414,
@@ -126,6 +129,7 @@ describe('App', () => {
     window.localStorage.setItem(
       APP_STORAGE_KEY,
       JSON.stringify({
+        version: 1,
         selectedGameId: 'Onitama',
         mctsSettings: {
           explorationBias: 2.5,
@@ -162,10 +166,36 @@ describe('App', () => {
     });
   });
 
+  it('ignores older unversioned app storage and falls back to defaults', () => {
+    window.localStorage.setItem(
+      APP_STORAGE_KEY,
+      JSON.stringify({
+        selectedGameId: 'Onitama',
+        mctsSettings: {
+          explorationBias: 2.5,
+          maxIterations: 250,
+          maxRetainedNodes: 5000,
+          maxTime: 1,
+        },
+        lastSelectedGameIdByFamily: {
+          Onitama: 'Onitama',
+        },
+      }),
+    );
+
+    render(<App />);
+
+    expect(screen.getByLabelText('Game')).toHaveValue('TicTacToe');
+    expect(screen.getByLabelText('Max Iterations')).toHaveValue(1000);
+    expect(screen.getByLabelText('Max Retained Nodes')).toHaveDisplayValue('');
+    expect(screen.getByLabelText('Max Time (ms)')).toHaveValue(1000);
+  });
+
   it('can clear saved data and restore default settings', () => {
     window.localStorage.setItem(
       APP_STORAGE_KEY,
       JSON.stringify({
+        version: 1,
         selectedGameId: 'Onitama',
         mctsSettings: {
           explorationBias: 2.5,
@@ -201,6 +231,7 @@ describe('App', () => {
     expect(screen.getByLabelText('Max Time (ms)')).toHaveValue(1000);
     expect(readJsonStorage(getGameSessionStorageKey('Onitama'))).toBeNull();
     expect(readJsonStorage(APP_STORAGE_KEY)).toMatchObject({
+      version: 1,
       selectedGameId: 'TicTacToe',
       mctsSettings: {
         explorationBias: 1.414,
@@ -312,6 +343,7 @@ describe('App', () => {
 
     await waitFor(() => {
       expect(readJsonStorage(APP_STORAGE_KEY)).toMatchObject({
+        version: 1,
         selectedGameId: 'Onitama',
         lastSelectedGameIdByFamily: {
           TicTacToe: 'TicTacToe',
@@ -325,6 +357,7 @@ describe('App', () => {
     window.localStorage.setItem(
       APP_STORAGE_KEY,
       JSON.stringify({
+        version: 1,
         selectedGameId: 'DobutsuShogi',
         mctsSettings: {
           explorationBias: 1.414,
@@ -346,6 +379,7 @@ describe('App', () => {
 
     await waitFor(() => {
       expect(readJsonStorage(APP_STORAGE_KEY)).toMatchObject({
+        version: 1,
         selectedGameId: 'GoroGoroDobutsuShogi',
         lastSelectedGameIdByFamily: {
           Shogi: 'GoroGoroDobutsuShogi',

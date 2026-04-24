@@ -4,7 +4,7 @@ import { getGameSessionStorageKey, readJsonStorage, writeJsonStorage } from '../
 import { useMCTS } from './useMCTS';
 
 export const NULLMOVE = '__INITIAL_STATE__';
-const SESSION_STORAGE_VERSION = 2;
+const SESSION_STORAGE_VERSION = 3;
 
 interface MCTSSettings {
   explorationBias: number;
@@ -32,14 +32,6 @@ interface PersistedSessionState {
   isAutoReplyEnabled: boolean;
 }
 
-interface LegacyPersistedSessionState {
-  version: number;
-  initialState: unknown;
-  history: string[];
-  historyIdx: number;
-  doAIMoveAfterPlayer: boolean;
-}
-
 type SessionAction =
   | { type: 'initialize'; sessionState: SessionState }
   | { type: 'move_started' }
@@ -64,29 +56,21 @@ const createSessionState = (
   isMoveInProgress: false,
 });
 
-const getPersistedAutoReplyEnabled = (
-  persistedSession: PersistedSessionState | LegacyPersistedSessionState,
-) => (
-  'isAutoReplyEnabled' in persistedSession
-    ? persistedSession.isAutoReplyEnabled
-    : persistedSession.doAIMoveAfterPlayer
-);
-
 const restoreSessionState = (game: Game): SessionState => {
-  const persistedSession = readJsonStorage<
-    PersistedSessionState | LegacyPersistedSessionState
-  >(getGameSessionStorageKey(game.id));
+  const persistedSession = readJsonStorage<PersistedSessionState>(
+    getGameSessionStorageKey(game.id),
+  );
 
   if(
     !persistedSession
-    || ![1, SESSION_STORAGE_VERSION].includes(persistedSession.version)
+    || persistedSession.version !== SESSION_STORAGE_VERSION
     || !Array.isArray(persistedSession.history)
     || persistedSession.history.some((move) => typeof move !== 'string')
     || persistedSession.history[0] !== NULLMOVE
     || !Number.isInteger(persistedSession.historyIdx)
     || persistedSession.historyIdx < 0
     || persistedSession.historyIdx >= persistedSession.history.length
-    || typeof getPersistedAutoReplyEnabled(persistedSession) !== 'boolean'
+    || typeof persistedSession.isAutoReplyEnabled !== 'boolean'
   ) {
     return createSessionState(game.createInitialState());
   }
@@ -111,7 +95,7 @@ const restoreSessionState = (game: Game): SessionState => {
       history: [...persistedSession.history],
       historyIdx: persistedSession.historyIdx,
       isAutoPlaying: false,
-      isAutoReplyEnabled: getPersistedAutoReplyEnabled(persistedSession),
+      isAutoReplyEnabled: persistedSession.isAutoReplyEnabled,
       isPendingAIMove: false,
       isMoveInProgress: false,
     };

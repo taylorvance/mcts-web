@@ -48,7 +48,7 @@ const appHelpContent: HelpContent = {
       title: 'Play',
       items: [
         'Choose a game, then play moves directly on the board.',
-        'Use AI Move (n) for one searched move, or Autoplay (p) to let the engine keep playing.',
+        'Use AI Move (n) for one searched move, or Auto-play (p) to let the engine keep playing.',
         'Undo (z), redo (x), and move history (h) let you revisit earlier positions.',
       ],
     },
@@ -65,7 +65,7 @@ const appHelpContent: HelpContent = {
       title: 'Keyboard Shortcuts',
       items: [
         'Game state: (r) reset, (z) undo, (x) redo, (h) toggle move history',
-        'AI play: (n) one AI move, (p) autoplay, (a) AI-after-player',
+        'AI play: (n) one AI move, (p) auto-play, (a) auto-reply',
         'Help: (?) toggle the help dialog',
       ],
     },

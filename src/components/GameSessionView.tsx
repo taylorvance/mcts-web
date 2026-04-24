@@ -41,8 +41,8 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
     gameState,
     history,
     historyIdx,
-    isAutoplaying,
-    doAIMoveAfterPlayer,
+    isAutoPlaying,
+    isAutoReplyEnabled,
     mcts,
     searchStats,
     isTerminal,
@@ -51,8 +51,8 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
     canRedo,
     handlePlayerMove,
     doAIMove,
-    toggleAutoplay,
-    toggleAIMoveAfterPlayer,
+    toggleAutoPlay,
+    toggleAutoReply,
     resetGame,
     gotoHistoryIdx,
     undoMove,
@@ -69,8 +69,8 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
     redo: { keys: 'x', callback: redoMove },
     toggleHistory: { keys: 'h', callback: toggleHistory },
     aiMove: { keys: 'n', callback: doAIMove },
-    autoplay: { keys: 'p', callback: toggleAutoplay },
-    aiAfterPlayer: { keys: 'a', callback: toggleAIMoveAfterPlayer },
+    autoPlay: { keys: 'p', callback: toggleAutoPlay },
+    autoReply: { keys: 'a', callback: toggleAutoReply },
   };
   useAppHotkeys(hotkeys);
 
@@ -168,28 +168,28 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
           </Button>
 
           <Button
-            onClick={toggleAutoplay}
-            className={`${controlButtonClass} ${isAutoplaying ? 'bg-gray-400' : ''}`}
-            tooltip="Autoplay"
-            ariaLabel={isAutoplaying ? 'Stop autoplay' : 'Start autoplay'}
+            onClick={toggleAutoPlay}
+            className={`${controlButtonClass} ${isAutoPlaying ? 'bg-gray-400' : ''}`}
+            tooltip="Auto-play"
+            ariaLabel={isAutoPlaying ? 'Stop auto-play' : 'Start auto-play'}
             disabled={isTerminal}
           >
-            {isAutoplaying ? <FaStop /> : <FaForwardFast />}
-            {hotkeyHint(hotkeys.autoplay.keys)}
+            {isAutoPlaying ? <FaStop /> : <FaForwardFast />}
+            {hotkeyHint(hotkeys.autoPlay.keys)}
           </Button>
 
           <Button
-            onClick={toggleAIMoveAfterPlayer}
-            className={`${controlButtonClass} ${doAIMoveAfterPlayer ? 'bg-gray-400' : ''}`}
-            tooltip="AI move after Player"
+            onClick={toggleAutoReply}
+            className={`${controlButtonClass} ${isAutoReplyEnabled ? 'bg-gray-400' : ''}`}
+            tooltip="Auto-reply"
             ariaLabel={
-              doAIMoveAfterPlayer
-                ? 'Disable AI move after player'
-                : 'Enable AI move after player'
+              isAutoReplyEnabled
+                ? 'Disable auto-reply after your moves'
+                : 'Enable auto-reply after your moves'
             }
           >
-            {doAIMoveAfterPlayer ? <TbRobot /> : <TbRobotOff />}
-            {hotkeyHint(hotkeys.aiAfterPlayer.keys)}
+            {isAutoReplyEnabled ? <TbRobot /> : <TbRobotOff />}
+            {hotkeyHint(hotkeys.autoReply.keys)}
           </Button>
         </section>
 

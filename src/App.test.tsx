@@ -211,10 +211,10 @@ describe('App', () => {
     window.localStorage.setItem(
       getGameSessionStorageKey('Onitama'),
       JSON.stringify({
-        version: 1,
+        version: 2,
         history: ['__INITIAL_STATE__'],
         historyIdx: 0,
-        doAIMoveAfterPlayer: true,
+        isAutoReplyEnabled: true,
         initialState: {},
       }),
     );

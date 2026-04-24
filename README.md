@@ -1,8 +1,9 @@
 # mcts-web
 
-`mcts-web` is a React playground for experimenting with Monte Carlo Tree Search across several turn-based board games. It lets you play moves manually, hand control to the AI, autoplay full games, inspect move history, and view the current search tree while tuning MCTS settings.
+`mcts-web` is a React playground for experimenting with Monte Carlo Tree Search across several turn-based board games. It lets you play moves manually, hand control to the AI, auto-play full games, inspect move history, and view the current search tree while tuning MCTS settings.
 
 Current games:
+
 - Connect Four
 - Dobutsu Shogi
 - Tic-Tac-Toe
@@ -54,8 +55,8 @@ The session view exposes the same controls for every game:
 - `z` / `x`: undo / redo
 - `h`: toggle history
 - `n`: request one AI move
-- `p`: toggle autoplay
-- `a`: toggle “AI moves after player”
+- `p`: toggle auto-play
+- `a`: toggle auto-reply
 
 The right panel shows the current search tree and the active MCTS settings. Search trees are reused across repeated searches and advanced when the chosen move already exists in the explored tree.
 
@@ -91,7 +92,7 @@ src/
   utils/        small cross-cutting utilities
 ```
 
-`src/App.tsx` is intentionally small and acts as the app shell. `src/components/GameSessionView.tsx` owns the common session UI. `src/hooks/useGameSession.ts` manages history, replay, autoplay, and AI flow. `src/games/gameRegistry.ts` is the only place where games are wired into the shell.
+`src/App.tsx` is intentionally small and acts as the app shell. `src/components/GameSessionView.tsx` owns the common session UI. `src/hooks/useGameSession.ts` manages history, replay, auto-play, and AI flow. `src/games/gameRegistry.ts` is the only place where games are wired into the shell.
 
 ## Adding or Changing a Game
 

@@ -4,7 +4,7 @@ import { getGameSessionStorageKey, readJsonStorage, writeJsonStorage } from '../
 import { useMCTS } from './useMCTS';
 
 export const NULLMOVE = '__INITIAL_STATE__';
-const SESSION_STORAGE_VERSION = 1;
+const SESSION_STORAGE_VERSION = 2;
 
 interface MCTSSettings {
   explorationBias: number;
@@ -18,13 +18,21 @@ interface SessionState {
   initialState: AppGameState;
   history: string[];
   historyIdx: number;
-  isAutoplaying: boolean;
-  doAIMoveAfterPlayer: boolean;
+  isAutoPlaying: boolean;
+  isAutoReplyEnabled: boolean;
   isPendingAIMove: boolean;
   isMoveInProgress: boolean;
 }
 
 interface PersistedSessionState {
+  version: number;
+  initialState: unknown;
+  history: string[];
+  historyIdx: number;
+  isAutoReplyEnabled: boolean;
+}
+
+interface LegacyPersistedSessionState {
   version: number;
   initialState: unknown;
   history: string[];
@@ -38,37 +46,47 @@ type SessionAction =
   | { type: 'move_applied'; gameState: AppGameState; move: string }
   | { type: 'move_completed' }
   | { type: 'set_pending_ai'; value: boolean }
-  | { type: 'set_autoplay'; value: boolean }
-  | { type: 'toggle_ai_after_player' }
+  | { type: 'set_auto_play'; value: boolean }
+  | { type: 'toggle_auto_reply' }
   | { type: 'goto_history'; gameState: AppGameState; idx: number };
 
 const createSessionState = (
   initialState: AppGameState,
-  doAIMoveAfterPlayer = true,
+  isAutoReplyEnabled = true,
 ): SessionState => ({
   gameState: initialState,
   initialState,
   history: [NULLMOVE],
   historyIdx: 0,
-  isAutoplaying: false,
-  doAIMoveAfterPlayer,
+  isAutoPlaying: false,
+  isAutoReplyEnabled,
   isPendingAIMove: false,
   isMoveInProgress: false,
 });
 
+const getPersistedAutoReplyEnabled = (
+  persistedSession: PersistedSessionState | LegacyPersistedSessionState,
+) => (
+  'isAutoReplyEnabled' in persistedSession
+    ? persistedSession.isAutoReplyEnabled
+    : persistedSession.doAIMoveAfterPlayer
+);
+
 const restoreSessionState = (game: Game): SessionState => {
-  const persistedSession = readJsonStorage<PersistedSessionState>(getGameSessionStorageKey(game.id));
+  const persistedSession = readJsonStorage<
+    PersistedSessionState | LegacyPersistedSessionState
+  >(getGameSessionStorageKey(game.id));
 
   if(
     !persistedSession
-    || persistedSession.version !== SESSION_STORAGE_VERSION
+    || ![1, SESSION_STORAGE_VERSION].includes(persistedSession.version)
     || !Array.isArray(persistedSession.history)
     || persistedSession.history.some((move) => typeof move !== 'string')
     || persistedSession.history[0] !== NULLMOVE
     || !Number.isInteger(persistedSession.historyIdx)
     || persistedSession.historyIdx < 0
     || persistedSession.historyIdx >= persistedSession.history.length
-    || typeof persistedSession.doAIMoveAfterPlayer !== 'boolean'
+    || typeof getPersistedAutoReplyEnabled(persistedSession) !== 'boolean'
   ) {
     return createSessionState(game.createInitialState());
   }
@@ -92,8 +110,8 @@ const restoreSessionState = (game: Game): SessionState => {
       initialState,
       history: [...persistedSession.history],
       historyIdx: persistedSession.historyIdx,
-      isAutoplaying: false,
-      doAIMoveAfterPlayer: persistedSession.doAIMoveAfterPlayer,
+      isAutoPlaying: false,
+      isAutoReplyEnabled: getPersistedAutoReplyEnabled(persistedSession),
       isPendingAIMove: false,
       isMoveInProgress: false,
     };
@@ -121,19 +139,19 @@ const sessionReducer = (state: SessionState, action: SessionAction): SessionStat
       return { ...state, isMoveInProgress: false };
     case 'set_pending_ai':
       return { ...state, isPendingAIMove: action.value };
-    case 'set_autoplay':
-      return { ...state, isAutoplaying: action.value };
-    case 'toggle_ai_after_player':
+    case 'set_auto_play':
+      return { ...state, isAutoPlaying: action.value };
+    case 'toggle_auto_reply':
       return {
         ...state,
-        doAIMoveAfterPlayer: !state.doAIMoveAfterPlayer,
+        isAutoReplyEnabled: !state.isAutoReplyEnabled,
       };
     case 'goto_history':
       return {
         ...state,
         gameState: action.gameState,
         historyIdx: action.idx,
-        isAutoplaying: false,
+        isAutoPlaying: false,
         isPendingAIMove: false,
       };
     default:
@@ -184,12 +202,12 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
       initialState: game.serializeState(state.initialState),
       history: state.history,
       historyIdx: state.historyIdx,
-      doAIMoveAfterPlayer: state.doAIMoveAfterPlayer,
+      isAutoReplyEnabled: state.isAutoReplyEnabled,
     } satisfies PersistedSessionState);
-  }, [game, state.doAIMoveAfterPlayer, state.history, state.historyIdx, state.initialState]);
+  }, [game, state.history, state.historyIdx, state.initialState, state.isAutoReplyEnabled]);
 
   const isTerminal = state.gameState.isTerminal();
-  const canPlay = !state.isAutoplaying && !state.isMoveInProgress && !isTerminal;
+  const canPlay = !state.isAutoPlaying && !state.isMoveInProgress && !isTerminal;
   const canUndo = state.historyIdx > 0;
   const canRedo = state.historyIdx < state.history.length-1;
 
@@ -228,7 +246,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
   const doAIMove = useCallback(() => {
     const currentState = stateRef.current;
     if(
-      currentState.isAutoplaying
+      currentState.isAutoPlaying
       || moveInProgressRef.current
       || currentState.gameState.isTerminal()
     ) {
@@ -269,7 +287,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
       type: 'initialize',
       sessionState: createSessionState(
         game.createInitialState(),
-        currentState.doAIMoveAfterPlayer,
+        currentState.isAutoReplyEnabled,
       ),
     });
     resetMCTS();
@@ -278,7 +296,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
   const handlePlayerMove = useCallback((move: unknown) => {
     const currentState = stateRef.current;
     if(
-      currentState.isAutoplaying
+      currentState.isAutoPlaying
       || moveInProgressRef.current
       || currentState.gameState.isTerminal()
     ) {
@@ -286,16 +304,16 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     }
 
     void performMove(move);
-    if(currentState.doAIMoveAfterPlayer) {
+    if(currentState.isAutoReplyEnabled) {
       dispatch({ type: 'set_pending_ai', value: true });
     }
   }, [performMove]);
 
-  const toggleAutoplay = useCallback(() => {
+  const toggleAutoPlay = useCallback(() => {
     const currentState = stateRef.current;
-    if(currentState.isAutoplaying) {
+    if(currentState.isAutoPlaying) {
       invalidatePendingMove();
-      dispatch({ type: 'set_autoplay', value: false });
+      dispatch({ type: 'set_auto_play', value: false });
       return;
     }
 
@@ -303,11 +321,11 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
       return;
     }
 
-    dispatch({ type: 'set_autoplay', value: true });
+    dispatch({ type: 'set_auto_play', value: true });
   }, [invalidatePendingMove]);
 
-  const toggleAIMoveAfterPlayer = useCallback(() => {
-    dispatch({ type: 'toggle_ai_after_player' });
+  const toggleAutoReply = useCallback(() => {
+    dispatch({ type: 'toggle_auto_reply' });
   }, []);
 
   const undoMove = useCallback(() => {
@@ -330,22 +348,22 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
   }, [doAIMove, state.isPendingAIMove]);
 
   useEffect(() => {
-    if(!state.isAutoplaying) return;
+    if(!state.isAutoPlaying) return;
     if(state.isMoveInProgress) return;
     if(isTerminal) {
-      dispatch({ type: 'set_autoplay', value: false });
+      dispatch({ type: 'set_auto_play', value: false });
       return;
     }
 
     void performMove();
-  }, [isTerminal, performMove, state.historyIdx, state.isAutoplaying, state.isMoveInProgress]);
+  }, [isTerminal, performMove, state.historyIdx, state.isAutoPlaying, state.isMoveInProgress]);
 
   return {
     gameState: state.gameState,
     history: state.history,
     historyIdx: state.historyIdx,
-    isAutoplaying: state.isAutoplaying,
-    doAIMoveAfterPlayer: state.doAIMoveAfterPlayer,
+    isAutoPlaying: state.isAutoPlaying,
+    isAutoReplyEnabled: state.isAutoReplyEnabled,
     mcts,
     searchStats,
     isTerminal,
@@ -354,8 +372,8 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     canRedo,
     handlePlayerMove,
     doAIMove,
-    toggleAutoplay,
-    toggleAIMoveAfterPlayer,
+    toggleAutoPlay,
+    toggleAutoReply,
     resetGame,
     gotoHistoryIdx,
     undoMove,

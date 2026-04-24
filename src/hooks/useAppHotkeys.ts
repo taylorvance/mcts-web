@@ -11,8 +11,8 @@ interface AppHotkeysConfig {
   redo: HotkeyConfig;
   toggleHistory: HotkeyConfig;
   aiMove: HotkeyConfig;
-  autoplay: HotkeyConfig;
-  aiAfterPlayer: HotkeyConfig;
+  autoPlay: HotkeyConfig;
+  autoReply: HotkeyConfig;
 }
 
 export const useAppHotkeys = (hotkeys: AppHotkeysConfig) => {
@@ -22,8 +22,8 @@ export const useAppHotkeys = (hotkeys: AppHotkeysConfig) => {
     { keys: hotkeys.redo.keys, callback: hotkeys.redo.callback },
     { keys: hotkeys.toggleHistory.keys, callback: hotkeys.toggleHistory.callback },
     { keys: hotkeys.aiMove.keys, callback: hotkeys.aiMove.callback },
-    { keys: hotkeys.autoplay.keys, callback: hotkeys.autoplay.callback },
-    { keys: hotkeys.aiAfterPlayer.keys, callback: hotkeys.aiAfterPlayer.callback },
+    { keys: hotkeys.autoPlay.keys, callback: hotkeys.autoPlay.callback },
+    { keys: hotkeys.autoReply.keys, callback: hotkeys.autoReply.callback },
   ], {
     enableOnFormTags: false,
   });

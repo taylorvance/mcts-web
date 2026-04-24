@@ -24,7 +24,7 @@ describe('useGameSession', () => {
     const { result } = renderHook(() => useGameSession(games.TicTacToe, TEST_SETTINGS));
 
     act(() => {
-      result.current.toggleAIMoveAfterPlayer();
+      result.current.toggleAutoReply();
       result.current.handlePlayerMove(0);
     });
 
@@ -61,7 +61,7 @@ describe('useGameSession', () => {
     const { result } = renderHook(() => useGameSession(games.TicTacToe, TEST_SETTINGS));
 
     act(() => {
-      result.current.toggleAIMoveAfterPlayer();
+      result.current.toggleAutoReply();
       result.current.handlePlayerMove(0);
     });
 
@@ -69,6 +69,7 @@ describe('useGameSession', () => {
       expect(readJsonStorage(getGameSessionStorageKey(games.TicTacToe.id))).toMatchObject({
         history: ['__INITIAL_STATE__', '0'],
         historyIdx: 1,
+        isAutoReplyEnabled: false,
       });
     });
 
@@ -80,6 +81,7 @@ describe('useGameSession', () => {
       expect(readJsonStorage(getGameSessionStorageKey(games.TicTacToe.id))).toMatchObject({
         history: ['__INITIAL_STATE__', '0'],
         historyIdx: 0,
+        isAutoReplyEnabled: false,
       });
     });
 
@@ -95,18 +97,18 @@ describe('useGameSession', () => {
     });
   });
 
-  it('continues autoplay until the game reaches a terminal state', async () => {
+  it('continues auto-play until the game reaches a terminal state', async () => {
     const { result } = renderHook(() => useGameSession(games.TicTacToe, TEST_SETTINGS));
 
     act(() => {
-      result.current.toggleAutoplay();
+      result.current.toggleAutoPlay();
     });
 
     await waitFor(() => {
       expect(result.current.isTerminal).toBe(true);
     });
     expect(result.current.historyIdx).toBeGreaterThan(1);
-    expect(result.current.isAutoplaying).toBe(false);
+    expect(result.current.isAutoPlaying).toBe(false);
   });
 
   it('can request an AI move for Dobutsu Shogi from the opening state', async () => {
@@ -125,20 +127,21 @@ describe('useGameSession', () => {
     const { result } = renderHook(() => useGameSession(games.TicTacToe, TEST_SETTINGS));
 
     act(() => {
-      result.current.toggleAIMoveAfterPlayer();
+      result.current.toggleAutoReply();
       result.current.handlePlayerMove(0);
     });
 
     await waitFor(() => {
       expect(readJsonStorage(getGameSessionStorageKey(games.TicTacToe.id))).toMatchObject({
+        version: 2,
         history: ['__INITIAL_STATE__', '0'],
         historyIdx: 1,
-        doAIMoveAfterPlayer: false,
+        isAutoReplyEnabled: false,
       });
     });
   });
 
-  it('restores a persisted session from localStorage', () => {
+  it('restores a legacy persisted session from localStorage', () => {
     const initialState = new OnitamaState(
       OnitamaState.initializeBoard(),
       true,
@@ -159,7 +162,7 @@ describe('useGameSession', () => {
 
     expect(result.current.history).toEqual(['__INITIAL_STATE__', '2,22,17']);
     expect(result.current.historyIdx).toBe(1);
-    expect(result.current.doAIMoveAfterPlayer).toBe(false);
+    expect(result.current.isAutoReplyEnabled).toBe(false);
     expect(formatGameStateDebugLabel(result.current.gameState)).toBe(
       formatGameStateDebugLabel(restoredState),
     );
@@ -170,11 +173,11 @@ describe('useGameSession', () => {
     const restoredState = games.UltimateTicTacToe.applyMove(initialState, 0);
 
     window.localStorage.setItem(getGameSessionStorageKey(games.UltimateTicTacToe.id), JSON.stringify({
-      version: 1,
+      version: 2,
       initialState: games.UltimateTicTacToe.serializeState(initialState),
       history: ['__INITIAL_STATE__', '0'],
       historyIdx: 1,
-      doAIMoveAfterPlayer: true,
+      isAutoReplyEnabled: true,
     }));
 
     const { result } = renderHook(() => useGameSession(games.UltimateTicTacToe, TEST_SETTINGS));
@@ -188,7 +191,7 @@ describe('useGameSession', () => {
 
   it('falls back to a clean Ultimate Tic-Tac-Toe state when persisted data is invalid', () => {
     window.localStorage.setItem(getGameSessionStorageKey(games.UltimateTicTacToe.id), JSON.stringify({
-      version: 1,
+      version: 2,
       initialState: {
         board: Array(81).fill(0),
         team: true,
@@ -196,7 +199,7 @@ describe('useGameSession', () => {
       },
       history: ['__INITIAL_STATE__'],
       historyIdx: 0,
-      doAIMoveAfterPlayer: true,
+      isAutoReplyEnabled: true,
     }));
 
     const { result } = renderHook(() => useGameSession(games.UltimateTicTacToe, TEST_SETTINGS));

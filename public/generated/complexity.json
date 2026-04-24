@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-22T01:29:25.266Z",
+  "generatedAt": "2026-04-24T11:38:24.045Z",
   "methodology": {
     "costPolicy": "measured with performance.now() across sampled random playout positions in the same run",
     "movePolicy": "uniform-random legal move playouts with deterministic seeded randomness",
@@ -151,11 +151,11 @@
         "averageCumulativeLogBranching": 58.62262675496391
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.000504411377526628,
-        "averageMakeMoveMs": 0.0006644771979304756,
-        "averageRandomPlayoutMs": 0.13100629000000594,
+        "averageGetLegalMovesMs": 0.000158723554301431,
+        "averageMakeMoveMs": 0.0007241443347430766,
+        "averageRandomPlayoutMs": 0.029286259999995536,
         "averageRandomPlayoutLength": 21.27,
-        "playoutPliesPerSecond": 162358.61652138253
+        "playoutPliesPerSecond": 726279.1493349866
       },
       "branchingByPly": [
         {
@@ -710,11 +710,11 @@
         "averageCumulativeLogBranching": 31.486332393116978
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.004277489051094481,
-        "averageMakeMoveMs": 0.006571443430656808,
-        "averageRandomPlayoutMs": 0.1721333700000025,
+        "averageGetLegalMovesMs": 0.004191744525547557,
+        "averageMakeMoveMs": 0.002282124999999186,
+        "averageRandomPlayoutMs": 0.12798206999999365,
         "averageRandomPlayoutLength": 10.96,
-        "playoutPliesPerSecond": 63671.558861595746
+        "playoutPliesPerSecond": 85636.99586981632
       },
       "branchingByPly": [
         {
@@ -1236,6 +1236,1983 @@
       ]
     },
     {
+      "gameId": "GoroGoroDobutsuShogi",
+      "gameName": "Goro-Goro Dobutsu Shogi",
+      "sampling": {
+        "samples": 100,
+        "maxPlies": 160,
+        "bucketSize": 5,
+        "truncatedSamples": 47
+      },
+      "openingBranching": 7,
+      "averageBranching": 20.607746361050694,
+      "averageGameLength": 119.54,
+      "gameLength": {
+        "max": 160,
+        "mean": 119.54,
+        "median": 132,
+        "min": 21,
+        "p90": 160,
+        "histogram": [
+          {
+            "plies": 21,
+            "count": 1
+          },
+          {
+            "plies": 30,
+            "count": 1
+          },
+          {
+            "plies": 35,
+            "count": 1
+          },
+          {
+            "plies": 38,
+            "count": 1
+          },
+          {
+            "plies": 41,
+            "count": 1
+          },
+          {
+            "plies": 42,
+            "count": 1
+          },
+          {
+            "plies": 45,
+            "count": 2
+          },
+          {
+            "plies": 46,
+            "count": 1
+          },
+          {
+            "plies": 49,
+            "count": 1
+          },
+          {
+            "plies": 57,
+            "count": 1
+          },
+          {
+            "plies": 59,
+            "count": 2
+          },
+          {
+            "plies": 62,
+            "count": 1
+          },
+          {
+            "plies": 64,
+            "count": 1
+          },
+          {
+            "plies": 66,
+            "count": 1
+          },
+          {
+            "plies": 67,
+            "count": 1
+          },
+          {
+            "plies": 68,
+            "count": 1
+          },
+          {
+            "plies": 69,
+            "count": 1
+          },
+          {
+            "plies": 70,
+            "count": 1
+          },
+          {
+            "plies": 73,
+            "count": 1
+          },
+          {
+            "plies": 74,
+            "count": 1
+          },
+          {
+            "plies": 75,
+            "count": 1
+          },
+          {
+            "plies": 77,
+            "count": 2
+          },
+          {
+            "plies": 82,
+            "count": 2
+          },
+          {
+            "plies": 83,
+            "count": 1
+          },
+          {
+            "plies": 84,
+            "count": 1
+          },
+          {
+            "plies": 86,
+            "count": 2
+          },
+          {
+            "plies": 89,
+            "count": 1
+          },
+          {
+            "plies": 90,
+            "count": 1
+          },
+          {
+            "plies": 92,
+            "count": 1
+          },
+          {
+            "plies": 94,
+            "count": 1
+          },
+          {
+            "plies": 99,
+            "count": 1
+          },
+          {
+            "plies": 101,
+            "count": 1
+          },
+          {
+            "plies": 102,
+            "count": 2
+          },
+          {
+            "plies": 109,
+            "count": 1
+          },
+          {
+            "plies": 110,
+            "count": 1
+          },
+          {
+            "plies": 117,
+            "count": 1
+          },
+          {
+            "plies": 118,
+            "count": 2
+          },
+          {
+            "plies": 120,
+            "count": 2
+          },
+          {
+            "plies": 122,
+            "count": 1
+          },
+          {
+            "plies": 123,
+            "count": 1
+          },
+          {
+            "plies": 126,
+            "count": 1
+          },
+          {
+            "plies": 132,
+            "count": 2
+          },
+          {
+            "plies": 149,
+            "count": 1
+          },
+          {
+            "plies": 157,
+            "count": 1
+          },
+          {
+            "plies": 160,
+            "count": 47
+          }
+        ]
+      },
+      "complexity": {
+        "averageLogBranchingPerPly": 4.000327433134555,
+        "averageCumulativeLogBranching": 481.77581392382876
+      },
+      "runtime": {
+        "averageGetLegalMovesMs": 0.036969471306674793,
+        "averageMakeMoveMs": 0.008191926384473313,
+        "averageRandomPlayoutMs": 5.821726319999993,
+        "averageRandomPlayoutLength": 119.54,
+        "playoutPliesPerSecond": 20533.428304475874
+      },
+      "branchingByPly": [
+        {
+          "ply": 0,
+          "positions": 100,
+          "max": 7,
+          "mean": 7,
+          "median": 7,
+          "min": 7,
+          "p90": 7
+        },
+        {
+          "ply": 1,
+          "positions": 100,
+          "max": 7,
+          "mean": 7,
+          "median": 7,
+          "min": 7,
+          "p90": 7
+        },
+        {
+          "ply": 2,
+          "positions": 100,
+          "max": 10,
+          "mean": 10,
+          "median": 10,
+          "min": 10,
+          "p90": 10
+        },
+        {
+          "ply": 3,
+          "positions": 100,
+          "max": 10,
+          "mean": 8.84,
+          "median": 8,
+          "min": 8,
+          "p90": 10
+        },
+        {
+          "ply": 4,
+          "positions": 100,
+          "max": 19,
+          "mean": 10.89,
+          "median": 11,
+          "min": 9,
+          "p90": 13
+        },
+        {
+          "ply": 5,
+          "positions": 100,
+          "max": 21,
+          "mean": 10.42,
+          "median": 10,
+          "min": 3,
+          "p90": 13
+        },
+        {
+          "ply": 6,
+          "positions": 100,
+          "max": 21,
+          "mean": 12.44,
+          "median": 12,
+          "min": 9,
+          "p90": 14
+        },
+        {
+          "ply": 7,
+          "positions": 100,
+          "max": 24,
+          "mean": 12.25,
+          "median": 12,
+          "min": 1,
+          "p90": 17
+        },
+        {
+          "ply": 8,
+          "positions": 100,
+          "max": 23,
+          "mean": 13.18,
+          "median": 13,
+          "min": 2,
+          "p90": 18
+        },
+        {
+          "ply": 9,
+          "positions": 100,
+          "max": 33,
+          "mean": 13.05,
+          "median": 12,
+          "min": 2,
+          "p90": 20
+        },
+        {
+          "ply": 10,
+          "positions": 100,
+          "max": 30,
+          "mean": 14.54,
+          "median": 14,
+          "min": 2,
+          "p90": 22
+        },
+        {
+          "ply": 11,
+          "positions": 100,
+          "max": 39,
+          "mean": 14.55,
+          "median": 13,
+          "min": 1,
+          "p90": 25
+        },
+        {
+          "ply": 12,
+          "positions": 100,
+          "max": 43,
+          "mean": 15.88,
+          "median": 14,
+          "min": 2,
+          "p90": 27
+        },
+        {
+          "ply": 13,
+          "positions": 100,
+          "max": 47,
+          "mean": 15.76,
+          "median": 15,
+          "min": 2,
+          "p90": 23
+        },
+        {
+          "ply": 14,
+          "positions": 100,
+          "max": 42,
+          "mean": 17.16,
+          "median": 16,
+          "min": 2,
+          "p90": 28
+        },
+        {
+          "ply": 15,
+          "positions": 100,
+          "max": 35,
+          "mean": 16.76,
+          "median": 15,
+          "min": 1,
+          "p90": 29
+        },
+        {
+          "ply": 16,
+          "positions": 100,
+          "max": 36,
+          "mean": 17.59,
+          "median": 16,
+          "min": 1,
+          "p90": 28
+        },
+        {
+          "ply": 17,
+          "positions": 100,
+          "max": 44,
+          "mean": 17.91,
+          "median": 17,
+          "min": 1,
+          "p90": 29
+        },
+        {
+          "ply": 18,
+          "positions": 100,
+          "max": 42,
+          "mean": 17.21,
+          "median": 16,
+          "min": 2,
+          "p90": 28
+        },
+        {
+          "ply": 19,
+          "positions": 100,
+          "max": 41,
+          "mean": 17.74,
+          "median": 17,
+          "min": 2,
+          "p90": 27
+        },
+        {
+          "ply": 20,
+          "positions": 100,
+          "max": 39,
+          "mean": 17.81,
+          "median": 16,
+          "min": 1,
+          "p90": 28
+        },
+        {
+          "ply": 21,
+          "positions": 99,
+          "max": 43,
+          "mean": 16.90909090909091,
+          "median": 16,
+          "min": 2,
+          "p90": 26
+        },
+        {
+          "ply": 22,
+          "positions": 99,
+          "max": 54,
+          "mean": 18.262626262626263,
+          "median": 17,
+          "min": 2,
+          "p90": 30
+        },
+        {
+          "ply": 23,
+          "positions": 99,
+          "max": 49,
+          "mean": 18.656565656565657,
+          "median": 17,
+          "min": 2,
+          "p90": 28
+        },
+        {
+          "ply": 24,
+          "positions": 99,
+          "max": 48,
+          "mean": 18.86868686868687,
+          "median": 17,
+          "min": 2,
+          "p90": 34
+        },
+        {
+          "ply": 25,
+          "positions": 99,
+          "max": 42,
+          "mean": 17.87878787878788,
+          "median": 17,
+          "min": 1,
+          "p90": 30
+        },
+        {
+          "ply": 26,
+          "positions": 99,
+          "max": 49,
+          "mean": 19.31313131313131,
+          "median": 18,
+          "min": 1,
+          "p90": 32
+        },
+        {
+          "ply": 27,
+          "positions": 99,
+          "max": 44,
+          "mean": 19.77777777777778,
+          "median": 19,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 28,
+          "positions": 99,
+          "max": 57,
+          "mean": 18.393939393939394,
+          "median": 17,
+          "min": 1,
+          "p90": 30
+        },
+        {
+          "ply": 29,
+          "positions": 99,
+          "max": 60,
+          "mean": 19.91919191919192,
+          "median": 19,
+          "min": 2,
+          "p90": 33
+        },
+        {
+          "ply": 30,
+          "positions": 98,
+          "max": 53,
+          "mean": 19.714285714285715,
+          "median": 18,
+          "min": 2,
+          "p90": 36
+        },
+        {
+          "ply": 31,
+          "positions": 98,
+          "max": 49,
+          "mean": 19.214285714285715,
+          "median": 19,
+          "min": 1,
+          "p90": 30
+        },
+        {
+          "ply": 32,
+          "positions": 98,
+          "max": 46,
+          "mean": 19.653061224489797,
+          "median": 18,
+          "min": 1,
+          "p90": 34
+        },
+        {
+          "ply": 33,
+          "positions": 98,
+          "max": 64,
+          "mean": 21.6734693877551,
+          "median": 20,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 34,
+          "positions": 98,
+          "max": 52,
+          "mean": 19.551020408163264,
+          "median": 18,
+          "min": 2,
+          "p90": 35
+        },
+        {
+          "ply": 35,
+          "positions": 97,
+          "max": 60,
+          "mean": 21.463917525773194,
+          "median": 18,
+          "min": 2,
+          "p90": 34
+        },
+        {
+          "ply": 36,
+          "positions": 97,
+          "max": 49,
+          "mean": 19.04123711340206,
+          "median": 18,
+          "min": 1,
+          "p90": 34
+        },
+        {
+          "ply": 37,
+          "positions": 97,
+          "max": 60,
+          "mean": 21.144329896907216,
+          "median": 21,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 38,
+          "positions": 96,
+          "max": 47,
+          "mean": 20.416666666666668,
+          "median": 19,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 39,
+          "positions": 96,
+          "max": 44,
+          "mean": 20.15625,
+          "median": 20,
+          "min": 1,
+          "p90": 34
+        },
+        {
+          "ply": 40,
+          "positions": 96,
+          "max": 56,
+          "mean": 21.78125,
+          "median": 21,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 41,
+          "positions": 95,
+          "max": 55,
+          "mean": 22.073684210526316,
+          "median": 21,
+          "min": 1,
+          "p90": 34
+        },
+        {
+          "ply": 42,
+          "positions": 94,
+          "max": 46,
+          "mean": 22.138297872340427,
+          "median": 22,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 43,
+          "positions": 94,
+          "max": 53,
+          "mean": 23.382978723404257,
+          "median": 23,
+          "min": 1,
+          "p90": 39
+        },
+        {
+          "ply": 44,
+          "positions": 94,
+          "max": 61,
+          "mean": 21.01063829787234,
+          "median": 19,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 45,
+          "positions": 92,
+          "max": 54,
+          "mean": 24.347826086956523,
+          "median": 24,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 46,
+          "positions": 91,
+          "max": 54,
+          "mean": 24.63736263736264,
+          "median": 23,
+          "min": 2,
+          "p90": 42
+        },
+        {
+          "ply": 47,
+          "positions": 91,
+          "max": 68,
+          "mean": 25.439560439560438,
+          "median": 25,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "ply": 48,
+          "positions": 91,
+          "max": 52,
+          "mean": 22.725274725274726,
+          "median": 20,
+          "min": 1,
+          "p90": 45
+        },
+        {
+          "ply": 49,
+          "positions": 90,
+          "max": 52,
+          "mean": 23.72222222222222,
+          "median": 23,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 50,
+          "positions": 90,
+          "max": 56,
+          "mean": 22.466666666666665,
+          "median": 22,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 51,
+          "positions": 90,
+          "max": 60,
+          "mean": 24.91111111111111,
+          "median": 22,
+          "min": 1,
+          "p90": 48
+        },
+        {
+          "ply": 52,
+          "positions": 90,
+          "max": 51,
+          "mean": 20.68888888888889,
+          "median": 19,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 53,
+          "positions": 90,
+          "max": 60,
+          "mean": 23.711111111111112,
+          "median": 22,
+          "min": 1,
+          "p90": 43
+        },
+        {
+          "ply": 54,
+          "positions": 90,
+          "max": 60,
+          "mean": 22.877777777777776,
+          "median": 21,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 55,
+          "positions": 90,
+          "max": 69,
+          "mean": 23.22222222222222,
+          "median": 20,
+          "min": 1,
+          "p90": 45
+        },
+        {
+          "ply": 56,
+          "positions": 90,
+          "max": 83,
+          "mean": 21.933333333333334,
+          "median": 20,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 57,
+          "positions": 89,
+          "max": 56,
+          "mean": 23.370786516853933,
+          "median": 23,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "ply": 58,
+          "positions": 89,
+          "max": 63,
+          "mean": 23.59550561797753,
+          "median": 25,
+          "min": 2,
+          "p90": 39
+        },
+        {
+          "ply": 59,
+          "positions": 87,
+          "max": 49,
+          "mean": 21.528735632183906,
+          "median": 19,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 60,
+          "positions": 87,
+          "max": 64,
+          "mean": 23.28735632183908,
+          "median": 22,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 61,
+          "positions": 87,
+          "max": 57,
+          "mean": 23.64367816091954,
+          "median": 23,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "ply": 62,
+          "positions": 86,
+          "max": 65,
+          "mean": 21.11627906976744,
+          "median": 19,
+          "min": 1,
+          "p90": 34
+        },
+        {
+          "ply": 63,
+          "positions": 86,
+          "max": 67,
+          "mean": 22.174418604651162,
+          "median": 21,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 64,
+          "positions": 85,
+          "max": 66,
+          "mean": 25.152941176470588,
+          "median": 23,
+          "min": 1,
+          "p90": 46
+        },
+        {
+          "ply": 65,
+          "positions": 85,
+          "max": 63,
+          "mean": 24.51764705882353,
+          "median": 23,
+          "min": 2,
+          "p90": 40
+        },
+        {
+          "ply": 66,
+          "positions": 84,
+          "max": 55,
+          "mean": 22.023809523809526,
+          "median": 22,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 67,
+          "positions": 83,
+          "max": 57,
+          "mean": 24.204819277108435,
+          "median": 21,
+          "min": 2,
+          "p90": 46
+        },
+        {
+          "ply": 68,
+          "positions": 82,
+          "max": 51,
+          "mean": 21.878048780487806,
+          "median": 21,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 69,
+          "positions": 81,
+          "max": 56,
+          "mean": 21.703703703703702,
+          "median": 20,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 70,
+          "positions": 80,
+          "max": 73,
+          "mean": 23.25,
+          "median": 21,
+          "min": 1,
+          "p90": 44
+        },
+        {
+          "ply": 71,
+          "positions": 80,
+          "max": 50,
+          "mean": 24.8,
+          "median": 25,
+          "min": 2,
+          "p90": 42
+        },
+        {
+          "ply": 72,
+          "positions": 80,
+          "max": 54,
+          "mean": 23.55,
+          "median": 21,
+          "min": 1,
+          "p90": 43
+        },
+        {
+          "ply": 73,
+          "positions": 79,
+          "max": 69,
+          "mean": 23.050632911392405,
+          "median": 23,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 74,
+          "positions": 78,
+          "max": 57,
+          "mean": 22.474358974358974,
+          "median": 21,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 75,
+          "positions": 77,
+          "max": 68,
+          "mean": 24.246753246753247,
+          "median": 23,
+          "min": 2,
+          "p90": 44
+        },
+        {
+          "ply": 76,
+          "positions": 77,
+          "max": 73,
+          "mean": 22.935064935064936,
+          "median": 23,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 77,
+          "positions": 75,
+          "max": 59,
+          "mean": 23.026666666666667,
+          "median": 22,
+          "min": 1,
+          "p90": 43
+        },
+        {
+          "ply": 78,
+          "positions": 75,
+          "max": 74,
+          "mean": 21.69333333333333,
+          "median": 21,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "ply": 79,
+          "positions": 75,
+          "max": 55,
+          "mean": 24.293333333333333,
+          "median": 24,
+          "min": 1,
+          "p90": 47
+        },
+        {
+          "ply": 80,
+          "positions": 75,
+          "max": 67,
+          "mean": 23.413333333333334,
+          "median": 23,
+          "min": 1,
+          "p90": 42
+        },
+        {
+          "ply": 81,
+          "positions": 75,
+          "max": 61,
+          "mean": 23.466666666666665,
+          "median": 23,
+          "min": 1,
+          "p90": 43
+        },
+        {
+          "ply": 82,
+          "positions": 73,
+          "max": 60,
+          "mean": 26.301369863013697,
+          "median": 26,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "ply": 83,
+          "positions": 72,
+          "max": 77,
+          "mean": 23.958333333333332,
+          "median": 22,
+          "min": 1,
+          "p90": 39
+        },
+        {
+          "ply": 84,
+          "positions": 71,
+          "max": 59,
+          "mean": 23.985915492957748,
+          "median": 23,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 85,
+          "positions": 71,
+          "max": 76,
+          "mean": 21.492957746478872,
+          "median": 19,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 86,
+          "positions": 69,
+          "max": 55,
+          "mean": 23.304347826086957,
+          "median": 24,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 87,
+          "positions": 69,
+          "max": 55,
+          "mean": 23.681159420289855,
+          "median": 22,
+          "min": 2,
+          "p90": 43
+        },
+        {
+          "ply": 88,
+          "positions": 69,
+          "max": 53,
+          "mean": 23.347826086956523,
+          "median": 23,
+          "min": 1,
+          "p90": 39
+        },
+        {
+          "ply": 89,
+          "positions": 68,
+          "max": 56,
+          "mean": 25.058823529411764,
+          "median": 23,
+          "min": 1,
+          "p90": 46
+        },
+        {
+          "ply": 90,
+          "positions": 67,
+          "max": 57,
+          "mean": 25.55223880597015,
+          "median": 24,
+          "min": 2,
+          "p90": 43
+        },
+        {
+          "ply": 91,
+          "positions": 67,
+          "max": 58,
+          "mean": 23.80597014925373,
+          "median": 23,
+          "min": 1,
+          "p90": 39
+        },
+        {
+          "ply": 92,
+          "positions": 66,
+          "max": 58,
+          "mean": 23.257575757575758,
+          "median": 20,
+          "min": 2,
+          "p90": 37
+        },
+        {
+          "ply": 93,
+          "positions": 66,
+          "max": 48,
+          "mean": 22.303030303030305,
+          "median": 21,
+          "min": 1,
+          "p90": 39
+        },
+        {
+          "ply": 94,
+          "positions": 65,
+          "max": 58,
+          "mean": 20.092307692307692,
+          "median": 18,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 95,
+          "positions": 65,
+          "max": 52,
+          "mean": 23.6,
+          "median": 23,
+          "min": 2,
+          "p90": 47
+        },
+        {
+          "ply": 96,
+          "positions": 65,
+          "max": 57,
+          "mean": 21.876923076923077,
+          "median": 19,
+          "min": 1,
+          "p90": 44
+        },
+        {
+          "ply": 97,
+          "positions": 65,
+          "max": 70,
+          "mean": 25.015384615384615,
+          "median": 22,
+          "min": 1,
+          "p90": 45
+        },
+        {
+          "ply": 98,
+          "positions": 65,
+          "max": 49,
+          "mean": 23.76923076923077,
+          "median": 23,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "ply": 99,
+          "positions": 64,
+          "max": 54,
+          "mean": 22.28125,
+          "median": 20,
+          "min": 1,
+          "p90": 42
+        },
+        {
+          "ply": 100,
+          "positions": 64,
+          "max": 57,
+          "mean": 26,
+          "median": 26,
+          "min": 2,
+          "p90": 40
+        },
+        {
+          "ply": 101,
+          "positions": 63,
+          "max": 54,
+          "mean": 22.015873015873016,
+          "median": 21,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 102,
+          "positions": 61,
+          "max": 57,
+          "mean": 20.524590163934427,
+          "median": 18,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 103,
+          "positions": 61,
+          "max": 47,
+          "mean": 23.721311475409838,
+          "median": 26,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 104,
+          "positions": 61,
+          "max": 53,
+          "mean": 22.524590163934427,
+          "median": 21,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 105,
+          "positions": 61,
+          "max": 56,
+          "mean": 25.016393442622952,
+          "median": 25,
+          "min": 1,
+          "p90": 45
+        },
+        {
+          "ply": 106,
+          "positions": 61,
+          "max": 55,
+          "mean": 21.885245901639344,
+          "median": 22,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 107,
+          "positions": 61,
+          "max": 57,
+          "mean": 24.24590163934426,
+          "median": 25,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 108,
+          "positions": 61,
+          "max": 64,
+          "mean": 23.360655737704917,
+          "median": 20,
+          "min": 2,
+          "p90": 39
+        },
+        {
+          "ply": 109,
+          "positions": 60,
+          "max": 60,
+          "mean": 25,
+          "median": 25,
+          "min": 1,
+          "p90": 42
+        },
+        {
+          "ply": 110,
+          "positions": 59,
+          "max": 51,
+          "mean": 20.847457627118644,
+          "median": 19,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 111,
+          "positions": 59,
+          "max": 62,
+          "mean": 24.8135593220339,
+          "median": 21,
+          "min": 2,
+          "p90": 47
+        },
+        {
+          "ply": 112,
+          "positions": 59,
+          "max": 49,
+          "mean": 20.949152542372882,
+          "median": 19,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 113,
+          "positions": 59,
+          "max": 67,
+          "mean": 23.25423728813559,
+          "median": 22,
+          "min": 1,
+          "p90": 45
+        },
+        {
+          "ply": 114,
+          "positions": 59,
+          "max": 49,
+          "mean": 20.864406779661017,
+          "median": 20,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 115,
+          "positions": 59,
+          "max": 65,
+          "mean": 23,
+          "median": 19,
+          "min": 1,
+          "p90": 44
+        },
+        {
+          "ply": 116,
+          "positions": 59,
+          "max": 57,
+          "mean": 23.440677966101696,
+          "median": 22,
+          "min": 1,
+          "p90": 43
+        },
+        {
+          "ply": 117,
+          "positions": 58,
+          "max": 62,
+          "mean": 24.810344827586206,
+          "median": 21,
+          "min": 1,
+          "p90": 43
+        },
+        {
+          "ply": 118,
+          "positions": 56,
+          "max": 49,
+          "mean": 21.875,
+          "median": 18,
+          "min": 1,
+          "p90": 44
+        },
+        {
+          "ply": 119,
+          "positions": 56,
+          "max": 61,
+          "mean": 20.553571428571427,
+          "median": 17,
+          "min": 2,
+          "p90": 40
+        },
+        {
+          "ply": 120,
+          "positions": 54,
+          "max": 50,
+          "mean": 23.62962962962963,
+          "median": 21,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 121,
+          "positions": 54,
+          "max": 61,
+          "mean": 23.055555555555557,
+          "median": 22,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 122,
+          "positions": 53,
+          "max": 54,
+          "mean": 22.30188679245283,
+          "median": 21,
+          "min": 1,
+          "p90": 42
+        },
+        {
+          "ply": 123,
+          "positions": 52,
+          "max": 55,
+          "mean": 21.5,
+          "median": 19,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 124,
+          "positions": 52,
+          "max": 48,
+          "mean": 24.71153846153846,
+          "median": 23,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 125,
+          "positions": 52,
+          "max": 47,
+          "mean": 19.557692307692307,
+          "median": 17,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 126,
+          "positions": 51,
+          "max": 47,
+          "mean": 20.058823529411764,
+          "median": 21,
+          "min": 1,
+          "p90": 33
+        },
+        {
+          "ply": 127,
+          "positions": 51,
+          "max": 61,
+          "mean": 20.137254901960784,
+          "median": 18,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 128,
+          "positions": 51,
+          "max": 56,
+          "mean": 21.137254901960784,
+          "median": 20,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 129,
+          "positions": 51,
+          "max": 59,
+          "mean": 21.11764705882353,
+          "median": 18,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 130,
+          "positions": 51,
+          "max": 60,
+          "mean": 20.137254901960784,
+          "median": 17,
+          "min": 2,
+          "p90": 37
+        },
+        {
+          "ply": 131,
+          "positions": 51,
+          "max": 49,
+          "mean": 21.686274509803923,
+          "median": 22,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 132,
+          "positions": 49,
+          "max": 44,
+          "mean": 22.081632653061224,
+          "median": 23,
+          "min": 3,
+          "p90": 38
+        },
+        {
+          "ply": 133,
+          "positions": 49,
+          "max": 55,
+          "mean": 23.428571428571427,
+          "median": 22,
+          "min": 2,
+          "p90": 36
+        },
+        {
+          "ply": 134,
+          "positions": 49,
+          "max": 49,
+          "mean": 19.632653061224488,
+          "median": 17,
+          "min": 1,
+          "p90": 39
+        },
+        {
+          "ply": 135,
+          "positions": 49,
+          "max": 42,
+          "mean": 19.489795918367346,
+          "median": 19,
+          "min": 1,
+          "p90": 31
+        },
+        {
+          "ply": 136,
+          "positions": 49,
+          "max": 53,
+          "mean": 19.959183673469386,
+          "median": 17,
+          "min": 2,
+          "p90": 40
+        },
+        {
+          "ply": 137,
+          "positions": 49,
+          "max": 63,
+          "mean": 24.183673469387756,
+          "median": 22,
+          "min": 2,
+          "p90": 43
+        },
+        {
+          "ply": 138,
+          "positions": 49,
+          "max": 48,
+          "mean": 22,
+          "median": 21,
+          "min": 2,
+          "p90": 38
+        },
+        {
+          "ply": 139,
+          "positions": 49,
+          "max": 55,
+          "mean": 21.346938775510203,
+          "median": 20,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 140,
+          "positions": 49,
+          "max": 60,
+          "mean": 23.693877551020407,
+          "median": 22,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "ply": 141,
+          "positions": 49,
+          "max": 48,
+          "mean": 21.428571428571427,
+          "median": 20,
+          "min": 1,
+          "p90": 39
+        },
+        {
+          "ply": 142,
+          "positions": 49,
+          "max": 52,
+          "mean": 22.020408163265305,
+          "median": 20,
+          "min": 1,
+          "p90": 43
+        },
+        {
+          "ply": 143,
+          "positions": 49,
+          "max": 49,
+          "mean": 19.816326530612244,
+          "median": 18,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "ply": 144,
+          "positions": 49,
+          "max": 63,
+          "mean": 24.163265306122447,
+          "median": 23,
+          "min": 2,
+          "p90": 39
+        },
+        {
+          "ply": 145,
+          "positions": 49,
+          "max": 64,
+          "mean": 20.6734693877551,
+          "median": 17,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "ply": 146,
+          "positions": 49,
+          "max": 61,
+          "mean": 21.79591836734694,
+          "median": 21,
+          "min": 1,
+          "p90": 39
+        },
+        {
+          "ply": 147,
+          "positions": 49,
+          "max": 63,
+          "mean": 16.53061224489796,
+          "median": 14,
+          "min": 1,
+          "p90": 35
+        },
+        {
+          "ply": 148,
+          "positions": 49,
+          "max": 44,
+          "mean": 23.591836734693878,
+          "median": 24,
+          "min": 1,
+          "p90": 39
+        },
+        {
+          "ply": 149,
+          "positions": 48,
+          "max": 56,
+          "mean": 19.25,
+          "median": 17,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 150,
+          "positions": 48,
+          "max": 63,
+          "mean": 20.416666666666668,
+          "median": 17,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 151,
+          "positions": 48,
+          "max": 58,
+          "mean": 19.604166666666668,
+          "median": 18,
+          "min": 1,
+          "p90": 33
+        },
+        {
+          "ply": 152,
+          "positions": 48,
+          "max": 64,
+          "mean": 22.666666666666668,
+          "median": 23,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "ply": 153,
+          "positions": 48,
+          "max": 52,
+          "mean": 19.958333333333332,
+          "median": 17,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 154,
+          "positions": 48,
+          "max": 56,
+          "mean": 20.875,
+          "median": 20,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "ply": 155,
+          "positions": 48,
+          "max": 53,
+          "mean": 21.354166666666668,
+          "median": 16,
+          "min": 1,
+          "p90": 46
+        },
+        {
+          "ply": 156,
+          "positions": 48,
+          "max": 59,
+          "mean": 22.020833333333332,
+          "median": 21,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "ply": 157,
+          "positions": 47,
+          "max": 51,
+          "mean": 19.5531914893617,
+          "median": 19,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "ply": 158,
+          "positions": 47,
+          "max": 57,
+          "mean": 21.893617021276597,
+          "median": 21,
+          "min": 2,
+          "p90": 41
+        },
+        {
+          "ply": 159,
+          "positions": 47,
+          "max": 43,
+          "mean": 19.70212765957447,
+          "median": 18,
+          "min": 1,
+          "p90": 35
+        }
+      ],
+      "branchingByBucket": [
+        {
+          "startPly": 0,
+          "endPly": 4,
+          "positions": 500,
+          "max": 19,
+          "mean": 8.746,
+          "median": 8,
+          "min": 7,
+          "p90": 11
+        },
+        {
+          "startPly": 5,
+          "endPly": 9,
+          "positions": 500,
+          "max": 33,
+          "mean": 12.268,
+          "median": 12,
+          "min": 1,
+          "p90": 17
+        },
+        {
+          "startPly": 10,
+          "endPly": 14,
+          "positions": 500,
+          "max": 47,
+          "mean": 15.578,
+          "median": 14,
+          "min": 1,
+          "p90": 25
+        },
+        {
+          "startPly": 15,
+          "endPly": 19,
+          "positions": 500,
+          "max": 44,
+          "mean": 17.442,
+          "median": 16,
+          "min": 1,
+          "p90": 28
+        },
+        {
+          "startPly": 20,
+          "endPly": 24,
+          "positions": 496,
+          "max": 54,
+          "mean": 18.100806451612904,
+          "median": 17,
+          "min": 1,
+          "p90": 29
+        },
+        {
+          "startPly": 25,
+          "endPly": 29,
+          "positions": 495,
+          "max": 60,
+          "mean": 19.056565656565656,
+          "median": 18,
+          "min": 1,
+          "p90": 32
+        },
+        {
+          "startPly": 30,
+          "endPly": 34,
+          "positions": 490,
+          "max": 64,
+          "mean": 19.961224489795917,
+          "median": 19,
+          "min": 1,
+          "p90": 34
+        },
+        {
+          "startPly": 35,
+          "endPly": 39,
+          "positions": 483,
+          "max": 60,
+          "mean": 20.44513457556936,
+          "median": 19,
+          "min": 1,
+          "p90": 35
+        },
+        {
+          "startPly": 40,
+          "endPly": 44,
+          "positions": 473,
+          "max": 61,
+          "mean": 22.076109936575055,
+          "median": 21,
+          "min": 1,
+          "p90": 36
+        },
+        {
+          "startPly": 45,
+          "endPly": 49,
+          "positions": 455,
+          "max": 68,
+          "mean": 24.175824175824175,
+          "median": 24,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "startPly": 50,
+          "endPly": 54,
+          "positions": 450,
+          "max": 60,
+          "mean": 22.93111111111111,
+          "median": 21,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "startPly": 55,
+          "endPly": 59,
+          "positions": 445,
+          "max": 83,
+          "mean": 22.734831460674158,
+          "median": 21,
+          "min": 1,
+          "p90": 39
+        },
+        {
+          "startPly": 60,
+          "endPly": 64,
+          "positions": 431,
+          "max": 67,
+          "mean": 23.071925754060324,
+          "median": 22,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "startPly": 65,
+          "endPly": 69,
+          "positions": 415,
+          "max": 63,
+          "mean": 22.879518072289155,
+          "median": 22,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "startPly": 70,
+          "endPly": 74,
+          "positions": 397,
+          "max": 73,
+          "mean": 23.43073047858942,
+          "median": 22,
+          "min": 1,
+          "p90": 42
+        },
+        {
+          "startPly": 75,
+          "endPly": 79,
+          "positions": 379,
+          "max": 74,
+          "mean": 23.242744063324537,
+          "median": 22,
+          "min": 1,
+          "p90": 43
+        },
+        {
+          "startPly": 80,
+          "endPly": 84,
+          "positions": 366,
+          "max": 77,
+          "mean": 24.218579234972676,
+          "median": 24,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "startPly": 85,
+          "endPly": 89,
+          "positions": 346,
+          "max": 76,
+          "mean": 23.36127167630058,
+          "median": 22,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "startPly": 90,
+          "endPly": 94,
+          "positions": 331,
+          "max": 58,
+          "mean": 23.021148036253777,
+          "median": 22,
+          "min": 1,
+          "p90": 39
+        },
+        {
+          "startPly": 95,
+          "endPly": 99,
+          "positions": 324,
+          "max": 70,
+          "mean": 23.311728395061728,
+          "median": 21,
+          "min": 1,
+          "p90": 44
+        },
+        {
+          "startPly": 100,
+          "endPly": 104,
+          "positions": 310,
+          "max": 57,
+          "mean": 22.980645161290322,
+          "median": 22,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "startPly": 105,
+          "endPly": 109,
+          "positions": 304,
+          "max": 64,
+          "mean": 23.898026315789473,
+          "median": 24,
+          "min": 1,
+          "p90": 41
+        },
+        {
+          "startPly": 110,
+          "endPly": 114,
+          "positions": 295,
+          "max": 67,
+          "mean": 22.145762711864407,
+          "median": 20,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "startPly": 115,
+          "endPly": 119,
+          "positions": 288,
+          "max": 65,
+          "mean": 22.760416666666668,
+          "median": 20,
+          "min": 1,
+          "p90": 43
+        },
+        {
+          "startPly": 120,
+          "endPly": 124,
+          "positions": 265,
+          "max": 61,
+          "mean": 23.041509433962265,
+          "median": 21,
+          "min": 1,
+          "p90": 40
+        },
+        {
+          "startPly": 125,
+          "endPly": 129,
+          "positions": 256,
+          "max": 61,
+          "mean": 20.3984375,
+          "median": 19,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "startPly": 130,
+          "endPly": 134,
+          "positions": 249,
+          "max": 60,
+          "mean": 21.3855421686747,
+          "median": 20,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "startPly": 135,
+          "endPly": 139,
+          "positions": 245,
+          "max": 63,
+          "mean": 21.39591836734694,
+          "median": 20,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "startPly": 140,
+          "endPly": 144,
+          "positions": 245,
+          "max": 63,
+          "mean": 22.224489795918366,
+          "median": 21,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "startPly": 145,
+          "endPly": 149,
+          "positions": 244,
+          "max": 64,
+          "mean": 20.37295081967213,
+          "median": 18,
+          "min": 1,
+          "p90": 38
+        },
+        {
+          "startPly": 150,
+          "endPly": 154,
+          "positions": 240,
+          "max": 64,
+          "mean": 20.704166666666666,
+          "median": 19,
+          "min": 1,
+          "p90": 37
+        },
+        {
+          "startPly": 155,
+          "endPly": 159,
+          "positions": 237,
+          "max": 59,
+          "mean": 20.911392405063292,
+          "median": 19,
+          "min": 1,
+          "p90": 39
+        }
+      ]
+    },
+    {
       "gameId": "Filler",
       "gameName": "Filler",
       "sampling": {
@@ -1365,11 +3342,11 @@
         "averageCumulativeLogBranching": 57.81207550239428
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.0005514975550115879,
-        "averageMakeMoveMs": 0.0009851026894851951,
-        "averageRandomPlayoutMs": 0.23192164999999476,
+        "averageGetLegalMovesMs": 0.00030233190709328517,
+        "averageMakeMoveMs": 0.0006292762836178142,
+        "averageRandomPlayoutMs": 0.09821920999999975,
         "averageRandomPlayoutLength": 32.72,
-        "playoutPliesPerSecond": 141082.1283825841
+        "playoutPliesPerSecond": 333132.3882568398
       },
       "branchingByPly": [
         {
@@ -2171,11 +4148,11 @@
         "averageCumulativeLogBranching": 119.20085564728738
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.012190325274726205,
-        "averageMakeMoveMs": 0.0048008904238634985,
-        "averageRandomPlayoutMs": 0.5570890899999961,
+        "averageGetLegalMovesMs": 0.0028267547880695956,
+        "averageMakeMoveMs": 0.00032819560439520856,
+        "averageRandomPlayoutMs": 0.1152679400000011,
         "averageRandomPlayoutLength": 31.85,
-        "playoutPliesPerSecond": 57172.18407562105
+        "playoutPliesPerSecond": 276312.7370889052
       },
       "branchingByPly": [
         {
@@ -3260,11 +5237,11 @@
         "averageCumulativeLogBranching": 173.39532156546443
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.01888987758820478,
-        "averageMakeMoveMs": 0.0009335040583065486,
-        "averageRandomPlayoutMs": 1.6466571500000042,
+        "averageGetLegalMovesMs": 0.0025285224449233096,
+        "averageMakeMoveMs": 0.0006160477058148743,
+        "averageRandomPlayoutMs": 0.23588168000000906,
         "averageRandomPlayoutLength": 60.37,
-        "playoutPliesPerSecond": 36662.15520334627
+        "playoutPliesPerSecond": 255933.39847332647
       },
       "branchingByPly": [
         {
@@ -4014,11 +5991,11 @@
         "averageCumulativeLogBranching": 17.665539019714178
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.00031697204574478215,
-        "averageMakeMoveMs": 0.0005765794155047547,
-        "averageRandomPlayoutMs": 0.021385440000008204,
+        "averageGetLegalMovesMs": 0.00016122109276181713,
+        "averageMakeMoveMs": 0.0002703710292206486,
+        "averageRandomPlayoutMs": 0.012689620000005562,
         "averageRandomPlayoutLength": 7.87,
-        "playoutPliesPerSecond": 368007.39194503275
+        "playoutPliesPerSecond": 620191.936401291
       },
       "branchingByPly": [
         {
@@ -4256,11 +6233,11 @@
         "averageCumulativeLogBranching": 163.80352840429137
       },
       "runtime": {
-        "averageGetLegalMovesMs": 0.0004291453960716017,
-        "averageMakeMoveMs": 0.0008739962762362369,
-        "averageRandomPlayoutMs": 0.13124955999999657,
+        "averageGetLegalMovesMs": 0.00018507007447613263,
+        "averageMakeMoveMs": 0.0004971748476642465,
+        "averageRandomPlayoutMs": 0.07265868999999611,
         "averageRandomPlayoutLength": 59.08,
-        "playoutPliesPerSecond": 450134.84235681663
+        "playoutPliesPerSecond": 813116.7792868707
       },
       "branchingByPly": [
         {

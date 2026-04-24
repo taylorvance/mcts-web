@@ -1,4 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { ConnectFourState } from './ConnectFour/state';
 import { DobutsuShogiState } from './DobutsuShogi/state';
@@ -6,7 +8,13 @@ import { FillerState } from './Filler/state';
 import { GoroGoroDobutsuShogiState } from './GoroGoroDobutsuShogi/state';
 import { createOnitamaPlayMove, OnitamaState } from './Onitama/state';
 import { OthelloState } from './Othello/state';
-import { buildGameFamilies, gameFamilies, gameIdToFamilyId, games } from './gameRegistry';
+import { buildGameFamilies, gameEntries, gameFamilies, gameIdToFamilyId, games } from './gameRegistry';
+
+interface ComplexityDataset {
+  games: Array<{
+    gameId: string;
+  }>;
+}
 
 describe('gameRegistry', () => {
   it.each([
@@ -175,5 +183,15 @@ describe('gameRegistry', () => {
         gameIds: ['DobutsuShogi', 'MiniShogi'],
       },
     ]);
+  });
+
+  it('has a complexity profile for every registered game', () => {
+    const dataset = JSON.parse(
+      readFileSync(resolve(__dirname, '../../public/generated/complexity.json'), 'utf8'),
+    ) as ComplexityDataset;
+    const expectedGameIds = gameEntries.map((entry) => entry.id).sort();
+    const actualGameIds = dataset.games.map((entry) => entry.gameId).sort();
+
+    expect(actualGameIds).toEqual(expectedGameIds);
   });
 });

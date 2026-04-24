@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import DobutsuShogi from '.';
 import { expectEncodedReplayToMatchTypedReplay } from '../../test/gameReplay';
-import { DobutsuShogiState, encodeDobutsuMove } from './state';
+import { DobutsuShogiState } from './state';
 import type { DobutsuHands, DobutsuMove, DobutsuPiece } from './state';
 
 const EMPTY_HANDS: DobutsuHands = {
@@ -179,45 +179,6 @@ describe('DobutsuShogiState', () => {
     expect(state.isTerminal()).toBe(true);
     expect(state.getWinner()).toBeNull();
     expect(state.getOutcomeReason()).toBe('repetition');
-  });
-
-  it('prefers immediate wins in rollout suggestions', () => {
-    const state = new DobutsuShogiState(
-      [
-        null, 'l', null,
-        null, 'C', null,
-        null, null, null,
-        null, 'L', null,
-      ] satisfies Array<DobutsuPiece | null>,
-      true,
-      EMPTY_HANDS,
-    );
-
-    const suggestion = state.suggestRollout(() => 0);
-
-    expect(encodeDobutsuMove(suggestion.move)).toBe('m:4-1');
-    expect(suggestion.nextState.getWinner()).toBe('S');
-  });
-
-  it('avoids rollout moves that allow an immediate losing reply when a safe capture exists', () => {
-    const state = new DobutsuShogiState(
-      [
-        null, 'l', null,
-        null, null, null,
-        null, 'g', null,
-        null, 'L', 'G',
-      ] satisfies Array<DobutsuPiece | null>,
-      true,
-      EMPTY_HANDS,
-    );
-
-    const suggestion = state.suggestRollout(() => 0);
-
-    expect(
-      suggestion.nextState.getLegalMoves().some(
-        (reply) => suggestion.nextState.makeTypedMove(reply).getWinner() === 'N',
-      ),
-    ).toBe(false);
   });
 
   it('rebuilds the same state from encoded typed history', () => {

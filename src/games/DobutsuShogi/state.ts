@@ -37,16 +37,6 @@ export interface DobutsuDropMove {
 export type DobutsuMove = DobutsuBoardMove | DobutsuDropMove;
 export type DobutsuOutcomeReason = 'capture' | 'try' | 'stalemate' | 'repetition' | null;
 
-interface DobutsuPosition {
-  board: Array<DobutsuPiece | null>;
-  hands: DobutsuHands;
-}
-
-interface RolloutCandidate {
-  move: DobutsuMove;
-  position: DobutsuPosition;
-}
-
 const DROP_PIECES: DobutsuDropPieceKind[] = ['G', 'E', 'C'];
 const INITIAL_BOARD: Array<DobutsuPiece | null> = [
   'g', 'l', 'e',
@@ -244,59 +234,6 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     return this.team ? 'S' : 'N';
   }
 
-  override suggestRollout(random: () => number) {
-    const currentTeam = this.getCurrentTeam();
-    const opponentTeam = getOpponentTeam(currentTeam);
-    let fallbackChoice: RolloutCandidate | null = null;
-    let fallbackCount = 0;
-    let safeChoice: RolloutCandidate | null = null;
-    let safeCount = 0;
-    let winningChoice: RolloutCandidate | null = null;
-    let winningCount = 0;
-
-    this.forEachLegalMoveOnPosition(this.board, this.hands, currentTeam, (move) => {
-      const position = this.applyMoveToPosition(move, this.board, this.hands, currentTeam);
-      const candidate = { move, position };
-
-      fallbackCount += 1;
-      if(Math.floor(random() * fallbackCount) === 0) {
-        fallbackChoice = candidate;
-      }
-
-      if(this.isImmediateWinningMove(position.board, currentTeam, move)) {
-        winningCount += 1;
-        if(Math.floor(random() * winningCount) === 0) {
-          winningChoice = candidate;
-        }
-        return;
-      }
-
-      if(!this.hasImmediateWinningMoveOnPosition(position.board, position.hands, opponentTeam)) {
-        safeCount += 1;
-        if(Math.floor(random() * safeCount) === 0) {
-          safeChoice = candidate;
-        }
-      }
-    });
-
-    if(fallbackCount === 0 || fallbackChoice === null) {
-      throw new Error('Non-terminal Dobutsu Shogi state has no legal moves.');
-    }
-
-    let choice: RolloutCandidate = fallbackChoice;
-    if(safeChoice !== null) {
-      choice = safeChoice;
-    }
-    if(winningChoice !== null) {
-      choice = winningChoice;
-    }
-
-    return {
-      move: choice.move,
-      nextState: this.createStateFromPosition(choice.position.board, choice.position.hands, !this.team),
-    };
-  }
-
   override sampleLegalMove(random: () => number): DobutsuMove {
     const choice = this.sampleLegalMoveOnPosition(this.board, this.hands, this.getCurrentTeam(), random);
     if(choice === null) {
@@ -339,7 +276,7 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
   }
 
   makeMove(move: DobutsuMove): DobutsuShogiState {
-    return this.makeTypedMove(move);
+    return this.applyMoveUnchecked(move);
   }
 
   isTerminal(): boolean {
@@ -595,10 +532,6 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     return (this.repetitionCounts.get(this.getPositionKey()) ?? 0) >= 3;
   }
 
-  private findLion(team: DobutsuTeam): number | null {
-    return this.findLionOnBoard(this.board, team);
-  }
-
   private findLionOnBoard(
     board: Array<DobutsuPiece | null>,
     team: DobutsuTeam,
@@ -611,31 +544,6 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     }
 
     return null;
-  }
-
-  private hasImmediateWinningMoveForCurrentTeam(): boolean {
-    return this.hasImmediateWinningMoveOnPosition(this.board, this.hands, this.getCurrentTeam());
-  }
-
-  private hasImmediateWinningMoveOnPosition(
-    board: Array<DobutsuPiece | null>,
-    hands: DobutsuHands,
-    team: DobutsuTeam,
-  ): boolean {
-    let hasWinningMove = false;
-
-    this.forEachLegalMoveOnPosition(board, hands, team, (move) => {
-      if(hasWinningMove) {
-        return;
-      }
-
-      const position = this.applyMoveToPosition(move, board, hands, team);
-      if(this.isImmediateWinningMove(position.board, team, move)) {
-        hasWinningMove = true;
-      }
-    });
-
-    return hasWinningMove;
   }
 
   private sampleLegalMoveOnPosition(
@@ -657,33 +565,12 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     return choice;
   }
 
-  private isImmediateWinningMove(
-    board: Array<DobutsuPiece | null>,
-    team: DobutsuTeam,
-    move: DobutsuMove,
-  ): boolean {
-    if(this.findLionOnBoard(board, getOpponentTeam(team)) === null) {
-      return true;
-    }
-
-    if(move.type !== 'move') {
-      return false;
-    }
-
-    const movedPiece = board[move.to];
-    return movedPiece !== null
-      && getPieceOwner(movedPiece) === team
-      && getPieceKind(movedPiece) === 'L'
-      && isFinalRank(team, move.to)
-      && !this.isSquareAttacked(board, move.to, getOpponentTeam(team));
-  }
-
   private applyMoveToPosition(
     move: DobutsuMove,
     board: Array<DobutsuPiece | null>,
     hands: DobutsuHands,
     currentTeam: DobutsuTeam,
-  ): DobutsuPosition {
+  ) {
     const nextBoard = [...board];
     const nextHands = cloneHands(hands);
 

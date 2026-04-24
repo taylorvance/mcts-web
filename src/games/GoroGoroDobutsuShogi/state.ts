@@ -192,6 +192,16 @@ const orientDelta = (
     : [-rowDelta, -colDelta]
 );
 
+const canPieceAttackWithDelta = (
+  pieceKind: GoroGoroPieceKind,
+  team: GoroGoroTeam,
+  rowDelta: number,
+  colDelta: number,
+) => GOROGORO_MOVE_DELTAS[pieceKind].some(([baseRowDelta, baseColDelta]) => {
+  const [orientedRowDelta, orientedColDelta] = orientDelta(team, [baseRowDelta, baseColDelta]);
+  return orientedRowDelta === rowDelta && orientedColDelta === colDelta;
+});
+
 const formatHands = (hands: GoroGoroHands) => (
   `S[D${hands.s.D}T${hands.s.T}C${hands.s.C}]|N[D${hands.n.D}T${hands.n.T}C${hands.n.C}]`
 );
@@ -280,6 +290,8 @@ export class GoroGoroDobutsuShogiState extends GameState<
   team: boolean;
   hands: GoroGoroHands;
   repetitionCounts: Map<string, number>;
+  private legalMovesCache: GoroGoroMove[] | null;
+  private hasAnyLegalMoveCache: boolean | null;
 
   constructor(
     board: Array<GoroGoroPiece | null> = [...INITIAL_BOARD],
@@ -297,6 +309,8 @@ export class GoroGoroDobutsuShogiState extends GameState<
     this.repetitionCounts = repetitionCounts
       ? new Map(repetitionCounts)
       : new Map([[this.getPositionKey(), 1]]);
+    this.legalMovesCache = null;
+    this.hasAnyLegalMoveCache = null;
   }
 
   getCurrentTeam(): GoroGoroTeam {
@@ -320,19 +334,20 @@ export class GoroGoroDobutsuShogiState extends GameState<
       return [];
     }
 
-    return this.listPseudoLegalMoves().filter((move) => {
-      if (this.wouldLeaveLionInCheck(move)) {
-        return false;
-      }
+    if (this.legalMovesCache !== null) {
+      return [...this.legalMovesCache];
+    }
 
-      if (move.type === 'drop' && move.piece === 'C') {
-        if (this.isIllegalChickDropMate(move)) {
-          return false;
-        }
+    const legalMoves: GoroGoroMove[] = [];
+    this.forEachPseudoLegalMove((move) => {
+      if (this.isLegalMove(move)) {
+        legalMoves.push(move);
       }
-
-      return true;
     });
+
+    this.legalMovesCache = legalMoves;
+    this.hasAnyLegalMoveCache = legalMoves.length > 0;
+    return [...legalMoves];
   }
 
   makeTypedMove(move: GoroGoroMove): GoroGoroDobutsuShogiState {
@@ -349,7 +364,7 @@ export class GoroGoroDobutsuShogiState extends GameState<
   }
 
   makeMove(move: GoroGoroMove): GoroGoroDobutsuShogiState {
-    return this.makeTypedMove(move);
+    return this.applyMoveUnchecked(move);
   }
 
   isTerminal(): boolean {
@@ -357,7 +372,7 @@ export class GoroGoroDobutsuShogiState extends GameState<
       return true;
     }
 
-    return this.getLegalMoves().length === 0;
+    return !this.hasAnyLegalMove();
   }
 
   getWinner(): GoroGoroTeam | null {
@@ -370,7 +385,7 @@ export class GoroGoroDobutsuShogiState extends GameState<
       return null;
     }
 
-    return this.getLegalMoves().length === 0
+    return !this.hasAnyLegalMove()
       ? getOpponentTeam(this.getCurrentTeam())
       : null;
   }
@@ -384,7 +399,7 @@ export class GoroGoroDobutsuShogiState extends GameState<
       return 'repetition';
     }
 
-    if (this.getLegalMoves().length > 0) {
+    if (this.hasAnyLegalMove()) {
       return null;
     }
 
@@ -421,9 +436,66 @@ export class GoroGoroDobutsuShogiState extends GameState<
     return [...INITIAL_BOARD];
   }
 
-  private listPseudoLegalMoves(): GoroGoroMove[] {
-    const moves: GoroGoroMove[] = [];
+  override sampleLegalMove(random: () => number): GoroGoroMove {
+    const choice = this.findRandomLegalSuccessor(random);
+    if (choice === null) {
+      throw new Error('Non-terminal Goro-Goro Dobutsu Shogi state has no legal moves.');
+    }
+
+    return choice.move;
+  }
+
+  override suggestRollout(random: () => number) {
+    return this.findRandomLegalSuccessor(random);
+  }
+
+  private hasAnyLegalMove() {
+    if (this.hasAnyLegalMoveCache !== null) {
+      return this.hasAnyLegalMoveCache;
+    }
+
+    if (this.legalMovesCache !== null) {
+      this.hasAnyLegalMoveCache = this.legalMovesCache.length > 0;
+      return this.hasAnyLegalMoveCache;
+    }
+
+    let hasLegalMove = false;
+    this.forEachPseudoLegalMove((move) => {
+      if (!this.isLegalMove(move)) {
+        return false;
+      }
+
+      hasLegalMove = true;
+      return true;
+    });
+
+    this.hasAnyLegalMoveCache = hasLegalMove;
+    return hasLegalMove;
+  }
+
+  private isLegalMove(move: GoroGoroMove) {
+    const { board, hands } = this.applyMoveToPosition(move);
     const currentTeam = this.getCurrentTeam();
+    const lionIndex = this.findLionOnBoard(board, currentTeam);
+    if (lionIndex === null) {
+      return false;
+    }
+
+    if (this.isSquareAttacked(board, lionIndex, getOpponentTeam(currentTeam))) {
+      return false;
+    }
+
+    if (move.type !== 'drop' || move.piece !== 'C') {
+      return true;
+    }
+
+    const nextState = this.createStateFromPosition(board, hands, !this.team);
+    return !this.isIllegalChickDropMateOnState(nextState);
+  }
+
+  private forEachPseudoLegalMove(visit: (move: GoroGoroMove) => boolean | void) {
+    const currentTeam = this.getCurrentTeam();
+    const currentHand = this.getCurrentHand();
 
     for (let index = 0; index < TOTAL_CELLS; index += 1) {
       const piece = this.board[index];
@@ -438,41 +510,49 @@ export class GoroGoroDobutsuShogiState extends GameState<
           && (isPromotionZone(currentTeam, index) || isPromotionZone(currentTeam, to))
         ) {
           if (isMandatoryPromotion(pieceKind, currentTeam, to)) {
-            moves.push({
+            if (visit({
               type: 'move',
               from: index,
               to,
               promote: true,
-            });
+            })) {
+              return;
+            }
             continue;
           }
 
-          moves.push({
+          if (visit({
             type: 'move',
             from: index,
             to,
             promote: false,
-          });
-          moves.push({
+          })) {
+            return;
+          }
+          if (visit({
             type: 'move',
             from: index,
             to,
             promote: true,
-          });
+          })) {
+            return;
+          }
           continue;
         }
 
-        moves.push({
+        if (visit({
           type: 'move',
           from: index,
           to,
           promote: false,
-        });
+        })) {
+          return;
+        }
       }
     }
 
     for (const piece of DROP_PIECES) {
-      if (this.getCurrentHand()[piece] <= 0) {
+      if (currentHand[piece] <= 0) {
         continue;
       }
 
@@ -485,15 +565,121 @@ export class GoroGoroDobutsuShogiState extends GameState<
           continue;
         }
 
-        moves.push({
+        if (visit({
           type: 'drop',
           piece,
           to: index,
-        });
+        })) {
+          return;
+        }
+      }
+    }
+  }
+
+  private findRandomLegalSuccessor(random: () => number) {
+    const boardStart = Math.floor(random() * TOTAL_CELLS);
+
+    for (let boardOffset = 0; boardOffset < TOTAL_CELLS; boardOffset += 1) {
+      const from = (boardStart + boardOffset) % TOTAL_CELLS;
+      const piece = this.board[from];
+      if (!piece || getPieceOwner(piece) !== this.getCurrentTeam()) {
+        continue;
+      }
+
+      const destinations = this.getBoardDestinations(from, piece);
+      if (destinations.length === 0) {
+        continue;
+      }
+
+      const destinationStart = Math.floor(random() * destinations.length);
+      const pieceKind = getPieceKind(piece);
+      for (let destinationOffset = 0; destinationOffset < destinations.length; destinationOffset += 1) {
+        const to = destinations[(destinationStart + destinationOffset) % destinations.length];
+        if (to === undefined) {
+          continue;
+        }
+
+        const candidates = this.getBoardMoveCandidates(from, to, pieceKind, this.getCurrentTeam(), random);
+        for (const move of candidates) {
+          const nextState = this.getNextStateIfLegal(move);
+          if (nextState !== null) {
+            return { move, nextState };
+          }
+        }
       }
     }
 
-    return moves;
+    const pieceStart = Math.floor(random() * DROP_PIECES.length);
+    for (let pieceOffset = 0; pieceOffset < DROP_PIECES.length; pieceOffset += 1) {
+      const piece = DROP_PIECES[(pieceStart + pieceOffset) % DROP_PIECES.length];
+      if (piece === undefined || this.getCurrentHand()[piece] <= 0) {
+        continue;
+      }
+
+      const squareStart = Math.floor(random() * TOTAL_CELLS);
+      for (let squareOffset = 0; squareOffset < TOTAL_CELLS; squareOffset += 1) {
+        const to = (squareStart + squareOffset) % TOTAL_CELLS;
+        if (this.board[to] !== null) {
+          continue;
+        }
+
+        if (piece === 'C' && !this.canDropChick(to, this.getCurrentTeam())) {
+          continue;
+        }
+
+        const move: GoroGoroDropMove = {
+          type: 'drop',
+          piece,
+          to,
+        };
+        const nextState = this.getNextStateIfLegal(move);
+        if (nextState !== null) {
+          return { move, nextState };
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private getBoardMoveCandidates(
+    from: number,
+    to: number,
+    pieceKind: GoroGoroPieceKind,
+    team: GoroGoroTeam,
+    random: () => number,
+  ): GoroGoroBoardMove[] {
+    if (
+      isPromotablePiece(pieceKind)
+      && (isPromotionZone(team, from) || isPromotionZone(team, to))
+    ) {
+      if (isMandatoryPromotion(pieceKind, team, to)) {
+        return [{
+          type: 'move',
+          from,
+          to,
+          promote: true,
+        }];
+      }
+
+      const preferPromotion = random() < 0.5;
+      return preferPromotion
+        ? [
+          { type: 'move', from, to, promote: true },
+          { type: 'move', from, to, promote: false },
+        ]
+        : [
+          { type: 'move', from, to, promote: false },
+          { type: 'move', from, to, promote: true },
+        ];
+    }
+
+    return [{
+      type: 'move',
+      from,
+      to,
+      promote: false,
+    }];
   }
 
   private getBoardDestinations(index: number, piece: GoroGoroPiece): number[] {
@@ -542,29 +728,34 @@ export class GoroGoroDobutsuShogiState extends GameState<
     return true;
   }
 
-  private wouldLeaveLionInCheck(move: GoroGoroMove): boolean {
-    const { board } = this.applyMoveToPosition(move);
+  private getNextStateIfLegal(move: GoroGoroMove) {
     const currentTeam = this.getCurrentTeam();
+    const { board, hands } = this.applyMoveToPosition(move);
     const lionIndex = this.findLionOnBoard(board, currentTeam);
     if (lionIndex === null) {
-      return true;
+      return null;
     }
 
-    return this.isSquareAttacked(board, lionIndex, getOpponentTeam(currentTeam));
+    if (this.isSquareAttacked(board, lionIndex, getOpponentTeam(currentTeam))) {
+      return null;
+    }
+
+    const nextState = this.createStateFromPosition(board, hands, !this.team);
+    if (
+      move.type === 'drop'
+      && move.piece === 'C'
+      && this.isIllegalChickDropMateOnState(nextState)
+    ) {
+      return null;
+    }
+
+    return nextState;
   }
 
-  private isIllegalChickDropMate(move: GoroGoroDropMove): boolean {
-    const { board, hands } = this.applyMoveToPosition(move);
-    const nextState = new GoroGoroDobutsuShogiState(
-      board,
-      !this.team,
-      hands,
-      this.repetitionCounts,
-    );
-
+  private isIllegalChickDropMateOnState(nextState: GoroGoroDobutsuShogiState) {
     return (
       nextState.isInCheck(nextState.board, nextState.getCurrentTeam())
-      && nextState.getLegalMoves().length === 0
+      && !nextState.hasAnyLegalMove()
     );
   }
 
@@ -628,23 +819,32 @@ export class GoroGoroDobutsuShogiState extends GameState<
     targetIndex: number,
     attacker: GoroGoroTeam,
   ): boolean {
-    for (let index = 0; index < TOTAL_CELLS; index += 1) {
-      const piece = board[index];
-      if (!piece || getPieceOwner(piece) !== attacker) {
-        continue;
-      }
+    const targetRow = getRow(targetIndex);
+    const targetCol = targetIndex % COLS;
 
-      const row = getRow(index);
-      const col = index % COLS;
-      for (const delta of GOROGORO_MOVE_DELTAS[getPieceKind(piece)]) {
-        const [rowDelta, colDelta] = orientDelta(attacker, delta);
-        const nextRow = row + rowDelta;
-        const nextCol = col + colDelta;
-        if (nextRow < 0 || nextRow >= ROWS || nextCol < 0 || nextCol >= COLS) {
+    for (let rowDelta = -1; rowDelta <= 1; rowDelta += 1) {
+      for (let colDelta = -1; colDelta <= 1; colDelta += 1) {
+        if (rowDelta === 0 && colDelta === 0) {
           continue;
         }
 
-        if (getIndex(nextRow, nextCol) === targetIndex) {
+        const sourceRow = targetRow - rowDelta;
+        const sourceCol = targetCol - colDelta;
+        if (
+          sourceRow < 0
+          || sourceRow >= ROWS
+          || sourceCol < 0
+          || sourceCol >= COLS
+        ) {
+          continue;
+        }
+
+        const piece = board[getIndex(sourceRow, sourceCol)];
+        if (!piece || getPieceOwner(piece) !== attacker) {
+          continue;
+        }
+
+        if (canPieceAttackWithDelta(getPieceKind(piece), attacker, rowDelta, colDelta)) {
           return true;
         }
       }
@@ -692,7 +892,14 @@ export class GoroGoroDobutsuShogiState extends GameState<
 
   private applyMoveUnchecked(move: GoroGoroMove): GoroGoroDobutsuShogiState {
     const { board, hands } = this.applyMoveToPosition(move);
-    const nextTeam = !this.team;
+    return this.createStateFromPosition(board, hands, !this.team);
+  }
+
+  private createStateFromPosition(
+    board: Array<GoroGoroPiece | null>,
+    hands: GoroGoroHands,
+    nextTeam: boolean,
+  ) {
     const nextRepetitionCounts = new Map(this.repetitionCounts);
     const nextPositionKey = createPositionKey(board, nextTeam, hands);
     nextRepetitionCounts.set(

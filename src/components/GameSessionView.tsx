@@ -43,6 +43,7 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
     historyIdx,
     isAutoPlaying,
     isAutoReplyEnabled,
+    isMoveInProgress,
     mcts,
     searchStats,
     isTerminal,
@@ -82,6 +83,13 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
     value.toLocaleString('en-US', {
       maximumFractionDigits: 0,
     });
+  const searchIconSlotClass = 'relative inline-flex h-4 w-4 shrink-0 items-center justify-center';
+  const searchSpinner = (
+    <span
+      aria-hidden="true"
+      className="absolute inset-0 animate-spin rounded-full border-2 border-current border-t-transparent"
+    />
+  );
   return (
     <div className="flex w-full max-w-full flex-col gap-4 overflow-x-hidden xl:flex-row">
       <section className="flex w-full min-w-0 max-w-full flex-col items-center gap-4 overflow-x-hidden xl:flex-1">
@@ -159,11 +167,13 @@ const GameSessionView: React.FC<GameSessionViewProps> = ({
           <Button
             onClick={doAIMove}
             disabled={!canPlay}
-            tooltip="AI Move"
-            ariaLabel="Play AI move"
+            tooltip={isMoveInProgress ? 'Searching for AI move' : 'AI Move'}
+            ariaLabel={isMoveInProgress ? 'Searching for AI move' : 'Play AI move'}
             className={controlButtonClass}
           >
-            <FaForwardStep />
+            <span className={searchIconSlotClass}>
+              {isMoveInProgress ? searchSpinner : <FaForwardStep className="relative z-10 block h-4 w-4" />}
+            </span>
             {hotkeyHint(hotkeys.aiMove.keys)}
           </Button>
 

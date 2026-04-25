@@ -296,7 +296,6 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
   const toggleAutoPlay = useCallback(() => {
     const currentState = stateRef.current;
     if(currentState.isAutoPlaying) {
-      invalidatePendingMove();
       dispatch({ type: 'set_auto_play', value: false });
       return;
     }
@@ -306,7 +305,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     }
 
     dispatch({ type: 'set_auto_play', value: true });
-  }, [invalidatePendingMove]);
+  }, []);
 
   const toggleAutoReply = useCallback(() => {
     dispatch({ type: 'toggle_auto_reply' });
@@ -348,6 +347,7 @@ export const useGameSession = (game: Game, settings: MCTSSettings) => {
     historyIdx: state.historyIdx,
     isAutoPlaying: state.isAutoPlaying,
     isAutoReplyEnabled: state.isAutoReplyEnabled,
+    isMoveInProgress: state.isMoveInProgress,
     mcts,
     searchStats,
     isTerminal,

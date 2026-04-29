@@ -28,8 +28,9 @@ interface BenchmarkScenario {
 interface BenchmarkOptions {
 	explorationBias: number;
 	game: string | null;
-	iterations: number;
+	iterations: number | null;
 	json: boolean;
+	maxTimeMs: number | null;
 	mode: 'benchmark' | 'choose-move' | 'profile-search' | 'server' | 'status';
 	moves: string[];
 	samples: number;
@@ -40,7 +41,8 @@ interface BenchmarkOptions {
 interface ServerRequest {
 	explorationBias?: number;
 	id: number;
-	iterations?: number;
+	iterations?: number | null;
+	maxTimeMs?: number | null;
 	mode: 'choose-move' | 'status';
 	moves?: string[];
 	scenario: string;
@@ -65,6 +67,7 @@ const DEFAULT_OPTIONS: BenchmarkOptions = {
 	game: null,
 	iterations: 2000,
 	json: false,
+	maxTimeMs: null,
 	mode: 'benchmark',
 	moves: [],
 	samples: 20,
@@ -120,6 +123,12 @@ const parseOptions = (rawArgs: string[]): BenchmarkOptions => {
 				break;
 			case '--iterations':
 				options.iterations = parsePositiveInt(nextValue, '--iterations');
+				options.maxTimeMs = null;
+				index += 1;
+				break;
+			case '--time-ms':
+				options.maxTimeMs = parsePositiveInt(nextValue, '--time-ms');
+				options.iterations = null;
 				index += 1;
 				break;
 			case '--mode':
@@ -317,11 +326,14 @@ const getCurrentTeam = (state: GameState) => {
 const runSearch = (
 	state: GameState,
 	explorationBias: number,
-	maxIterations: number,
+	limits: { maxIterations: number | null; maxTimeMs: number | null },
 ) => {
 	const result = new MCTS({
 		explorationBias,
-	}).search(state, { maxIterations });
+	}).search(state, {
+		...(limits.maxIterations !== null ? { maxIterations: limits.maxIterations } : {}),
+		...(limits.maxTimeMs !== null ? { maxTimeMs: limits.maxTimeMs } : {}),
+	});
 	if(result.bestMove === null) {
 		throw new Error('Benchmark search did not produce a legal move.');
 	}
@@ -442,10 +454,9 @@ const getWinner = (
 const summarizeResult = (
 	scenario: BenchmarkScenario,
 	elapsedSamplesMs: number[],
-	iterations: number,
+	totalRounds: number,
 ): BenchmarkResult => {
 	const totalMs = elapsedSamplesMs.reduce((sum, elapsedMs) => sum + elapsedMs, 0);
-	const totalRounds = iterations * elapsedSamplesMs.length;
 
 	return {
 		averageMs: totalMs / elapsedSamplesMs.length,
@@ -470,7 +481,7 @@ const benchmarkScenario = (
 		runSearch(
 			scenario.createState(),
 			options.explorationBias,
-			options.iterations,
+			{ maxIterations: options.iterations, maxTimeMs: options.maxTimeMs },
 		);
 	}
 
@@ -481,12 +492,16 @@ const benchmarkScenario = (
 		runSearch(
 			scenario.createState(),
 			options.explorationBias,
-			options.iterations,
+			{ maxIterations: options.iterations, maxTimeMs: options.maxTimeMs },
 		);
 		elapsedSamplesMs.push(performance.now() - start);
 	}
 
-	return summarizeResult(scenario, elapsedSamplesMs, options.iterations);
+	return summarizeResult(
+		scenario,
+		elapsedSamplesMs,
+		options.iterations === null ? 0 : options.iterations * elapsedSamplesMs.length,
+	);
 };
 
 const selectScenario = (
@@ -510,8 +525,12 @@ const createServerResponse = (
 
 	if(request.mode === 'choose-move') {
 		const iterations = request.iterations ?? DEFAULT_OPTIONS.iterations;
+		const maxTimeMs = request.maxTimeMs ?? null;
 		const explorationBias = request.explorationBias ?? DEFAULT_OPTIONS.explorationBias;
-		const move = runSearch(state, explorationBias, iterations);
+		const move = runSearch(state, explorationBias, {
+			maxIterations: maxTimeMs === null ? iterations : null,
+			maxTimeMs,
+		});
 		return {
 			id: request.id,
 			move: serializeMove(scenario.gameDefinition, move, state),
@@ -597,6 +616,10 @@ const profileSearchScenario = (
 	scenario: BenchmarkScenario,
 	options: BenchmarkOptions,
 ) => {
+	if(options.iterations === null) {
+		throw new Error('profile-search mode requires --iterations.');
+	}
+
 	const sampleState = scenario.createState() as GameState;
 	const { methodStats, restore } = instrumentStatePrototype(sampleState);
 	const elapsedSamplesMs: number[] = [];
@@ -606,7 +629,7 @@ const profileSearchScenario = (
 			runSearch(
 				scenario.createState(),
 				options.explorationBias,
-				options.iterations,
+				{ maxIterations: options.iterations, maxTimeMs: null },
 			);
 		}
 
@@ -620,7 +643,7 @@ const profileSearchScenario = (
 			runSearch(
 				scenario.createState(),
 				options.explorationBias,
-				options.iterations,
+				{ maxIterations: options.iterations, maxTimeMs: null },
 			);
 			elapsedSamplesMs.push(performance.now() - start);
 		}
@@ -654,6 +677,12 @@ const profileSearchScenario = (
 	};
 };
 
+const formatSearchBudget = (options: BenchmarkOptions) => (
+	options.maxTimeMs !== null
+		? `${options.maxTimeMs} ms/search`
+		: `${options.iterations} rounds/search`
+);
+
 const formatNumber = (value: number) => value.toLocaleString('en-US', {
 	maximumFractionDigits: 2,
 	minimumFractionDigits: 2,
@@ -661,7 +690,7 @@ const formatNumber = (value: number) => value.toLocaleString('en-US', {
 
 const printTextReport = (options: BenchmarkOptions, results: BenchmarkResult[]) => {
 	console.log(
-		`Benchmarking ${results.length} scenario(s) with ${options.iterations} rounds/search, `
+		`Benchmarking ${results.length} scenario(s) with ${formatSearchBudget(options)}, `
 		+ `${options.samples} sample(s), warmup ${options.warmup}, c=${options.explorationBias}.`,
 	);
 
@@ -700,7 +729,10 @@ const main = async () => {
 
 		const state = applyMoves(scenario.gameDefinition, scenario.createState(), options.moves);
 		if(options.mode === 'choose-move') {
-			const move = runSearch(state, options.explorationBias, options.iterations);
+			const move = runSearch(state, options.explorationBias, {
+				maxIterations: options.iterations,
+				maxTimeMs: options.maxTimeMs,
+			});
 			console.log(JSON.stringify({
 				move: serializeMove(scenario.gameDefinition, move, state),
 			}, null, options.json ? 2 : 0));

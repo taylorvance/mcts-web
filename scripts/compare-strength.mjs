@@ -44,6 +44,7 @@ const parseArgs = (rawArgs) => {
 		maxTurns: 200,
 		pairs: 1,
 		scenarios: [],
+		timeMs: null,
 	};
 
 	for(let index = 0; index < rawArgs.length; index += 1) {
@@ -64,6 +65,7 @@ const parseArgs = (rawArgs) => {
 				break;
 			case '--iterations':
 				options.iterations = Number.parseInt(nextValue, 10);
+				options.timeMs = null;
 				break;
 			case '--max-turns':
 				options.maxTurns = Number.parseInt(nextValue, 10);
@@ -73,6 +75,10 @@ const parseArgs = (rawArgs) => {
 				break;
 			case '--scenario':
 				options.scenarios.push(nextValue);
+				break;
+			case '--time-ms':
+				options.timeMs = Number.parseInt(nextValue, 10);
+				options.iterations = null;
 				break;
 			default:
 				throw new Error(`Unknown argument: ${arg}`);
@@ -85,8 +91,12 @@ const parseArgs = (rawArgs) => {
 		throw new Error('--exploration-bias must be a positive number.');
 	}
 
-	if(!Number.isInteger(options.iterations) || options.iterations <= 0) {
+	if(options.iterations !== null && (!Number.isInteger(options.iterations) || options.iterations <= 0)) {
 		throw new Error('--iterations must be a positive integer.');
+	}
+
+	if(options.timeMs !== null && (!Number.isInteger(options.timeMs) || options.timeMs <= 0)) {
+		throw new Error('--time-ms must be a positive integer.');
 	}
 
 	if(!Number.isInteger(options.maxTurns) || options.maxTurns <= 0) {
@@ -244,6 +254,7 @@ class BenchmarkWorker {
 		return await this.request({
 			explorationBias: settings.explorationBias,
 			iterations: settings.iterations,
+			maxTimeMs: settings.timeMs,
 			mode: 'choose-move',
 			moves,
 			scenario: scenarioId,

@@ -243,6 +243,10 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     return choice;
   }
 
+  override suggestRollout(random: () => number) {
+    return this.findRolloutSuccessor(random);
+  }
+
   getPositionKey(): string {
     return createPositionKey(this.board, this.team, this.hands);
   }
@@ -284,7 +288,7 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
       return true;
     }
 
-    return this.listPseudoLegalMoves().length === 0;
+    return !this.hasAnyPseudoLegalMove();
   }
 
   getWinner(): DobutsuTeam | null {
@@ -302,7 +306,7 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
       return null;
     }
 
-    return this.listPseudoLegalMoves().length === 0
+    return !this.hasAnyPseudoLegalMove()
       ? getOpponentTeam(this.getCurrentTeam())
       : null;
   }
@@ -320,7 +324,7 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
       return 'repetition';
     }
 
-    return this.listPseudoLegalMoves().length === 0 ? 'stalemate' : null;
+    return !this.hasAnyPseudoLegalMove() ? 'stalemate' : null;
   }
 
   getReward(): Record<DobutsuTeam, number> {
@@ -360,11 +364,21 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     return moves;
   }
 
+  private hasAnyPseudoLegalMove(): boolean {
+    let hasMove = false;
+    this.forEachLegalMoveOnPosition(this.board, this.hands, this.getCurrentTeam(), () => {
+      hasMove = true;
+      return true;
+    });
+
+    return hasMove;
+  }
+
   private forEachLegalMoveOnPosition(
     board: Array<DobutsuPiece | null>,
     hands: DobutsuHands,
     team: DobutsuTeam,
-    visit: (move: DobutsuMove) => void,
+    visit: (move: DobutsuMove) => boolean | void,
   ) {
     const hand = hands[getTeamKey(team)];
 
@@ -380,11 +394,13 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
           continue;
         }
 
-        visit({
+        if(visit({
           type: 'move',
           from: index,
           to,
-        });
+        })) {
+          return;
+        }
       }
     }
 
@@ -395,11 +411,13 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
 
       for(let index = 0; index < TOTAL_CELLS; index += 1) {
         if(board[index] === null) {
-          visit({
+          if(visit({
             type: 'drop',
             piece,
             to: index,
-          });
+          })) {
+            return;
+          }
         }
       }
     }
@@ -563,6 +581,118 @@ export class DobutsuShogiState extends GameState<DobutsuMove, DobutsuTeam, Dobut
     });
 
     return choice;
+  }
+
+  private findRolloutSuccessor(random: () => number): {
+    move: DobutsuMove;
+    nextState: DobutsuShogiState;
+  } | null {
+    if(this.getCapturedLionWinner() || this.getTryWinner() || this.isRepetitionDraw()) {
+      return null;
+    }
+
+    const currentTeam = this.getCurrentTeam();
+    const tacticalMove = (
+      this.sampleWinningRolloutMove(currentTeam, random)
+      ?? this.sampleCaptureRolloutMove(currentTeam, random)
+    );
+    if(tacticalMove !== null) {
+      return this.createRolloutSuggestion(tacticalMove, currentTeam);
+    }
+
+    const sampledMove = this.sampleLegalMoveOnPosition(this.board, this.hands, currentTeam, random);
+    if(sampledMove === null) {
+      return null;
+    }
+
+    return this.createRolloutSuggestion(sampledMove, currentTeam);
+  }
+
+  private sampleWinningRolloutMove(
+    currentTeam: DobutsuTeam,
+    random: () => number,
+  ): DobutsuMove | null {
+    let choice: DobutsuMove | null = null;
+    let count = 0;
+
+    for(let from = 0; from < TOTAL_CELLS; from += 1) {
+      const piece = this.board[from];
+      if(!piece || getPieceOwner(piece) !== currentTeam) {
+        continue;
+      }
+
+      const pieceKind = getPieceKind(piece);
+      for(const to of this.getBoardDestinationsOnBoard(this.board, from, piece)) {
+        if(
+          pieceKind === 'L'
+          && isFinalRank(currentTeam, to)
+          && this.isAttackedAfterLionMoveOnBoard(this.board, from, to, currentTeam)
+        ) {
+          continue;
+        }
+
+        const destinationPiece = this.board[to];
+        if(
+          (!destinationPiece || getPieceKind(destinationPiece) !== 'L')
+          && (pieceKind !== 'L' || !isFinalRank(currentTeam, to))
+        ) {
+          continue;
+        }
+
+        count += 1;
+        if(Math.floor(random() * count) === 0) {
+          choice = { type: 'move', from, to };
+        }
+      }
+    }
+
+    return choice;
+  }
+
+  private sampleCaptureRolloutMove(
+    currentTeam: DobutsuTeam,
+    random: () => number,
+  ): DobutsuMove | null {
+    let choice: DobutsuMove | null = null;
+    let count = 0;
+
+    for(let from = 0; from < TOTAL_CELLS; from += 1) {
+      const piece = this.board[from];
+      if(!piece || getPieceOwner(piece) !== currentTeam) {
+        continue;
+      }
+
+      const pieceKind = getPieceKind(piece);
+      for(const to of this.getBoardDestinationsOnBoard(this.board, from, piece)) {
+        if(
+          pieceKind === 'L'
+          && isFinalRank(currentTeam, to)
+          && this.isAttackedAfterLionMoveOnBoard(this.board, from, to, currentTeam)
+        ) {
+          continue;
+        }
+
+        const destinationPiece = this.board[to];
+        if(!destinationPiece || getPieceKind(destinationPiece) === 'L') {
+          continue;
+        }
+
+        count += 1;
+        if(Math.floor(random() * count) === 0) {
+          choice = { type: 'move', from, to };
+        }
+      }
+    }
+
+    return choice;
+  }
+
+  private createRolloutSuggestion(move: DobutsuMove, currentTeam: DobutsuTeam) {
+    const position = this.applyMoveToPosition(move, this.board, this.hands, currentTeam);
+    return {
+      move,
+      nextState: this.createStateFromPosition(position.board, position.hands, !this.team),
+    };
   }
 
   private applyMoveToPosition(

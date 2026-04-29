@@ -149,6 +149,79 @@ describe('DobutsuShogiState', () => {
     expect(attackedTry.getOutcomeReason()).toBeNull();
   });
 
+  it('takes immediate lion captures in rollouts', () => {
+    const state = new DobutsuShogiState(
+      [
+        null, 'l', null,
+        null, 'C', null,
+        null, null, null,
+        null, 'L', null,
+      ] satisfies Array<DobutsuPiece | null>,
+      true,
+      EMPTY_HANDS,
+    );
+
+    const suggestion = state.suggestRollout(() => 0.99);
+
+    expect(suggestion?.move).toEqual({
+      type: 'move',
+      from: 4,
+      to: 1,
+    });
+    expect(suggestion?.nextState.getWinner()).toBe('S');
+    expect(suggestion?.nextState.getOutcomeReason()).toBe('capture');
+  });
+
+  it('takes immediate safe try wins in rollouts', () => {
+    const state = new DobutsuShogiState(
+      [
+        null, null, null,
+        null, null, 'L',
+        'l', null, null,
+        null, null, null,
+      ] satisfies Array<DobutsuPiece | null>,
+      true,
+      EMPTY_HANDS,
+    );
+
+    const suggestion = state.suggestRollout(() => 0.99);
+
+    expect(suggestion?.move).toMatchObject({
+      type: 'move',
+      from: 5,
+    });
+    expect(suggestion?.nextState.getWinner()).toBe('S');
+    expect(suggestion?.nextState.getOutcomeReason()).toBe('try');
+  });
+
+  it('keeps unsafe lion moves legal but punishes them immediately in rollouts', () => {
+    const unsafeLionMove: DobutsuMove = {
+      type: 'move',
+      from: 10,
+      to: 7,
+    };
+    const state = new DobutsuShogiState(
+      [
+        'l', null, null,
+        null, 'g', null,
+        null, null, null,
+        null, 'L', 'G',
+      ] satisfies Array<DobutsuPiece | null>,
+      true,
+      EMPTY_HANDS,
+    );
+
+    expect(state.getLegalMoves()).toContainEqual(unsafeLionMove);
+
+    const punished = state.makeTypedMove(unsafeLionMove).suggestRollout(() => 0.99);
+    expect(punished?.move).toEqual({
+      type: 'move',
+      from: 4,
+      to: 7,
+    });
+    expect(punished?.nextState.getWinner()).toBe('N');
+  });
+
   it('declares a draw after the same position appears for the third time', () => {
     let state = new DobutsuShogiState(
       [

@@ -25,7 +25,7 @@ jobs:
 
   deploy:
     needs: e2e
-    uses: taylorvance/tv-shared/.github/workflows/deploy-pages.yml@main
+    uses: taylorvance/tv-shared/.github/workflows/deploy-pages.yml@v1
     with:
       node-version: '20'
       working-directory: .
